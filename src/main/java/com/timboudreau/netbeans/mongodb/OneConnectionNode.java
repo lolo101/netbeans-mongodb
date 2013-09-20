@@ -24,6 +24,7 @@
 package com.timboudreau.netbeans.mongodb;
 
 import com.mongodb.MongoClient;
+import com.mongodb.MongoClientURI;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -118,8 +119,7 @@ class OneConnectionNode extends AbstractNode implements PropertyChangeListener {
             if (create && (mongo == null || !mongo.getConnector().isOpen())) {
                 ConnectionInfo connection = getLookup().lookup(ConnectionInfo.class);
                 try {
-                    mongo = new MongoClient(connection.getHost(), connection.getPort());
-                    mongo.getDatabaseNames();
+                    mongo = new MongoClient(new MongoClientURI(connection.getMongoURI()));
                     content.add(disconnecter);
                     setProblem(false);
                 } catch (Exception ex) {
@@ -184,8 +184,7 @@ class OneConnectionNode extends AbstractNode implements PropertyChangeListener {
         Sheet sheet = Sheet.createDefault();
         Sheet.Set set = Sheet.createPropertiesSet();
         set.put(new ConnectionNameProperty(getLookup()));
-        set.put(new ConnectionHostProperty(getLookup()));
-        set.put(new ConnectionPortProperty(getLookup()));
+        set.put(new ConnectionURIProperty(getLookup()));
         sheet.put(set);
         return sheet;
     }
@@ -196,8 +195,7 @@ class OneConnectionNode extends AbstractNode implements PropertyChangeListener {
             case ConnectionInfo.PREFS_KEY_DISPLAY_NAME:
                 setDisplayName((String) evt.getNewValue());
                 break;
-            case ConnectionInfo.PREFS_KEY_HOST:
-            case ConnectionInfo.PREFS_KEY_PORT:
+            case ConnectionInfo.PREFS_KEY_URI:
                 MongoDisconnect disconnect = getLookup().lookup(MongoDisconnect.class);
                 if (disconnect != null) {
                     disconnect.close();

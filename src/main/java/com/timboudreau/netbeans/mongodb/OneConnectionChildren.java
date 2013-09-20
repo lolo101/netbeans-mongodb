@@ -24,6 +24,7 @@
 package com.timboudreau.netbeans.mongodb;
 
 import com.mongodb.MongoClient;
+import com.mongodb.MongoClientURI;
 import java.util.List;
 import java.util.concurrent.Callable;
 import org.openide.nodes.ChildFactory;
@@ -38,6 +39,7 @@ final class OneConnectionChildren extends ChildFactory.Detachable<DbInfo> {
 
     private final Lookup lookup;
     private MongoClient client;
+    private ConnectionInfo connectionInfo;
 
     public OneConnectionChildren(Lookup lookup) {
         this.lookup = lookup;
@@ -46,6 +48,7 @@ final class OneConnectionChildren extends ChildFactory.Detachable<DbInfo> {
     @Override
     protected void addNotify() {
         client = lookup.lookup(MongoClient.class);
+        connectionInfo = lookup.lookup(ConnectionInfo.class);
     }
 
     @Override
@@ -62,8 +65,14 @@ final class OneConnectionChildren extends ChildFactory.Detachable<DbInfo> {
             problems.invoke(new Callable<Void>() {
                 @Override
                 public Void call() throws Exception {
-                    for (String dbName : client.getDatabaseNames()) {
-                        list.add(new DbInfo(lookup, dbName));
+                    final MongoClientURI uri = new MongoClientURI(connectionInfo.getMongoURI());
+                    final String connectionDBName = uri.getDatabase();
+                    if(connectionDBName != null) {
+                        list.add(new DbInfo(lookup, connectionDBName));
+                    } else {
+                        for (String dbName : client.getDatabaseNames()) {
+                            list.add(new DbInfo(lookup, dbName));
+                        }
                     }
                     return null;
                 }

@@ -37,11 +37,9 @@ import org.openide.util.Parameters;
 final class ConnectionInfo implements Comparable<ConnectionInfo>, AutoCloseable {
 
     public static final String PREFS_KEY_DISPLAY_NAME = "displayName"; //NOI18N
-    public static final String PREFS_KEY_HOST = "host"; //NOI18N
-    public static final String PREFS_KEY_PORT = "port"; //NOI18N
     public static final String PREFS_KEY_ID = "id"; //NOI18N
-    public static final String DEFAULT_HOST = "localhost"; //NOI18N
-    public static final int DEFAULT_PORT = 27017;
+    public static final String PREFS_KEY_URI = "uri"; //NOI18N
+    public static final String DEFAULT_URI = "mongodb://localhost"; //NOI18N
 
     private final Preferences node;
     private final String id;
@@ -77,7 +75,7 @@ final class ConnectionInfo implements Comparable<ConnectionInfo>, AutoCloseable 
     }
 
     public String getDisplayName() {
-        return node.get(PREFS_KEY_DISPLAY_NAME, toString());
+        return node.get(PREFS_KEY_DISPLAY_NAME, getMongoURI());
     }
 
     public void setDisplayName(String displayName) {
@@ -93,34 +91,22 @@ final class ConnectionInfo implements Comparable<ConnectionInfo>, AutoCloseable 
         }
     }
 
-    public String getHost() {
-        return node.get(PREFS_KEY_HOST, DEFAULT_HOST);
+    public String getMongoURI() {
+        return node.get(PREFS_KEY_URI, DEFAULT_URI);
     }
 
-    public int getPort() {
-        return node.getInt(PREFS_KEY_PORT, DEFAULT_PORT);
-    }
-
-    public void setHost(String host) {
-        Parameters.notNull(PREFS_KEY_HOST, host);
-        String old = getHost();
-        if (!host.equals(old)) {
-            node.put(PREFS_KEY_HOST, host);
-            supp.firePropertyChange(PREFS_KEY_HOST, old, host);
-        }
-    }
-
-    public void setPort(int port) {
-        int old = getPort();
-        if (old != port) {
-            node.putInt(PREFS_KEY_PORT, port);
-            supp.firePropertyChange(PREFS_KEY_PORT, old, port);
+    public void setMongoURI(String uri) {
+        Parameters.notNull(PREFS_KEY_URI, uri);
+        final String old = getMongoURI();
+        if (!old.equals(uri)) {
+            node.put(PREFS_KEY_URI, uri);
+            supp.firePropertyChange(PREFS_KEY_URI, old, uri);
         }
     }
 
     @Override
     public String toString() {
-        return getHost() + ":" + getPort() + " (" + id + ")"; //NOI18N
+        return getDisplayName(); //NOI18N
     }
 
     @Override
@@ -158,5 +144,4 @@ final class ConnectionInfo implements Comparable<ConnectionInfo>, AutoCloseable 
     public void close() {
         save();
     }
-
 }

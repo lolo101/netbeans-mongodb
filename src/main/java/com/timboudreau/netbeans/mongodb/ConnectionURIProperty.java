@@ -30,29 +30,35 @@ import org.openide.util.NbBundle.Messages;
 
 /**
  *
- * @author Tim Boudreau
+ * @author Yann D'Isanto
  */
-@Messages("ConnectionPort=Port")
-public class ConnectionPortProperty extends PropertySupport.ReadWrite<Integer> {
+@Messages("ConnectionURI=Mongo URI")
+public class ConnectionURIProperty extends PropertySupport.ReadWrite<String> {
 
+    private static final String MONGO_URI_PREFIX = "mongodb://";
+    
     private final Lookup lkp;
 
-    ConnectionPortProperty(Lookup lkp) {
-        super("connectionPort", Integer.class, Bundle.ConnectionPort(), null);
+    ConnectionURIProperty(Lookup lkp) {
+        super("connectionURI", String.class, Bundle.ConnectionURI(), null);
         this.lkp = lkp;
     }
 
     @Override
-    public Integer getValue() throws IllegalAccessException, InvocationTargetException {
-        ConnectionInfo info = lkp.lookup(ConnectionInfo.class);
-        return info == null ? -1 : info.getPort();
+    public String getValue() throws IllegalAccessException, InvocationTargetException {
+        final ConnectionInfo info = lkp.lookup(ConnectionInfo.class);
+        return info == null ? "[no value]" : info.getMongoURI();
     }
 
     @Override
-    public void setValue(Integer t) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        ConnectionInfo info = lkp.lookup(ConnectionInfo.class);
+    public void setValue(String t) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        final ConnectionInfo info = lkp.lookup(ConnectionInfo.class);
         if (info != null) {
-            info.setPort(t);
+            final StringBuilder uriBuilder = new StringBuilder(t);
+            if(!t.startsWith(MONGO_URI_PREFIX)) {
+                uriBuilder.insert(0, MONGO_URI_PREFIX);
+            }
+            info.setMongoURI(t);
         }
     }
 }

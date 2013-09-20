@@ -121,8 +121,7 @@ final class GenericNode extends AbstractNode {
         expert.put(new CollectionNameProperty(getLookup()));
         expert.put(new DatabaseNameProperty(getLookup()));
         expert.put(new ConnectionNameProperty(getLookup()));
-        expert.put(new ConnectionHostProperty(getLookup()));
-        expert.put(new ConnectionPortProperty(getLookup()));
+        expert.put(new ConnectionURIProperty(getLookup()));
         sheet.put(expert);
         return sheet;
     }

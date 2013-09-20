@@ -25,7 +25,6 @@ package com.timboudreau.netbeans.mongodb;
 
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import java.util.regex.Pattern;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -37,8 +36,11 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Tim Boudreau
  */
+@Messages("ConnectionNameNotSet=Specify the connection name")
 public class NewConnectionPanel extends javax.swing.JPanel implements DocumentListener, FocusListener {
 
+    private static final String MONGO_URI_PREFIX = "mongodb://";
+    
     private final ChangeSupport supp = new ChangeSupport(this);
 
     public void addChangeListener(ChangeListener listener) {
@@ -55,8 +57,21 @@ public class NewConnectionPanel extends javax.swing.JPanel implements DocumentLi
     public NewConnectionPanel() {
         initComponents();
         nameField.addFocusListener(this);
-        portField.addFocusListener(this);
-        hostField.addFocusListener(this);
+        uriField.addFocusListener(this);
+        uriField.getDocument().addDocumentListener(this);
+    }
+
+    String getConnectionName() {
+        return nameField.getText().trim();
+    }
+    
+    String getMongoURI() {
+        final String inputURI = uriField.getText().trim();
+        final StringBuilder uriBuilder = new StringBuilder(inputURI);
+        if(!inputURI.startsWith(MONGO_URI_PREFIX)) {
+            uriBuilder.insert(0, MONGO_URI_PREFIX);
+        }
+        return uriBuilder.toString();
     }
 
     /**
@@ -68,23 +83,18 @@ public class NewConnectionPanel extends javax.swing.JPanel implements DocumentLi
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        hostLabel = new javax.swing.JLabel();
-        hostField = new javax.swing.JTextField();
-        portLabel = new javax.swing.JLabel();
-        portField = new javax.swing.JTextField();
+        uriLabel = new javax.swing.JLabel();
+        uriField = new javax.swing.JTextField();
         problemLabel = new javax.swing.JLabel();
         nameLabel = new javax.swing.JLabel();
         nameField = new javax.swing.JTextField();
+        mongoURIPrefixLabel = new javax.swing.JLabel();
 
-        hostLabel.setLabelFor(hostField);
-        org.openide.awt.Mnemonics.setLocalizedText(hostLabel, org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "NewConnectionPanel.hostLabel.text")); // NOI18N
+        uriLabel.setLabelFor(uriField);
+        org.openide.awt.Mnemonics.setLocalizedText(uriLabel, org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "NewConnectionPanel.uriLabel.text")); // NOI18N
 
-        hostField.setText(org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "NewConnectionPanel.hostField.text")); // NOI18N
-
-        portLabel.setLabelFor(portField);
-        org.openide.awt.Mnemonics.setLocalizedText(portLabel, org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "NewConnectionPanel.portLabel.text")); // NOI18N
-
-        portField.setText(org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "NewConnectionPanel.portField.text")); // NOI18N
+        uriField.setText(org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "NewConnectionPanel.uriField.text")); // NOI18N
+        uriField.setToolTipText(org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "NewConnectionPanel.uriField.toolTipText")); // NOI18N
 
         problemLabel.setForeground(javax.swing.UIManager.getDefaults().getColor("nb.errorForeground"));
         org.openide.awt.Mnemonics.setLocalizedText(problemLabel, org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "NewConnectionPanel.problemLabel.text")); // NOI18N
@@ -93,6 +103,8 @@ public class NewConnectionPanel extends javax.swing.JPanel implements DocumentLi
         org.openide.awt.Mnemonics.setLocalizedText(nameLabel, org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "NewConnectionPanel.nameLabel.text")); // NOI18N
 
         nameField.setText(org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "NewConnectionPanel.nameField.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(mongoURIPrefixLabel, org.openide.util.NbBundle.getMessage(NewConnectionPanel.class, "NewConnectionPanel.mongoURIPrefixLabel.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -105,13 +117,14 @@ public class NewConnectionPanel extends javax.swing.JPanel implements DocumentLi
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(nameLabel)
-                            .addComponent(hostLabel)
-                            .addComponent(portLabel))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(uriLabel))
+                        .addGap(14, 14, 14)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(portField)
-                            .addComponent(hostField)
-                            .addComponent(nameField, javax.swing.GroupLayout.DEFAULT_SIZE, 469, Short.MAX_VALUE))))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(mongoURIPrefixLabel)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(uriField, javax.swing.GroupLayout.DEFAULT_SIZE, 373, Short.MAX_VALUE))
+                            .addComponent(nameField))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -123,52 +136,49 @@ public class NewConnectionPanel extends javax.swing.JPanel implements DocumentLi
                     .addComponent(nameField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(hostLabel)
-                    .addComponent(hostField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(portField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(portLabel))
-                .addGap(42, 42, 42)
+                    .addComponent(uriLabel)
+                    .addComponent(uriField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(mongoURIPrefixLabel))
+                .addGap(33, 33, 33)
                 .addComponent(problemLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JTextField hostField;
-    private javax.swing.JLabel hostLabel;
+    private javax.swing.JLabel mongoURIPrefixLabel;
     private javax.swing.JTextField nameField;
     private javax.swing.JLabel nameLabel;
-    private javax.swing.JTextField portField;
-    private javax.swing.JLabel portLabel;
     private javax.swing.JLabel problemLabel;
+    private javax.swing.JTextField uriField;
+    private javax.swing.JLabel uriLabel;
     // End of variables declaration//GEN-END:variables
 
     @Override
     public void insertUpdate(DocumentEvent e) {
-        changedUpdate(e);
+        performValidation();
     }
 
     @Override
-    @Messages("HostIsEmpty=Host not set")
     public void removeUpdate(DocumentEvent e) {
-        changedUpdate(e);
+        performValidation();
     }
 
-    @Messages("PortInvalid=Invalid port")
-    public int getPort() {
-        return Integer.parseInt(portField.getText().trim());
+    @Override
+    public void changedUpdate(DocumentEvent e) {
     }
 
-    @Messages("HostInvalid=Invalid host")
-    public String getHost() {
-        return hostField.getText().trim();
+    private void performValidation() {
+        final String name = getConnectionName();
+        if (name.isEmpty()) {
+            setProblem(Bundle.ConnectionNameNotSet());
+            return;
+        }
+        setProblem(null);
     }
-
+    
     private boolean ok = true;
 
-    @Messages("PortIsNegative=Port cannot be negative")
     private void setOk(boolean ok) {
         if (ok != this.ok) {
             this.ok = ok;
@@ -176,46 +186,8 @@ public class NewConnectionPanel extends javax.swing.JPanel implements DocumentLi
         }
     }
 
-    @Messages("PortIsZero=Port cannot be zero")
     public boolean isOk() {
         return ok;
-    }
-
-    @Override
-    @Messages("PortNotSet=Invalid port")
-    public void changedUpdate(DocumentEvent e) {
-        String portString = portField.getText().trim();
-        if (portString.isEmpty()) {
-            setProblem(Bundle.PortNotSet());
-            return;
-        }
-        try {
-            int port = Integer.parseInt(portString);
-            if (port == 0) {
-                setProblem(Bundle.PortIsZero());
-                return;
-            }
-            if (port < 0) {
-                setProblem(Bundle.PortIsNegative());
-                return;
-            }
-        } catch (NumberFormatException nfe) {
-            setProblem(Bundle.PortInvalid());
-            return;
-        }
-        String host = getHost();
-        if (host.isEmpty()) {
-            setProblem(Bundle.HostIsEmpty());
-            return;
-        } else {
-            Pattern validIp = Pattern.compile("^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$");
-            Pattern validHost = Pattern.compile("^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9\\-]*[A-Za-z0-9])$");
-            if (!validIp.matcher(host).matches() && !validHost.matcher(host).matches()) {
-                setProblem(Bundle.HostInvalid());
-                return;
-            }
-        }
-        setProblem(null);
     }
 
     private void setProblem(String problem) {
@@ -238,7 +210,4 @@ public class NewConnectionPanel extends javax.swing.JPanel implements DocumentLi
         // do nothing
     }
 
-    String getConnectionName() {
-        return nameField.getText().trim();
-    }
 }

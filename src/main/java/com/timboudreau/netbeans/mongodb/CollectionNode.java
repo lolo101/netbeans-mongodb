@@ -63,8 +63,7 @@ final class CollectionNode extends AbstractNode {
         set.put(new CollectionNameProperty(getLookup()));
         set.put(new DatabaseNameProperty(getLookup()));
         set.put(new ConnectionNameProperty(getLookup()));
-        set.put(new ConnectionHostProperty(getLookup()));
-        set.put(new ConnectionPortProperty(getLookup()));
+        set.put(new ConnectionURIProperty(getLookup()));
         sheet.put(set);
         return sheet;
     }

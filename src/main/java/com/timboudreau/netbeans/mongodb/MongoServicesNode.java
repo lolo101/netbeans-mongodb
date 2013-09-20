@@ -138,16 +138,14 @@ public class MongoServicesNode extends AbstractNode {
             Object dlgResult = DialogDisplayer.getDefault().notify(desc);
             System.out.println("DLG RESULT " + dlgResult);
             if (dlgResult.equals(NotifyDescriptor.OK_OPTION)) {
-                String host = pnl.getHost();
-                int port = pnl.getPort();
-                String name = pnl.getConnectionName();
-                Preferences prefs = prefs();
+                final String uri = pnl.getMongoURI();
+                final String name = pnl.getConnectionName();
+                final Preferences prefs = prefs();
                 try (ConnectionInfo info = new ConnectionInfo(prefs)) {
                     if (!name.isEmpty()) {
                         info.setDisplayName(name);
                     }
-                    info.setPort(port);
-                    info.setHost(host);
+                    info.setMongoURI(uri);
                 } finally {
                     factory.doRefresh();
                 }

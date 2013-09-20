@@ -25,12 +25,9 @@ package com.timboudreau.netbeans.mongodb;
 
 import com.mongodb.DB;
 import com.mongodb.MongoClient;
-import java.lang.reflect.InvocationTargetException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -41,9 +38,12 @@ import org.openide.util.lookup.ProxyLookup;
  *
  * @author Tim Boudreau
  */
+@Messages({
+    "DB_NAME_DESC=The name of the database",
+    "DB_NAME=Database Name"})
 public class OneDbNode extends AbstractNode {
 
-    public OneDbNode(DbInfo info) {
+    OneDbNode(DbInfo info) {
         this(info, new InstanceContent());
     }
 
@@ -55,7 +55,6 @@ public class OneDbNode extends AbstractNode {
         this(info, content, new ProxyLookup(info.lookup, lkp, Lookups.fixed(info)));
     }
 
-    @Messages("DB_NAME_DESC=The name of the database")
     OneDbNode(DbInfo info, InstanceContent content, ProxyLookup lkp) {
         super(Children.create(new OneDBChildren(lkp), true), lkp);
         content.add(info, new DBConverter());
@@ -65,14 +64,12 @@ public class OneDbNode extends AbstractNode {
     }
 
     @Override
-    @Messages("DB_NAME=Database Name")
     protected Sheet createSheet() {
         Sheet sheet = Sheet.createDefault();
         Sheet.Set set = Sheet.createPropertiesSet();
         set.put(new DatabaseNameProperty(getLookup()));
         set.put(new ConnectionNameProperty(getLookup()));
-        set.put(new ConnectionHostProperty(getLookup()));
-        set.put(new ConnectionPortProperty(getLookup()));
+        set.put(new ConnectionURIProperty(getLookup()));
         sheet.put(set);
         return sheet;
     }

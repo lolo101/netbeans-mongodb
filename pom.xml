@@ -12,6 +12,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <netbeans.hint.license>mit</netbeans.hint.license>
+        <netbeans.target.version>RELEASE731</netbeans.target.version>
     </properties>
 
     <repositories>
@@ -34,30 +35,30 @@
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-api-annotations-common</artifactId>
-            <version>RELEASE731</version>
+            <version>${netbeans.target.version}</version>
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-openide-nodes</artifactId>
-            <version>RELEASE731</version>
+            <version>${netbeans.target.version}</version>
             <type>jar</type>
         </dependency>
         <dependency>
             <artifactId>org-openide-util</artifactId>
             <groupId>org.netbeans.api</groupId>
             <type>jar</type>
-            <version>RELEASE731</version>
+            <version>${netbeans.target.version}</version>
         </dependency>
         <dependency>
             <artifactId>org-openide-util-lookup</artifactId>
             <groupId>org.netbeans.api</groupId>
             <type>jar</type>
-            <version>RELEASE731</version>
+            <version>${netbeans.target.version}</version>
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-core-ide</artifactId>
-            <version>RELEASE731</version>
+            <version>${netbeans.target.version}</version>
             <type>jar</type>
         </dependency>
         <dependency>
@@ -70,13 +71,13 @@
             <artifactId>org-openide-awt</artifactId>
             <groupId>org.netbeans.api</groupId>
             <type>jar</type>
-            <version>RELEASE731</version>
+            <version>${netbeans.target.version}</version>
         </dependency>
         <dependency>
             <artifactId>org-openide-dialogs</artifactId>
             <groupId>org.netbeans.api</groupId>
             <type>jar</type>
-            <version>RELEASE731</version>
+            <version>${netbeans.target.version}</version>
         </dependency>
     </dependencies>
 
