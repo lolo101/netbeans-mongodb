@@ -27,6 +27,7 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -97,7 +98,13 @@ public class DisconnectAction extends AbstractAction implements ContextAwareActi
 
     @Override
     public void resultChanged(LookupEvent le) {
-        Lookup.Result res = (Lookup.Result) le.getSource();
-        setEnabled(!res.allItems().isEmpty());
+        final Lookup.Result result = (Lookup.Result) le.getSource();
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                setEnabled(!result.allItems().isEmpty());
+            }
+        });
     }
 }
