@@ -24,47 +24,32 @@
 package com.timboudreau.netbeans.mongodb.views;
 
 import com.mongodb.DBCollection;
-import com.timboudreau.netbeans.mongodb.CollectionNodeInfo;
-import java.util.Collection;
-import org.netbeans.api.settings.ConvertAsProperties;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionReference;
+import com.timboudreau.netbeans.mongodb.CollectionInfo;
 import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
 import org.openide.windows.TopComponent;
-import org.openide.util.NbBundle.Messages;
-import org.openide.util.Utilities;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Top component which displays something.
  */
-@ConvertAsProperties(
-        dtd = "-//com.timboudreau.netbeans.mongodb.views//CollectionView//EN",
-        autostore = false)
 @TopComponent.Description(
         preferredID = "CollectionViewTopComponent",
         iconBase = "com/timboudreau/netbeans/mongodb/mongo-collection.png",
         persistenceType = TopComponent.PERSISTENCE_ALWAYS)
-@TopComponent.Registration(mode = "editor", openAtStartup = false)
-@ActionID(category = "Window", id = "com.timboudreau.netbeans.mongodb.views.CollectionViewTopComponent")
-@ActionReference(path = "Menu/Window" /*, position = 333 */)
-@TopComponent.OpenActionRegistration(
-        displayName = "#CTL_CollectionViewAction",
-        preferredID = "CollectionViewTopComponent")
-@Messages({
-    "CTL_CollectionViewAction=CollectionView",
-    "CTL_CollectionViewTopComponent=CollectionView Window",
-    "HINT_CollectionViewTopComponent=This is a CollectionView window"
-})
-public final class CollectionViewTopComponent extends TopComponent implements LookupListener {
+public final class CollectionViewTopComponent extends TopComponent {
 
-    private Lookup.Result result = null;
-
-    public CollectionViewTopComponent() {
+    private final CollectionInfo collectionInfo;
+    
+    public CollectionViewTopComponent(CollectionInfo collectionInfo, Lookup lookup) {
+        this.collectionInfo = collectionInfo;
+        associateLookup(Lookups.singleton(collectionInfo));
         initComponents();
-        setName(Bundle.CTL_CollectionViewTopComponent());
-        setToolTipText(Bundle.HINT_CollectionViewTopComponent());
+        setName(collectionInfo.getName());
+        nameValueLabel.setText(collectionInfo.getName());
+        final DBCollection dbCollection = lookup.lookup(DBCollection.class);
+        System.out.println("dbCollection: " + dbCollection);
+        documentsList.setModel(new DocumentsListModel(dbCollection));
+        refreshButton.setEnabled(true);
         documentsList.setCellRenderer(new MongoDocumentListCellRenderer());
     }
 
@@ -164,32 +149,5 @@ public final class CollectionViewTopComponent extends TopComponent implements Lo
     void readProperties(java.util.Properties p) {
         String version = p.getProperty("version");
         // TODO read your settings according to their version
-    }
-
-    @Override
-    public void componentOpened() {
-        result = Utilities.actionsGlobalContext().lookupResult(CollectionNodeInfo.class);
-        result.addLookupListener(this);
-        resultChanged(new LookupEvent(result));
-    }
-
-    @Override
-    public void componentClosed() {
-        result.removeLookupListener(this);
-        result = null;
-    }
-
-    @Override
-    public void resultChanged(LookupEvent le) {
-        Lookup.Result r = (Lookup.Result) le.getSource();
-        Collection<CollectionNodeInfo> instances = r.allInstances();
-        if (!instances.isEmpty()) {
-            for (CollectionNodeInfo cni : instances) {
-                nameValueLabel.setText(cni.getCollectionInfo().getName());
-                final DBCollection dbCollection = cni.getLookup().lookup(DBCollection.class);
-                documentsList.setModel(new DocumentsListModel(dbCollection));
-                refreshButton.setEnabled(true);
-            }
-        }
     }
 }

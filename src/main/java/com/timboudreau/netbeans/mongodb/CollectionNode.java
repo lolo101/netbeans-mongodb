@@ -25,12 +25,15 @@ package com.timboudreau.netbeans.mongodb;
 
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
+import com.timboudreau.netbeans.mongodb.views.CollectionViewTopComponent;
+import java.util.Set;
 import javax.swing.Action;
+import org.openide.actions.OpenAction;
+import org.openide.cookies.OpenCookie;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Sheet;
+import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
@@ -52,11 +55,23 @@ final class CollectionNode extends AbstractNode {
         this(connection, content, new ProxyLookup(new AbstractLookup(content), Lookups.fixed(connection), connection.lookup));
     }
 
-    CollectionNode(CollectionInfo collection, InstanceContent content, ProxyLookup lkp) {
+    CollectionNode(final CollectionInfo collection, final InstanceContent content, final ProxyLookup lkp) {
         super(Children.LEAF, lkp);
         content.add(collection);
         content.add(collection, new CollectionConverter());
         content.add(new CollectionNodeInfo(collection, lkp));
+        content.add(new OpenCookie() {
+
+            @Override
+            public void open() {
+                TopComponent tc = findTopComponent(collection);
+                if (tc == null) {
+                    tc = new CollectionViewTopComponent(collection, lkp);
+                    tc.open();
+                }
+                tc.requestActive();
+            }
+        });
         setDisplayName(collection.name);
         setName(collection.name);
         setIconBaseWithExtension(MongoServicesNode.MONGO_COLLECTION);
@@ -76,27 +91,38 @@ final class CollectionNode extends AbstractNode {
 
     @Override
     public Action[] getActions(boolean context) {
-        return new Action[]{new OpenEditorAction()};
+        return new Action[]{SystemAction.get(OpenAction.class)};
     }
 
     @Override
     public Action getPreferredAction() {
-        return new OpenEditorAction();
+        return SystemAction.get(OpenAction.class);
     }
-    
-    private class OpenEditorAction extends AbstractAction {
 
-        public OpenEditorAction() {
-            super("Open Editor");
+    private TopComponent findTopComponent(CollectionInfo collection) {
+        final Set<TopComponent> openTopComponents = WindowManager.getDefault().getRegistry().getOpened();
+        for (TopComponent tc : openTopComponents) {
+            if (tc instanceof CollectionViewTopComponent) {
+                if (tc.getLookup().lookup(CollectionInfo.class) == collection) {
+                    return tc;
+                }
+            }
         }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            TopComponent tc = WindowManager.getDefault().findTopComponent("CollectionViewTopComponent");
-            tc.open();
-        }
+        return null;
     }
-    
+
+//    private class OpenEditorAction extends AbstractAction {
+//
+//        public OpenEditorAction() {
+//            super("Open Editor");
+//        }
+//
+//        @Override
+//        public void actionPerformed(ActionEvent e) {
+//            TopComponent tc = WindowManager.getDefault().findTopComponent("CollectionViewTopComponent");
+//            tc.open();
+//        }
+//    }
     static int maxCursorSize = 40;
 
     private class CollectionConverter implements InstanceContent.Convertor<CollectionInfo, DBCollection> {
