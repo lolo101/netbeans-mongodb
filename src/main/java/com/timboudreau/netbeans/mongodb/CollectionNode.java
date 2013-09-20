@@ -111,20 +111,6 @@ final class CollectionNode extends AbstractNode {
         return null;
     }
 
-//    private class OpenEditorAction extends AbstractAction {
-//
-//        public OpenEditorAction() {
-//            super("Open Editor");
-//        }
-//
-//        @Override
-//        public void actionPerformed(ActionEvent e) {
-//            TopComponent tc = WindowManager.getDefault().findTopComponent("CollectionViewTopComponent");
-//            tc.open();
-//        }
-//    }
-    static int maxCursorSize = 40;
-
     private class CollectionConverter implements InstanceContent.Convertor<CollectionInfo, DBCollection> {
 
         @Override

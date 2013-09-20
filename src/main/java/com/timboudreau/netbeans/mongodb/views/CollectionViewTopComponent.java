@@ -41,11 +41,11 @@ import org.openide.util.lookup.Lookups;
 public final class CollectionViewTopComponent extends TopComponent {
 
     private static final Integer[] ITEMS_PER_PAGE_VALUES = { 10, 20, 50, 100 };
-    
+
     private final CollectionInfo collectionInfo;
 
     private final DocumentsListModel listModel;
-
+    
     public CollectionViewTopComponent(CollectionInfo collectionInfo, Lookup lookup) {
         this.collectionInfo = collectionInfo;
         associateLookup(Lookups.singleton(collectionInfo));
@@ -53,7 +53,6 @@ public final class CollectionViewTopComponent extends TopComponent {
         setName(collectionInfo.getName());
         nameValueLabel.setText(collectionInfo.getName());
         final DBCollection dbCollection = lookup.lookup(DBCollection.class);
-        System.out.println("dbCollection: " + dbCollection);
         listModel = new DocumentsListModel(dbCollection);
         documentsList.setModel(listModel);
         documentsList.setCellRenderer(new MongoDocumentListCellRenderer());
@@ -71,7 +70,7 @@ public final class CollectionViewTopComponent extends TopComponent {
             }
         }).start();
     }
-    
+
     private void updatePagination() {
         SwingUtilities.invokeLater(new Runnable() {
 
@@ -172,10 +171,6 @@ public final class CollectionViewTopComponent extends TopComponent {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(nameLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(nameValueLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addComponent(listScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 567, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
@@ -196,7 +191,11 @@ public final class CollectionViewTopComponent extends TopComponent {
                         .addComponent(itemsPerPageLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(itemsPerPageComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(nameLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(nameValueLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
