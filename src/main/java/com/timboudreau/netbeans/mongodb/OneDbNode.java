@@ -25,6 +25,8 @@ package com.timboudreau.netbeans.mongodb;
 
 import com.mongodb.DB;
 import com.mongodb.MongoClient;
+import com.timboudreau.netbeans.nodes.RefreshChildrenAction;
+import javax.swing.Action;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Sheet;
@@ -43,6 +45,8 @@ import org.openide.util.lookup.ProxyLookup;
     "DB_NAME=Database Name"})
 public class OneDbNode extends AbstractNode {
 
+    private OneDBChildren childFactory;
+    
     OneDbNode(DbInfo info) {
         this(info, new InstanceContent());
     }
@@ -56,7 +60,12 @@ public class OneDbNode extends AbstractNode {
     }
 
     OneDbNode(DbInfo info, InstanceContent content, ProxyLookup lkp) {
-        super(Children.create(new OneDBChildren(lkp), true), lkp);
+        this(info, content, lkp, new OneDBChildren(lkp));
+    }
+
+    OneDbNode(DbInfo info, InstanceContent content, ProxyLookup lkp, OneDBChildren childFactory) {
+        super(Children.create(childFactory, true), lkp);
+        this.childFactory = childFactory;
         content.add(info, new DBConverter());
         setName(info.dbName);
         setDisplayName(info.dbName);
@@ -72,6 +81,13 @@ public class OneDbNode extends AbstractNode {
         set.put(new ConnectionURIProperty(getLookup()));
         sheet.put(set);
         return sheet;
+    }
+
+    @Override
+    public Action[] getActions(boolean context) {
+        return new Action[]{
+            new RefreshChildrenAction(childFactory)
+        };
     }
 
     private class DBConverter implements InstanceContent.Convertor<DbInfo, DB> {

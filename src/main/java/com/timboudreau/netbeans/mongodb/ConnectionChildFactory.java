@@ -23,11 +23,11 @@
  */
 package com.timboudreau.netbeans.mongodb;
 
+import com.timboudreau.netbeans.nodes.RefreshableChildFactory;
 import java.util.Arrays;
 import java.util.List;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
-import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 
@@ -35,7 +35,7 @@ import org.openide.util.Exceptions;
  *
  * @author Tim Boudreau
  */
-final class ConnectionChildFactory extends ChildFactory<ConnectionInfo> {
+final class ConnectionChildFactory extends RefreshableChildFactory<ConnectionInfo> {
 
     private ConnectionInfo[] connections() {
         try {
@@ -54,10 +54,6 @@ final class ConnectionChildFactory extends ChildFactory<ConnectionInfo> {
             Exceptions.printStackTrace(ex);
             return new ConnectionInfo[0];
         }
-    }
-
-    public void doRefresh() {
-        super.refresh(false);
     }
 
     @Override

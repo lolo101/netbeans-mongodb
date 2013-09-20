@@ -25,9 +25,9 @@ package com.timboudreau.netbeans.mongodb;
 
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
+import com.timboudreau.netbeans.nodes.RefreshableChildFactory;
 import java.util.List;
 import java.util.concurrent.Callable;
-import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 
@@ -35,7 +35,7 @@ import org.openide.util.Lookup;
  *
  * @author Tim Boudreau
  */
-final class OneConnectionChildren extends ChildFactory.Detachable<DbInfo> {
+final class OneConnectionChildren extends RefreshableChildFactory<DbInfo> {
 
     private final Lookup lookup;
     private MongoClient client;

@@ -25,6 +25,7 @@ package com.timboudreau.netbeans.mongodb;
 
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
+import com.timboudreau.netbeans.nodes.RefreshChildrenAction;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -63,6 +64,8 @@ class OneConnectionNode extends AbstractNode implements PropertyChangeListener {
     @StaticResource
     private final static String ERROR_BADGE = "com/timboudreau/netbeans/mongodb/error.png"; //NOI18N
 
+    private OneConnectionChildren childFactory;
+    
     OneConnectionNode(ConnectionInfo connection) {
         this(connection, new InstanceContent());
     }
@@ -72,7 +75,12 @@ class OneConnectionNode extends AbstractNode implements PropertyChangeListener {
     }
 
     OneConnectionNode(ConnectionInfo connection, InstanceContent content, ProxyLookup lkp) {
-        super(Children.create(new OneConnectionChildren(lkp), true), lkp);
+        this(connection, content, lkp, new OneConnectionChildren(lkp));
+    }
+    
+    OneConnectionNode(ConnectionInfo connection, InstanceContent content, ProxyLookup lkp, OneConnectionChildren childFactory) {
+        super(Children.create(childFactory, true), lkp);
+        this.childFactory = childFactory;
         this.content = content;
         content.add(problems);
         content.add(connection, converter);
@@ -108,9 +116,10 @@ class OneConnectionNode extends AbstractNode implements PropertyChangeListener {
     @Override
     public Action[] getActions(boolean ignored) {
         Action[] orig = super.getActions(ignored);
-        Action[] nue = new Action[orig.length + 1];
-        System.arraycopy(orig, 0, nue, 1, orig.length);
+        Action[] nue = new Action[orig.length + 2];
+        System.arraycopy(orig, 0, nue, 2, orig.length);
         nue[0] = new DisconnectAction(getLookup());
+        nue[1] = new RefreshChildrenAction(childFactory);
         return nue;
     }
 
@@ -208,7 +217,8 @@ class OneConnectionNode extends AbstractNode implements PropertyChangeListener {
 
         @Override
         public void close() {
-            setChildren(Children.create(new OneConnectionChildren(getLookup()), true));
+            childFactory = new OneConnectionChildren(getLookup());
+            setChildren(Children.create(childFactory, true));
             RequestProcessor.getDefault().post(this);
             setProblem(false);
             setShortDescription("");

@@ -106,6 +106,7 @@ final class ConnectionInfo implements Comparable<ConnectionInfo>, AutoCloseable 
 
     @Override
     public String toString() {
+//        return getMongoURI(); //NOI18N
         return getDisplayName(); //NOI18N
     }
 

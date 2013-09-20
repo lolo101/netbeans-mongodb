@@ -30,7 +30,7 @@ import org.openide.util.NbBundle.Messages;
 
 /**
  *
- * @author Yann D'Isanto
+ * @author Tim Boudreau
  */
 @Messages("ConnectionURI=Mongo URI")
 public class ConnectionURIProperty extends PropertySupport.ReadWrite<String> {

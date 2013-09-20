@@ -147,7 +147,7 @@ public class MongoServicesNode extends AbstractNode {
                     }
                     info.setMongoURI(uri);
                 } finally {
-                    factory.doRefresh();
+                    factory.refresh();
                 }
             }
         }
