@@ -79,6 +79,16 @@
             <type>jar</type>
             <version>${netbeans.target.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-windows</artifactId>
+            <version>${netbeans.target.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-settings</artifactId>
+            <version>${netbeans.target.version}</version>
+        </dependency>
     </dependencies>
 
     <build>

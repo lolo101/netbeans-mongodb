@@ -1,7 +1,7 @@
-/* 
+/*
  * The MIT License
  *
- * Copyright 2013 Tim Boudreau.
+ * Copyright 2013 PVVQ7166.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,61 +23,28 @@
  */
 package com.timboudreau.netbeans.mongodb;
 
-import java.util.Objects;
 import org.openide.util.Lookup;
-import org.openide.util.Parameters;
 
 /**
  *
- * @author Tim Boudreau
+ * @author PVVQ7166
  */
-public final class CollectionInfo implements Comparable<CollectionInfo> {
+public class CollectionNodeInfo {
 
-    final String name;
-    final Lookup lookup;
+    private final CollectionInfo collectionInfo;
 
-    public CollectionInfo(String name, Lookup lookup) {
-        Parameters.notNull("lookup", lookup);
-        Parameters.notNull("name", name);
-        this.name = name;
+    private final Lookup lookup;
+
+    public CollectionNodeInfo(CollectionInfo collectionInfo, Lookup lookup) {
+        this.collectionInfo = collectionInfo;
         this.lookup = lookup;
     }
 
-    public String getName() {
-        return name;
+    public CollectionInfo getCollectionInfo() {
+        return collectionInfo;
     }
 
     public Lookup getLookup() {
         return lookup;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        boolean result = o instanceof CollectionInfo;
-        if (result) {
-            CollectionInfo other = (CollectionInfo) o;
-            result = name.equals(other.name);
-            if (result) {
-                DbInfo mine = lookup.lookup(DbInfo.class);
-                DbInfo info = other.lookup.lookup(DbInfo.class);
-                result = Objects.equals(mine, info);
-            }
-        }
-        return result;
-    }
-
-    @Override
-    public int hashCode() {
-        return name.hashCode();
-    }
-
-    @Override
-    public String toString() {
-        return name;
-    }
-
-    @Override
-    public int compareTo(CollectionInfo o) {
-        return name.compareToIgnoreCase(o.name);
     }
 }

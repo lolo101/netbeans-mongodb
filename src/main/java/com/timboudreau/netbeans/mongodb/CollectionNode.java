@@ -25,6 +25,9 @@ package com.timboudreau.netbeans.mongodb;
 
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Sheet;
@@ -32,6 +35,8 @@ import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  *
@@ -48,14 +53,15 @@ final class CollectionNode extends AbstractNode {
     }
 
     CollectionNode(CollectionInfo collection, InstanceContent content, ProxyLookup lkp) {
-        super(Children.create(new CollectionChildFactory(lkp), true), lkp);
+        super(Children.LEAF, lkp);
         content.add(collection);
         content.add(collection, new CollectionConverter());
+        content.add(new CollectionNodeInfo(collection, lkp));
         setDisplayName(collection.name);
         setName(collection.name);
         setIconBaseWithExtension(MongoServicesNode.MONGO_COLLECTION);
     }
-    
+
     @Override
     protected Sheet createSheet() {
         Sheet sheet = Sheet.createDefault();
@@ -68,6 +74,29 @@ final class CollectionNode extends AbstractNode {
         return sheet;
     }
 
+    @Override
+    public Action[] getActions(boolean context) {
+        return new Action[]{new OpenEditorAction()};
+    }
+
+    @Override
+    public Action getPreferredAction() {
+        return new OpenEditorAction();
+    }
+    
+    private class OpenEditorAction extends AbstractAction {
+
+        public OpenEditorAction() {
+            super("Open Editor");
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            TopComponent tc = WindowManager.getDefault().findTopComponent("CollectionViewTopComponent");
+            tc.open();
+        }
+    }
+    
     static int maxCursorSize = 40;
 
     private class CollectionConverter implements InstanceContent.Convertor<CollectionInfo, DBCollection> {
