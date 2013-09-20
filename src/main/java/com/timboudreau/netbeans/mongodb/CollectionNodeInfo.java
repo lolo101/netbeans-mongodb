@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2013 PVVQ7166.
+ * Copyright 2013 Yann D'Isanto.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,7 @@ import org.openide.util.Lookup;
 
 /**
  *
- * @author PVVQ7166
+ * @author Yann D'Isanto
  */
 public class CollectionNodeInfo {
 

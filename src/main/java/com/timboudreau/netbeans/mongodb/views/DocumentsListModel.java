@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2013 PVVQ7166.
+ * Copyright 2013 Yann D'Isanto.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,30 +32,47 @@ import javax.swing.AbstractListModel;
 
 /**
  *
- * @author PVVQ7166
+ * @author Yann D'Isanto
  */
 public class DocumentsListModel extends AbstractListModel<DBObject> {
 
     private DBCollection dbCollection;
 
     private final List<DBObject> data = new ArrayList<>();
+    
+    private int itemsPerPage = 10;
+    
+    private int page = 1;
+    
+    private int cursorItemCount = 0;
 
     public DocumentsListModel(DBCollection dbCollection) {
         this.dbCollection = dbCollection;
     }
 
-    public void query() {
+    public void update() {
         clear();
         if(dbCollection == null) {
             // TODO: error message
             return;
         }
         try (DBCursor cursor = dbCollection.find()) {
-            for (DBObject document : cursor) {
+            cursorItemCount = cursor.count();
+            DBCursor c = cursor;
+            if(itemsPerPage > 0) {
+                final int toSkip = (page - 1) * itemsPerPage;
+                c = cursor.skip(toSkip).limit(itemsPerPage);
+            }
+            for (DBObject document : c) {
                 final int index = data.size();
+                data.add(document);
                 if (data.add(document)) {
                     fireIntervalAdded(this, index, index);
                 }
+            }
+            if(data.size() > 0) {
+                System.out.println(data.size() - 1 + " item(s) added");
+                fireIntervalAdded(this, 0, data.size() - 1);
             }
         }
     }
@@ -66,6 +83,29 @@ public class DocumentsListModel extends AbstractListModel<DBObject> {
             data.clear();
             fireIntervalRemoved(this, 0, size - 1);
         }
+    }
+
+    public int getItemsPerPage() {
+        return itemsPerPage;
+    }
+
+    public void setItemsPerPage(int itemsPerPage) {
+        this.itemsPerPage = itemsPerPage;
+    }
+
+    public int getPage() {
+        return page;
+    }
+
+    public void setPage(int page) {
+        this.page = page;
+    }
+
+    public int getPageCount() {
+        if(itemsPerPage > 0) {
+            return (cursorItemCount / itemsPerPage) + 1;
+        }
+        return 1;
     }
 
     @Override
