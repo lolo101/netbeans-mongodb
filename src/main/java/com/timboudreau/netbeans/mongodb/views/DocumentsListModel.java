@@ -48,12 +48,9 @@ public class DocumentsListModel extends AbstractListModel<DBObject> {
         clear();
         if(dbCollection == null) {
             // TODO: error message
-            System.out.println("dbCollection is null");
             return;
         }
-        System.out.println("querying dbCollection");
         try (DBCursor cursor = dbCollection.find()) {
-            System.out.println(cursor.count() + " items found");
             for (DBObject document : cursor) {
                 final int index = data.size();
                 if (data.add(document)) {
