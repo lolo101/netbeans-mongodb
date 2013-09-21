@@ -58,17 +58,13 @@ public class DocumentsListModel extends AbstractListModel<DBObject> {
         }
         try (DBCursor cursor = dbCollection.find()) {
             cursorItemCount = cursor.count();
-            DBCursor c = cursor;
+            DBCursor pageCursor = cursor;
             if(itemsPerPage > 0) {
                 final int toSkip = (page - 1) * itemsPerPage;
-                c = cursor.skip(toSkip).limit(itemsPerPage);
+                pageCursor = cursor.skip(toSkip).limit(itemsPerPage);
             }
-            for (DBObject document : c) {
-                final int index = data.size();
+            for (DBObject document : pageCursor) {
                 data.add(document);
-                if (data.add(document)) {
-                    fireIntervalAdded(this, index, index);
-                }
             }
             if(data.size() > 0) {
                 System.out.println(data.size() - 1 + " item(s) added");
