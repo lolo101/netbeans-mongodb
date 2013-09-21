@@ -59,7 +59,6 @@ final class CollectionNode extends AbstractNode {
         super(Children.LEAF, lkp);
         content.add(collection);
         content.add(collection, new CollectionConverter());
-        content.add(new CollectionNodeInfo(collection, lkp));
         content.add(new OpenCookie() {
 
             @Override
