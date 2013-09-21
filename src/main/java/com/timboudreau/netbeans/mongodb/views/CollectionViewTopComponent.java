@@ -24,10 +24,20 @@
 package com.timboudreau.netbeans.mongodb.views;
 
 import com.mongodb.DBCollection;
+import com.mongodb.DBObject;
+import com.mongodb.MongoException;
+import com.mongodb.util.JSON;
+import com.mongodb.util.JSONParseException;
 import com.timboudreau.netbeans.mongodb.CollectionInfo;
+import java.awt.Dimension;
 import javax.swing.JComboBox;
+import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
 import org.openide.util.lookup.Lookups;
 
@@ -38,16 +48,20 @@ import org.openide.util.lookup.Lookups;
         preferredID = "CollectionViewTopComponent",
         iconBase = "com/timboudreau/netbeans/mongodb/mongo-collection.png",
         persistenceType = TopComponent.PERSISTENCE_ALWAYS)
+@Messages({"addDocumentTitle=Document to add","invalidJson=invalid json"})
 public final class CollectionViewTopComponent extends TopComponent {
 
-    private static final Integer[] ITEMS_PER_PAGE_VALUES = { 10, 20, 50, 100 };
+    private static final Integer[] ITEMS_PER_PAGE_VALUES = {10, 20, 50, 100};
 
     private final CollectionInfo collectionInfo;
 
+    private final Lookup lookup;
+
     private final DocumentsListModel listModel;
-    
+
     public CollectionViewTopComponent(CollectionInfo collectionInfo, Lookup lookup) {
         this.collectionInfo = collectionInfo;
+        this.lookup = lookup;
         associateLookup(Lookups.singleton(collectionInfo));
         initComponents();
         setName(collectionInfo.getName());
@@ -111,6 +125,7 @@ public final class CollectionViewTopComponent extends TopComponent {
         pageCountLabel = new javax.swing.JLabel();
         pageLabel = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
+        addButton = new javax.swing.JButton();
 
         org.openide.awt.Mnemonics.setLocalizedText(nameLabel, org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.nameLabel.text")); // NOI18N
 
@@ -164,6 +179,13 @@ public final class CollectionViewTopComponent extends TopComponent {
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.jLabel3.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.addButton.text")); // NOI18N
+        addButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -191,7 +213,8 @@ public final class CollectionViewTopComponent extends TopComponent {
                         .addComponent(itemsPerPageLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(itemsPerPageComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(addButton))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(nameLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -208,9 +231,10 @@ public final class CollectionViewTopComponent extends TopComponent {
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(itemsPerPageLabel)
-                    .addComponent(itemsPerPageComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(itemsPerPageComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(addButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(listScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 258, Short.MAX_VALUE)
+                .addComponent(listScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 255, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lastButton)
@@ -275,7 +299,41 @@ public final class CollectionViewTopComponent extends TopComponent {
         reload();
     }//GEN-LAST:event_itemsPerPageComboBoxActionPerformed
 
+    private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
+        final JTextPane editor = new JTextPane();
+        editor.setPreferredSize(new Dimension(450, 300));
+        String json = "{}";
+        int caretPosition = 1;
+        boolean doLoop = true;
+        while (doLoop) {
+            doLoop = false;
+            editor.setText(json);
+            editor.setCaretPosition(caretPosition);
+            final DialogDescriptor desc = new DialogDescriptor(editor, Bundle.addDocumentTitle());
+            
+            final Object dlgResult = DialogDisplayer.getDefault().notify(desc);
+            if (dlgResult.equals(NotifyDescriptor.OK_OPTION)) {
+                try {
+                    json = editor.getText().trim();
+                    final DBObject document = (DBObject) JSON.parse(json);
+                    final DBCollection dbCollection = lookup.lookup(DBCollection.class);
+                    dbCollection.insert(document);
+                    reload();
+                } catch (JSONParseException ex) {
+                    caretPosition = 0; // JSONParseException does not expose the error position
+                    DialogDisplayer.getDefault().notify(
+                            new NotifyDescriptor.Message(Bundle.invalidJson(), NotifyDescriptor.ERROR_MESSAGE));
+                    doLoop = true;
+                } catch (MongoException ex) {
+                    DialogDisplayer.getDefault().notify(
+                            new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE));
+                }
+            }
+        }
+    }//GEN-LAST:event_addButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton addButton;
     private javax.swing.JList documentsList;
     private javax.swing.JButton firstButton;
     private javax.swing.JComboBox itemsPerPageComboBox;
