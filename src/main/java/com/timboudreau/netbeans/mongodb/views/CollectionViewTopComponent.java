@@ -430,7 +430,7 @@ public final class CollectionViewTopComponent extends TopComponent {
     private void deleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed
         final DBObject document = documentsList.getSelectedValue();
         final Object dlgResult = DialogDisplayer.getDefault().notify(
-                new NotifyDescriptor.Confirmation("Permanently delete this document?"));
+                new NotifyDescriptor.Confirmation("Permanently delete this document?", NotifyDescriptor.YES_NO_OPTION));
         if (dlgResult.equals(NotifyDescriptor.OK_OPTION)) {
             try {
                 final DBCollection dbCollection = lookup.lookup(DBCollection.class);
