@@ -56,7 +56,7 @@ import org.openide.util.lookup.Lookups;
         preferredID = "CollectionViewTopComponent",
         iconBase = "com/timboudreau/netbeans/mongodb/mongo-collection.png",
         persistenceType = TopComponent.PERSISTENCE_ALWAYS)
-@Messages({"addDocumentTitle=Add new document", "editDocumentTitle=Edit document", "invalidJson=invalid json"})
+@Messages({"addDocumentTitle=Add new document", "editDocumentTitle=Edit document", "editCriteriaTitle=Enter criteria", "invalidJson=invalid json"})
 public final class CollectionViewTopComponent extends TopComponent {
 
     private static final Integer[] ITEMS_PER_PAGE_VALUES = {10, 20, 50, 100};
@@ -66,6 +66,8 @@ public final class CollectionViewTopComponent extends TopComponent {
     private final Lookup lookup;
 
     private final DocumentsListModel listModel;
+    
+    private final EditorKit jsonEditorKit = MimeLookup.getLookup("text/x-json").lookup(EditorKit.class);
 
     public CollectionViewTopComponent(CollectionInfo collectionInfo, Lookup lookup) {
         this.collectionInfo = collectionInfo;
@@ -141,12 +143,11 @@ public final class CollectionViewTopComponent extends TopComponent {
 
     private DBObject showJsonEditor(String title, String defaultJson) {
         final JEditorPane editor = new JEditorPane();
-        final EditorKit jsonEditorKit = MimeLookup.getLookup("text/x-json").lookup(EditorKit.class);
         if (jsonEditorKit != null) {
             editor.setEditorKit(jsonEditorKit);
         }
         editor.setPreferredSize(new Dimension(450, 300));
-        String json = Json.prettify(defaultJson);
+        String json = defaultJson.trim().isEmpty() ? "{}" : Json.prettify(defaultJson);
         boolean doLoop = true;
         while (doLoop) {
             doLoop = false;
@@ -191,6 +192,11 @@ public final class CollectionViewTopComponent extends TopComponent {
         addButton = new javax.swing.JButton();
         editButton = new javax.swing.JButton();
         deleteButton = new javax.swing.JButton();
+        criteriaPanel = new javax.swing.JPanel();
+        editCriteriaButton = new javax.swing.JButton();
+        clearCriteriaButton = new javax.swing.JButton();
+        criteriaScrollPane = new javax.swing.JScrollPane();
+        criteriaArea = new javax.swing.JTextArea();
 
         org.openide.awt.Mnemonics.setLocalizedText(nameLabel, org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.nameLabel.text")); // NOI18N
 
@@ -267,6 +273,55 @@ public final class CollectionViewTopComponent extends TopComponent {
             }
         });
 
+        criteriaPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.criteriaPanel.border.title"))); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(editCriteriaButton, org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.editCriteriaButton.text")); // NOI18N
+        editCriteriaButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editCriteriaButtonActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(clearCriteriaButton, org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.clearCriteriaButton.text")); // NOI18N
+        clearCriteriaButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                clearCriteriaButtonActionPerformed(evt);
+            }
+        });
+
+        criteriaArea.setEditable(false);
+        criteriaArea.setColumns(20);
+        criteriaArea.setRows(5);
+        criteriaArea.setOpaque(false);
+        criteriaScrollPane.setViewportView(criteriaArea);
+
+        javax.swing.GroupLayout criteriaPanelLayout = new javax.swing.GroupLayout(criteriaPanel);
+        criteriaPanel.setLayout(criteriaPanelLayout);
+        criteriaPanelLayout.setHorizontalGroup(
+            criteriaPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(criteriaPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(criteriaPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(criteriaScrollPane)
+                    .addGroup(criteriaPanelLayout.createSequentialGroup()
+                        .addComponent(editCriteriaButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(clearCriteriaButton)
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
+        );
+        criteriaPanelLayout.setVerticalGroup(
+            criteriaPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(criteriaPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(criteriaPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(editCriteriaButton)
+                    .addComponent(clearCriteriaButton))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(criteriaScrollPane)
+                .addContainerGap())
+        );
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -274,7 +329,8 @@ public final class CollectionViewTopComponent extends TopComponent {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(listScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 567, Short.MAX_VALUE)
+                    .addComponent(criteriaPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(listScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 435, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(firstButton)
@@ -313,6 +369,8 @@ public final class CollectionViewTopComponent extends TopComponent {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(nameLabel)
                     .addComponent(nameValueLabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(criteriaPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(itemsPerPageLabel)
@@ -321,7 +379,7 @@ public final class CollectionViewTopComponent extends TopComponent {
                     .addComponent(deleteButton)
                     .addComponent(editButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(listScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 255, Short.MAX_VALUE)
+                .addComponent(listScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 180, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lastButton)
@@ -431,11 +489,33 @@ public final class CollectionViewTopComponent extends TopComponent {
             }
         }
     }//GEN-LAST:event_editDocumentButtonActionPerformed
+
+    private void editCriteriaButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editCriteriaButtonActionPerformed
+        final String json = listModel.getCriteria() != null ? JSON.serialize(listModel.getCriteria()) : "";
+        final DBObject criteria = showJsonEditor(Bundle.editCriteriaTitle(), json);
+        if (criteria != null) {
+            listModel.setCriteria(criteria);
+            criteriaArea.setText(JSON.serialize(criteria));
+            reload();
+        }
+    }//GEN-LAST:event_editCriteriaButtonActionPerformed
+
+    private void clearCriteriaButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearCriteriaButtonActionPerformed
+        listModel.setCriteria(null);
+        criteriaArea.setText("");
+        reload();
+    }//GEN-LAST:event_clearCriteriaButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
+    private javax.swing.JButton clearCriteriaButton;
+    private javax.swing.JTextArea criteriaArea;
+    private javax.swing.JPanel criteriaPanel;
+    private javax.swing.JScrollPane criteriaScrollPane;
     private javax.swing.JButton deleteButton;
     private javax.swing.JList<DBObject> documentsList;
     private javax.swing.JButton editButton;
+    private javax.swing.JButton editCriteriaButton;
     private javax.swing.JButton firstButton;
     private javax.swing.JComboBox itemsPerPageComboBox;
     private javax.swing.JLabel itemsPerPageLabel;

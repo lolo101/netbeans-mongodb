@@ -39,12 +39,14 @@ public class DocumentsListModel extends AbstractListModel<DBObject> {
     private DBCollection dbCollection;
 
     private final List<DBObject> data = new ArrayList<>();
-    
+
     private int itemsPerPage = 10;
-    
+
     private int page = 1;
-    
+
     private int cursorItemCount = 0;
+
+    private DBObject criteria;
 
     public DocumentsListModel(DBCollection dbCollection) {
         this.dbCollection = dbCollection;
@@ -52,21 +54,21 @@ public class DocumentsListModel extends AbstractListModel<DBObject> {
 
     public void update() {
         clear();
-        if(dbCollection == null) {
+        if (dbCollection == null) {
             // TODO: error message
             return;
         }
-        try (DBCursor cursor = dbCollection.find()) {
+        try (DBCursor cursor = dbCollection.find(criteria)) {
             cursorItemCount = cursor.count();
             DBCursor pageCursor = cursor;
-            if(itemsPerPage > 0) {
+            if (itemsPerPage > 0) {
                 final int toSkip = (page - 1) * itemsPerPage;
                 pageCursor = cursor.skip(toSkip).limit(itemsPerPage);
             }
             for (DBObject document : pageCursor) {
                 data.add(document);
             }
-            if(data.size() > 0) {
+            if (data.size() > 0) {
                 System.out.println(data.size() - 1 + " item(s) added");
                 fireIntervalAdded(this, 0, data.size() - 1);
             }
@@ -98,7 +100,7 @@ public class DocumentsListModel extends AbstractListModel<DBObject> {
     }
 
     public int getPageCount() {
-        if(itemsPerPage > 0) {
+        if (itemsPerPage > 0) {
             return (cursorItemCount / itemsPerPage) + 1;
         }
         return 1;
@@ -112,5 +114,13 @@ public class DocumentsListModel extends AbstractListModel<DBObject> {
     @Override
     public DBObject getElementAt(int index) {
         return data != null ? data.get(index) : null;
+    }
+
+    public DBObject getCriteria() {
+        return criteria;
+    }
+
+    public void setCriteria(DBObject criteria) {
+        this.criteria = criteria;
     }
 }
