@@ -97,6 +97,11 @@
             <version>${netbeans.target.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-editor-mimelookup</artifactId>
+            <version>${netbeans.target.version}</version>
+        </dependency>
+        <dependency>
             <groupId>com.github.jsonj</groupId>
             <artifactId>jsonj</artifactId>
             <version>0.7</version>
