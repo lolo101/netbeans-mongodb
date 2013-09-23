@@ -25,14 +25,21 @@ package com.timboudreau.netbeans.mongodb;
 
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
+import com.mongodb.MongoException;
 import com.timboudreau.netbeans.mongodb.views.CollectionViewTopComponent;
+import java.awt.event.ActionEvent;
 import java.util.Set;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.actions.OpenAction;
 import org.openide.cookies.OpenCookie;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Sheet;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -45,7 +52,13 @@ import org.openide.windows.WindowManager;
  *
  * @author Tim Boudreau
  */
+@Messages({
+    "ACTION_DropCollection=Drop Collection",
+    "# {0} - collection name",
+    "dropCollectionConfirmText=Permanently drop ''{0}'' collection?"})
 final class CollectionNode extends AbstractNode {
+
+    private final Lookup lookup;
 
     CollectionNode(CollectionInfo connection) {
         this(connection, new InstanceContent());
@@ -55,8 +68,9 @@ final class CollectionNode extends AbstractNode {
         this(connection, content, new ProxyLookup(new AbstractLookup(content), Lookups.fixed(connection), connection.lookup));
     }
 
-    CollectionNode(final CollectionInfo collection, final InstanceContent content, final ProxyLookup lkp) {
-        super(Children.LEAF, lkp);
+    CollectionNode(final CollectionInfo collection, final InstanceContent content, final ProxyLookup lookup) {
+        super(Children.LEAF, lookup);
+        this.lookup = lookup;
         content.add(collection);
         content.add(collection, new CollectionConverter());
         content.add(new OpenCookie() {
@@ -65,7 +79,7 @@ final class CollectionNode extends AbstractNode {
             public void open() {
                 TopComponent tc = findTopComponent(collection);
                 if (tc == null) {
-                    tc = new CollectionViewTopComponent(collection, lkp);
+                    tc = new CollectionViewTopComponent(collection, lookup);
                     tc.open();
                 }
                 tc.requestActive();
@@ -90,7 +104,10 @@ final class CollectionNode extends AbstractNode {
 
     @Override
     public Action[] getActions(boolean context) {
-        return new Action[]{SystemAction.get(OpenAction.class)};
+        return new Action[]{
+            SystemAction.get(OpenAction.class),
+            new DropCollectionAction()
+        };
     }
 
     @Override
@@ -131,6 +148,34 @@ final class CollectionNode extends AbstractNode {
         @Override
         public String displayName(CollectionInfo t) {
             return id(t);
+        }
+    }
+
+    public class DropCollectionAction extends AbstractAction {
+
+        public DropCollectionAction() {
+            super(Bundle.ACTION_DropCollection());
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            final CollectionInfo ci = lookup.lookup(CollectionInfo.class);
+            final Object dlgResult = DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(
+                    Bundle.dropCollectionConfirmText(ci.getName()),
+                    NotifyDescriptor.YES_NO_OPTION));
+            if (dlgResult.equals(NotifyDescriptor.OK_OPTION)) {
+                try {
+                    lookup.lookup(DBCollection.class).drop();
+                    ((OneDbNode) getParentNode()).refreshChildren();
+                    final TopComponent tc = findTopComponent(ci);
+                    if (tc != null) {
+                        tc.close();
+                    }
+                } catch (MongoException ex) {
+                    DialogDisplayer.getDefault().notify(
+                            new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE));
+                }
+            }
         }
     }
 }

@@ -107,6 +107,10 @@ public class OneDbNode extends AbstractNode {
             new RefreshChildrenAction(childFactory)
         };
     }
+    
+    public void refreshChildren() {
+        childFactory.refresh();
+    }
 
     private class DBConverter implements InstanceContent.Convertor<DbInfo, DB> {
 
