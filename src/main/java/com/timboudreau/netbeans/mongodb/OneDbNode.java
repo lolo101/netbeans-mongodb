@@ -23,13 +23,22 @@
  */
 package com.timboudreau.netbeans.mongodb;
 
+import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
+import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
+import com.mongodb.MongoException;
 import com.timboudreau.netbeans.nodes.RefreshChildrenAction;
+import java.awt.event.ActionEvent;
+import java.text.MessageFormat;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Sheet;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -42,11 +51,18 @@ import org.openide.util.lookup.ProxyLookup;
  */
 @Messages({
     "DB_NAME_DESC=The name of the database",
-    "DB_NAME=Database Name"})
+    "DB_NAME=Database Name",
+    "ACTION_AddCollection=Add Collection",
+    "addCollectionTitle=Add Collection",
+    "addCollectionText=Collection name:",
+    "# {0} - collection name",
+    "collectionAlreadyExists=Collection ''{0}'' already exists"})
 public class OneDbNode extends AbstractNode {
 
-    private OneDBChildren childFactory;
-    
+    private final OneDBChildren childFactory;
+
+    private final Lookup lookup;
+
     OneDbNode(DbInfo info) {
         this(info, new InstanceContent());
     }
@@ -63,9 +79,10 @@ public class OneDbNode extends AbstractNode {
         this(info, content, lkp, new OneDBChildren(lkp));
     }
 
-    OneDbNode(DbInfo info, InstanceContent content, ProxyLookup lkp, OneDBChildren childFactory) {
-        super(Children.create(childFactory, true), lkp);
+    OneDbNode(DbInfo info, InstanceContent content, ProxyLookup lookup, OneDBChildren childFactory) {
+        super(Children.create(childFactory, true), lookup);
         this.childFactory = childFactory;
+        this.lookup = lookup;
         content.add(info, new DBConverter());
         setName(info.dbName);
         setDisplayName(info.dbName);
@@ -86,6 +103,7 @@ public class OneDbNode extends AbstractNode {
     @Override
     public Action[] getActions(boolean context) {
         return new Action[]{
+            new AddCollectionAction(),
             new RefreshChildrenAction(childFactory)
         };
     }
@@ -112,6 +130,47 @@ public class OneDbNode extends AbstractNode {
         @Override
         public String displayName(DbInfo t) {
             return id(t);
+        }
+    }
+
+    public class AddCollectionAction extends AbstractAction {
+
+        public AddCollectionAction() {
+            super(Bundle.ACTION_AddCollection());
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            final NotifyDescriptor.InputLine input = new NotifyDescriptor.InputLine(
+                    Bundle.addCollectionText(),
+                    Bundle.addCollectionTitle());
+            boolean doLoop = true;
+            while (doLoop) {
+                doLoop = false;
+                final Object dlgResult = DialogDisplayer.getDefault().notify(input);
+                if (dlgResult.equals(NotifyDescriptor.OK_OPTION)) {
+
+                    final String collectionName = input.getInputText();
+                    final DB db = lookup.lookup(DB.class);
+                    final DBObject collectionOptions = new BasicDBObject("capped", false);
+                    try {
+                        if (db.getCollectionNames().contains(collectionName)) {
+                            DialogDisplayer.getDefault().notify(
+                                new NotifyDescriptor.Message(
+                                    Bundle.collectionAlreadyExists(collectionName), 
+                                    NotifyDescriptor.ERROR_MESSAGE));
+                            doLoop = true;
+                        } else {
+                            db.createCollection(collectionName, collectionOptions);
+                            childFactory.refresh();
+                        }
+                    } catch (MongoException ex) {
+                        DialogDisplayer.getDefault().notify(
+                                new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE));
+                    }
+
+                }
+            }
         }
     }
 }
