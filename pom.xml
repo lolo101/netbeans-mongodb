@@ -96,6 +96,11 @@
             <artifactId>org-openide-actions</artifactId>
             <version>${netbeans.target.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.github.jsonj</groupId>
+            <artifactId>jsonj</artifactId>
+            <version>0.7</version>
+        </dependency>
     </dependencies>
 
     <build>

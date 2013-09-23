@@ -24,7 +24,7 @@
 package com.timboudreau.netbeans.mongodb.views;
 
 import com.mongodb.DBObject;
-import com.mongodb.util.JSON;
+import com.timboudreau.netbeans.mongodb.util.Json;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -33,6 +33,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.ListCellRenderer;
+import javax.swing.ScrollPaneConstants;
 
 /**
  *
@@ -41,11 +42,16 @@ import javax.swing.ListCellRenderer;
 public class MongoDocumentListCellRenderer extends JPanel implements ListCellRenderer<DBObject> {
 
     private final JTextArea textArea = new JTextArea();
+    private final JScrollPane scrollPane = new JScrollPane(textArea);
     
     public MongoDocumentListCellRenderer() {
         textArea.setEditable(false);
+        textArea.setLineWrap(true);
+        textArea.setWrapStyleWord(true);
         setLayout(new BorderLayout());
-        add(new JScrollPane(textArea), BorderLayout.CENTER);
+        scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+        add(scrollPane, BorderLayout.CENTER);
         setPreferredSize(new Dimension(0, 70));
     }
 
@@ -59,7 +65,7 @@ public class MongoDocumentListCellRenderer extends JPanel implements ListCellRen
             textArea.setForeground(list.getForeground());
             textArea.setBackground(list.getBackground());
         }
-        textArea.setText(JSON.serialize(value));
+        textArea.setText(Json.prettify(value));
         return this;
     }
 }
