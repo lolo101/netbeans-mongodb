@@ -91,7 +91,7 @@ public final class CollectionViewTopComponent extends TopComponent {
             @Override
             public void mouseClicked(MouseEvent evt) {
                 if (evt.getClickCount() == 2 && documentsList.getSelectedValue() != null) {
-                    editSelectedDocument();
+                    editDocumentButtonActionPerformed(null);
                 }
             }
         });
@@ -165,23 +165,6 @@ public final class CollectionViewTopComponent extends TopComponent {
             }
         }
         return null;
-    }
-
-    private void editSelectedDocument() {
-        final DBObject document = documentsList.getSelectedValue();
-        final DBObject modifiedDocument = showJsonEditor(
-                Bundle.editDocumentTitle(),
-                JSON.serialize(document));
-        if (modifiedDocument != null) {
-            try {
-                final DBCollection dbCollection = lookup.lookup(DBCollection.class);
-                dbCollection.save(modifiedDocument);
-                reload();
-            } catch (MongoException ex) {
-                DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE));
-            }
-        }
     }
 
     /**
@@ -264,7 +247,7 @@ public final class CollectionViewTopComponent extends TopComponent {
         org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.addButton.text")); // NOI18N
         addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addButtonActionPerformed(evt);
+                addDocumentButtonActionPerformed(evt);
             }
         });
 
@@ -272,7 +255,7 @@ public final class CollectionViewTopComponent extends TopComponent {
         editButton.setEnabled(false);
         editButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                editButtonActionPerformed(evt);
+                editDocumentButtonActionPerformed(evt);
             }
         });
 
@@ -280,7 +263,7 @@ public final class CollectionViewTopComponent extends TopComponent {
         deleteButton.setEnabled(false);
         deleteButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                deleteButtonActionPerformed(evt);
+                deleteDocumentButtonActionPerformed(evt);
             }
         });
 
@@ -400,7 +383,7 @@ public final class CollectionViewTopComponent extends TopComponent {
         reload();
     }//GEN-LAST:event_itemsPerPageComboBoxActionPerformed
 
-    private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
+    private void addDocumentButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addDocumentButtonActionPerformed
         final DBObject document = showJsonEditor(
                 Bundle.addDocumentTitle(),
                 "{}");
@@ -414,9 +397,9 @@ public final class CollectionViewTopComponent extends TopComponent {
                         new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE));
             }
         }
-    }//GEN-LAST:event_addButtonActionPerformed
+    }//GEN-LAST:event_addDocumentButtonActionPerformed
 
-    private void deleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed
+    private void deleteDocumentButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteDocumentButtonActionPerformed
         final DBObject document = documentsList.getSelectedValue();
         final Object dlgResult = DialogDisplayer.getDefault().notify(
                 new NotifyDescriptor.Confirmation("Permanently delete this document?", NotifyDescriptor.YES_NO_OPTION));
@@ -430,11 +413,24 @@ public final class CollectionViewTopComponent extends TopComponent {
                         new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE));
             }
         }
-    }//GEN-LAST:event_deleteButtonActionPerformed
+    }//GEN-LAST:event_deleteDocumentButtonActionPerformed
 
-    private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
-        editSelectedDocument();
-    }//GEN-LAST:event_editButtonActionPerformed
+    private void editDocumentButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editDocumentButtonActionPerformed
+        final DBObject document = documentsList.getSelectedValue();
+        final DBObject modifiedDocument = showJsonEditor(
+                Bundle.editDocumentTitle(),
+                JSON.serialize(document));
+        if (modifiedDocument != null) {
+            try {
+                final DBCollection dbCollection = lookup.lookup(DBCollection.class);
+                dbCollection.save(modifiedDocument);
+                reload();
+            } catch (MongoException ex) {
+                DialogDisplayer.getDefault().notify(
+                        new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE));
+            }
+        }
+    }//GEN-LAST:event_editDocumentButtonActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
     private javax.swing.JButton deleteButton;
