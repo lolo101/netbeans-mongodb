@@ -20,7 +20,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="criteriaPanel" max="32767" attributes="0"/>
-                  <Component id="listScrollPane" pref="435" max="32767" attributes="0"/>
+                  <Component id="listScrollPane" pref="498" max="32767" attributes="0"/>
                   <Group type="102" alignment="1" attributes="0">
                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                       <Component id="firstButton" min="-2" max="-2" attributes="0"/>
@@ -37,7 +37,9 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="lastButton" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Group type="102" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="refreshButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace type="separate" max="-2" attributes="0"/>
                       <Component id="itemsPerPageLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="itemsPerPageComboBox" min="-2" max="-2" attributes="0"/>
@@ -75,9 +77,10 @@
                   <Component id="addButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="deleteButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="editButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="refreshButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="listScrollPane" pref="180" max="32767" attributes="0"/>
+              <Component id="listScrollPane" pref="178" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="lastButton" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -318,5 +321,18 @@
         </Container>
       </SubComponents>
     </Container>
+    <Component class="javax.swing.JButton" name="refreshButton">
+      <Properties>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/com/timboudreau/netbeans/mongodb/views/refresh.png"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="com/timboudreau/netbeans/mongodb/views/Bundle.properties" key="CollectionViewTopComponent.refreshButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="refreshButtonActionPerformed"/>
+      </Events>
+    </Component>
   </SubComponents>
 </Form>

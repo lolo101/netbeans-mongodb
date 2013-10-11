@@ -44,6 +44,8 @@ public class MongoDocumentListCellRenderer extends JPanel implements ListCellRen
     private final JTextArea textArea = new JTextArea();
     private final JScrollPane scrollPane = new JScrollPane(textArea);
     
+    private final StringBuilder toolTipBuilder = new StringBuilder();
+    
     public MongoDocumentListCellRenderer() {
         textArea.setEditable(false);
         textArea.setLineWrap(true);
@@ -66,6 +68,12 @@ public class MongoDocumentListCellRenderer extends JPanel implements ListCellRen
             textArea.setBackground(list.getBackground());
         }
         textArea.setText(Json.prettify(value));
+        toolTipBuilder.setLength(0);
+        toolTipBuilder
+                .append("<html><pre>")
+                .append(textArea.getText())
+                .append("</pre></html>");
+        setToolTipText(toolTipBuilder.toString());
         return this;
     }
 }

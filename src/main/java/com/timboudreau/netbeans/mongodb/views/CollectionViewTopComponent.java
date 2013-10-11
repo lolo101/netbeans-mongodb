@@ -197,6 +197,7 @@ public final class CollectionViewTopComponent extends TopComponent {
         clearCriteriaButton = new javax.swing.JButton();
         criteriaScrollPane = new javax.swing.JScrollPane();
         criteriaArea = new javax.swing.JTextArea();
+        refreshButton = new javax.swing.JButton();
 
         org.openide.awt.Mnemonics.setLocalizedText(nameLabel, org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.nameLabel.text")); // NOI18N
 
@@ -322,6 +323,14 @@ public final class CollectionViewTopComponent extends TopComponent {
                 .addContainerGap())
         );
 
+        refreshButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/timboudreau/netbeans/mongodb/views/refresh.png"))); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(refreshButton, org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.refreshButton.text")); // NOI18N
+        refreshButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                refreshButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -330,7 +339,7 @@ public final class CollectionViewTopComponent extends TopComponent {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(criteriaPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(listScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 435, Short.MAX_VALUE)
+                    .addComponent(listScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 498, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(firstButton)
@@ -347,6 +356,8 @@ public final class CollectionViewTopComponent extends TopComponent {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(lastButton))
                     .addGroup(layout.createSequentialGroup()
+                        .addComponent(refreshButton)
+                        .addGap(18, 18, 18)
                         .addComponent(itemsPerPageLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(itemsPerPageComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -377,9 +388,10 @@ public final class CollectionViewTopComponent extends TopComponent {
                     .addComponent(itemsPerPageComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(addButton)
                     .addComponent(deleteButton)
-                    .addComponent(editButton))
+                    .addComponent(editButton)
+                    .addComponent(refreshButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(listScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 180, Short.MAX_VALUE)
+                .addComponent(listScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 178, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lastButton)
@@ -506,6 +518,10 @@ public final class CollectionViewTopComponent extends TopComponent {
         reload();
     }//GEN-LAST:event_clearCriteriaButtonActionPerformed
 
+    private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
+        reload();
+    }//GEN-LAST:event_refreshButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
     private javax.swing.JButton clearCriteriaButton;
@@ -528,6 +544,7 @@ public final class CollectionViewTopComponent extends TopComponent {
     private javax.swing.JLabel pageCountLabel;
     private javax.swing.JLabel pageLabel;
     private javax.swing.JButton previousButton;
+    private javax.swing.JButton refreshButton;
     // End of variables declaration//GEN-END:variables
 
     void writeProperties(java.util.Properties p) {
