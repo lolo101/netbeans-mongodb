@@ -33,8 +33,9 @@ import org.openide.util.Parameters;
  */
 public final class CollectionInfo implements Comparable<CollectionInfo> {
 
-    final String name;
-    final Lookup lookup;
+    private String name;
+
+    private final Lookup lookup;
 
     public CollectionInfo(String name, Lookup lookup) {
         Parameters.notNull("lookup", lookup);
@@ -45,6 +46,11 @@ public final class CollectionInfo implements Comparable<CollectionInfo> {
 
     public String getName() {
         return name;
+    }
+
+    public void setName(String name) {
+        Parameters.notNull("name", name);
+        this.name = name;
     }
 
     public Lookup getLookup() {

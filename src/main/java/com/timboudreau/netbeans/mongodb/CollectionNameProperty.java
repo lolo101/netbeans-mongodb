@@ -44,6 +44,6 @@ final class CollectionNameProperty extends PropertySupport.ReadOnly<String> {
     @Override
     public String getValue() throws IllegalAccessException, InvocationTargetException {
         CollectionInfo info = lkp.lookup(CollectionInfo.class);
-        return info == null ? "[no name]" : info.name;
+        return info == null ? "[no name]" : info.getName();
     }
 }

@@ -54,27 +54,30 @@ import org.openide.windows.WindowManager;
  */
 @Messages({
     "ACTION_DropCollection=Drop Collection",
+    "ACTION_RenameCollection=Rename Collection",
     "# {0} - collection name",
     "dropCollectionConfirmText=Permanently drop ''{0}'' collection?"})
 final class CollectionNode extends AbstractNode {
 
     private final Lookup lookup;
 
+    private final CollectionInfo collection;
+
     CollectionNode(CollectionInfo connection) {
         this(connection, new InstanceContent());
     }
 
     CollectionNode(CollectionInfo connection, InstanceContent content) {
-        this(connection, content, new ProxyLookup(new AbstractLookup(content), Lookups.fixed(connection), connection.lookup));
+        this(connection, content, new ProxyLookup(new AbstractLookup(content), Lookups.fixed(connection), connection.getLookup()));
     }
 
     CollectionNode(final CollectionInfo collection, final InstanceContent content, final ProxyLookup lookup) {
         super(Children.LEAF, lookup);
         this.lookup = lookup;
+        this.collection = collection;
         content.add(collection);
         content.add(collection, new CollectionConverter());
         content.add(new OpenCookie() {
-
             @Override
             public void open() {
                 TopComponent tc = findTopComponent(collection);
@@ -85,9 +88,12 @@ final class CollectionNode extends AbstractNode {
                 tc.requestActive();
             }
         });
-        setDisplayName(collection.name);
-        setName(collection.name);
         setIconBaseWithExtension(MongoServicesNode.MONGO_COLLECTION);
+    }
+
+    @Override
+    public String getName() {
+        return collection.getName();
     }
 
     @Override
@@ -106,7 +112,8 @@ final class CollectionNode extends AbstractNode {
     public Action[] getActions(boolean context) {
         return new Action[]{
             SystemAction.get(OpenAction.class),
-            new DropCollectionAction()
+            new DropCollectionAction(),
+            new RenameCollectionAction()
         };
     }
 
@@ -132,7 +139,7 @@ final class CollectionNode extends AbstractNode {
         @Override
         public DBCollection convert(CollectionInfo t) {
             DB db = getLookup().lookup(DB.class);
-            return db.getCollection(t.name);
+            return db.getCollection(t.getName());
         }
 
         @Override
@@ -142,7 +149,7 @@ final class CollectionNode extends AbstractNode {
 
         @Override
         public String id(CollectionInfo t) {
-            return t.name;
+            return t.getName();
         }
 
         @Override
@@ -171,6 +178,42 @@ final class CollectionNode extends AbstractNode {
                     if (tc != null) {
                         tc.close();
                     }
+                } catch (MongoException ex) {
+                    DialogDisplayer.getDefault().notify(
+                            new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE));
+                }
+            }
+        }
+    }
+
+    public class RenameCollectionAction extends AbstractAction {
+
+        public RenameCollectionAction() {
+            super(Bundle.ACTION_RenameCollection());
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            final CollectionInfo ci = lookup.lookup(CollectionInfo.class);
+            final NotifyDescriptor.InputLine input = new NotifyDescriptor.InputLine(
+                    "rename 'collection name' to:",
+                    "Rename collection",
+                    NotifyDescriptor.OK_CANCEL_OPTION,
+                    NotifyDescriptor.PLAIN_MESSAGE);
+            input.setInputText(ci.getName());
+            final Object dlgResult = DialogDisplayer.getDefault().notify(input);
+            if (dlgResult.equals(NotifyDescriptor.OK_OPTION)) {
+                final String newName = input.getInputText().trim();
+                if (newName.isEmpty()) {
+                    // error?
+                    return;
+                }
+                if(newName.equals(ci.getName())) {
+                    return;
+                }
+                try {
+                    lookup.lookup(DBCollection.class).rename(newName);
+                    ((OneDbNode) getParentNode()).refreshChildren();
                 } catch (MongoException ex) {
                     DialogDisplayer.getDefault().notify(
                             new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE));
