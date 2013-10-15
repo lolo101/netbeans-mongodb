@@ -11,6 +11,7 @@ You can:
  * Browse documents (a json criteria can be specified)
  * Add/Edit/Delete documents as json
 
+![NetBeans MongoDB Plugin Screen Shot](screenshot.png "NetBeans MongoDB Plugin Screen Shot")
 
 
 Status
