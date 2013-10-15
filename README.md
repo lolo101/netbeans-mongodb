@@ -1,13 +1,16 @@
 NetBeans MongoDB
 ================
 
-A [NetBeans](http://netbeans.org) plugin for browsing [MongoDB](http://mongodb.org).  It adds
-a node to the Services tab.  Right click it to add servers.
+A [NetBeans](http://netbeans.org) plugin for accessing [MongoDB](http://mongodb.org). It adds
+a node to the Services tab. Right click it to add connections.
 
-You can browse into collections;  responses to queries are browsable as subnodes;  the property sheet
-shows all non-Map, non-List properties (lists and Maps become additional subnodes).
+You can:
+ * Connect to MongoDB using mongo standard uri
+ * Browse collections
+ * Create/Rename/Delete collections
+ * Browse documents (a json criteria can be specified)
+ * Add/Edit/Delete documents as json
 
-![NetBeans MongoDB Plugin Screen Shot](screenshot.png "NetBeans MongoDB Plugin Screen Shot")
 
 
 Status
@@ -15,32 +18,17 @@ Status
 
 Stable and works.
 
-Note that as yet there is no write support, just browsing.
 
 
 Build And Run / Downloads
 -------------------------
 
 It's a Maven project built using the NBM Maven Plugin - just check out and build.
+In NetBeans, install using Tools | Plugins on the Downloaded tab.
 
-A continuous build of it, with NBM download, 
-is [on timboudreau.com](http://timboudreau.com/builds/job/netbeans-mongodb/).
-To install in NetBeans, simply download and install using Tools | Plugins on the Downloaded tab.
-
-
-To-Dos
-------
-
- * Authentication, storing passwords using keyring api
- * Refresh action on collections and other nodes
- * Write support
-   * Write support for properties
-   * Custom queries
-   * Add/remove collection, item, database
 
 
 License
 -------
 
 MIT license
-
