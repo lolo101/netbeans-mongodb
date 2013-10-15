@@ -56,7 +56,12 @@ import org.openide.util.lookup.Lookups;
         preferredID = "CollectionViewTopComponent",
         iconBase = "com/timboudreau/netbeans/mongodb/mongo-collection.png",
         persistenceType = TopComponent.PERSISTENCE_ALWAYS)
-@Messages({"addDocumentTitle=Add new document", "editDocumentTitle=Edit document", "editCriteriaTitle=Enter criteria", "invalidJson=invalid json"})
+@Messages({
+    "addDocumentTitle=Add new document",
+    "editDocumentTitle=Edit document",
+    "editCriteriaTitle=Enter criteria",
+    "invalidJson=invalid json",
+    "confirmDocumentDeletionText=Edit document"})
 public final class CollectionViewTopComponent extends TopComponent {
 
     private static final Integer[] ITEMS_PER_PAGE_VALUES = {10, 20, 50, 100};
@@ -66,7 +71,7 @@ public final class CollectionViewTopComponent extends TopComponent {
     private final Lookup lookup;
 
     private final DocumentsListModel listModel;
-    
+
     private final EditorKit jsonEditorKit = MimeLookup.getLookup("text/x-json").lookup(EditorKit.class);
 
     public CollectionViewTopComponent(CollectionInfo collectionInfo, Lookup lookup) {
@@ -82,6 +87,7 @@ public final class CollectionViewTopComponent extends TopComponent {
         documentsList.setCellRenderer(new MongoDocumentListCellRenderer());
         documentsList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         documentsList.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+
             @Override
             public void valueChanged(ListSelectionEvent evt) {
                 if (!evt.getValueIsAdjusting()) {
@@ -90,6 +96,7 @@ public final class CollectionViewTopComponent extends TopComponent {
             }
         });
         documentsList.addMouseListener(new MouseAdapter() {
+
             @Override
             public void mouseClicked(MouseEvent evt) {
                 if (evt.getClickCount() == 2 && documentsList.getSelectedValue() != null) {
@@ -102,6 +109,7 @@ public final class CollectionViewTopComponent extends TopComponent {
 
     private void reload() {
         new Thread(new Runnable() {
+
             @Override
             public void run() {
                 listModel.setPage(1);
@@ -114,6 +122,7 @@ public final class CollectionViewTopComponent extends TopComponent {
 
     private void updatePagination() {
         SwingUtilities.invokeLater(new Runnable() {
+
             @Override
             public void run() {
                 int page = listModel.getPage();
@@ -132,6 +141,7 @@ public final class CollectionViewTopComponent extends TopComponent {
 
     private void updateDocumentButtonsState() {
         SwingUtilities.invokeLater(new Runnable() {
+
             @Override
             public void run() {
                 boolean itemSelected = documentsList.getSelectedIndex() > -1;
@@ -411,6 +421,7 @@ public final class CollectionViewTopComponent extends TopComponent {
 
     private void previousButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_previousButtonActionPerformed
         new Thread(new Runnable() {
+
             @Override
             public void run() {
                 int page = listModel.getPage();
@@ -425,6 +436,7 @@ public final class CollectionViewTopComponent extends TopComponent {
 
     private void nextButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nextButtonActionPerformed
         new Thread(new Runnable() {
+
             @Override
             public void run() {
                 int page = listModel.getPage();
@@ -439,6 +451,7 @@ public final class CollectionViewTopComponent extends TopComponent {
 
     private void lastButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_lastButtonActionPerformed
         new Thread(new Runnable() {
+
             @Override
             public void run() {
                 listModel.setPage(listModel.getPageCount());
@@ -472,7 +485,7 @@ public final class CollectionViewTopComponent extends TopComponent {
     private void deleteDocumentButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteDocumentButtonActionPerformed
         final DBObject document = documentsList.getSelectedValue();
         final Object dlgResult = DialogDisplayer.getDefault().notify(
-                new NotifyDescriptor.Confirmation("Permanently delete this document?", NotifyDescriptor.YES_NO_OPTION));
+                new NotifyDescriptor.Confirmation(Bundle.confirmDocumentDeletionText(), NotifyDescriptor.YES_NO_OPTION));
         if (dlgResult.equals(NotifyDescriptor.OK_OPTION)) {
             try {
                 final DBCollection dbCollection = lookup.lookup(DBCollection.class);

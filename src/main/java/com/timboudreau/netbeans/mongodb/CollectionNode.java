@@ -56,7 +56,9 @@ import org.openide.windows.WindowManager;
     "ACTION_DropCollection=Drop Collection",
     "ACTION_RenameCollection=Rename Collection",
     "# {0} - collection name",
-    "dropCollectionConfirmText=Permanently drop ''{0}'' collection?"})
+    "dropCollectionConfirmText=Permanently drop ''{0}'' collection?",
+    "# {0} - collection name",
+    "renameCollectionText=rename ''{0}'' to:"})
 final class CollectionNode extends AbstractNode {
 
     private final Lookup lookup;
@@ -196,8 +198,8 @@ final class CollectionNode extends AbstractNode {
         public void actionPerformed(ActionEvent e) {
             final CollectionInfo ci = lookup.lookup(CollectionInfo.class);
             final NotifyDescriptor.InputLine input = new NotifyDescriptor.InputLine(
-                    "rename 'collection name' to:",
-                    "Rename collection",
+                    Bundle.renameCollectionText(ci.getName()),
+                    Bundle.ACTION_RenameCollection(),
                     NotifyDescriptor.OK_CANCEL_OPTION,
                     NotifyDescriptor.PLAIN_MESSAGE);
             input.setInputText(ci.getName());
