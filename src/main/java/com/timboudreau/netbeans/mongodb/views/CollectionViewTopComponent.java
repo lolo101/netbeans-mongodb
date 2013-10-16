@@ -33,6 +33,10 @@ import com.timboudreau.netbeans.mongodb.util.Json;
 import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import javax.swing.JComboBox;
 import javax.swing.JEditorPane;
 import javax.swing.ListSelectionModel;
@@ -44,6 +48,8 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileChooserBuilder;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
@@ -178,6 +184,33 @@ public final class CollectionViewTopComponent extends TopComponent {
         return null;
     }
 
+    private void exportDocuments() {
+        final File home = new File(System.getProperty("user.home"));
+        final File file = new FileChooserBuilder("export-collection-documents")
+                .setTitle("Export documents")
+                .setDefaultWorkingDirectory(home)
+                .setApproveText("Save")
+                .showSaveDialog();
+        //Result will be null if the user clicked cancel or closed the dialog w/o OK
+        if (file != null) {
+            exportDocumentsAs(file);
+        }
+    }
+
+    private void exportDocumentsAs(File file) {
+        try (PrintWriter writer = new PrintWriter(file, "UTF-8")) {
+            for (DBObject document : listModel.getDocuments()) {
+                final String json = JSON.serialize(document);
+                writer.println(json);
+                writer.flush();
+            }
+        } catch (FileNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (UnsupportedEncodingException ex) {
+            throw new AssertionError();
+        }
+    }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -208,6 +241,7 @@ public final class CollectionViewTopComponent extends TopComponent {
         criteriaScrollPane = new javax.swing.JScrollPane();
         criteriaArea = new javax.swing.JTextArea();
         refreshButton = new javax.swing.JButton();
+        exportButton = new javax.swing.JButton();
 
         org.openide.awt.Mnemonics.setLocalizedText(nameLabel, org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.nameLabel.text")); // NOI18N
 
@@ -341,6 +375,13 @@ public final class CollectionViewTopComponent extends TopComponent {
             }
         });
 
+        org.openide.awt.Mnemonics.setLocalizedText(exportButton, org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.exportButton.text")); // NOI18N
+        exportButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -351,7 +392,8 @@ public final class CollectionViewTopComponent extends TopComponent {
                     .addComponent(criteriaPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(listScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 498, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(exportButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(firstButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(previousButton)
@@ -410,7 +452,8 @@ public final class CollectionViewTopComponent extends TopComponent {
                     .addComponent(previousButton)
                     .addComponent(pageCountLabel)
                     .addComponent(pageLabel)
-                    .addComponent(jLabel3))
+                    .addComponent(jLabel3)
+                    .addComponent(exportButton))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -535,6 +578,16 @@ public final class CollectionViewTopComponent extends TopComponent {
         reload();
     }//GEN-LAST:event_refreshButtonActionPerformed
 
+    private void exportButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportButtonActionPerformed
+        new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                exportDocuments();
+            }
+        }).start();
+    }//GEN-LAST:event_exportButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
     private javax.swing.JButton clearCriteriaButton;
@@ -545,6 +598,7 @@ public final class CollectionViewTopComponent extends TopComponent {
     private javax.swing.JList<DBObject> documentsList;
     private javax.swing.JButton editButton;
     private javax.swing.JButton editCriteriaButton;
+    private javax.swing.JButton exportButton;
     private javax.swing.JButton firstButton;
     private javax.swing.JComboBox itemsPerPageComboBox;
     private javax.swing.JLabel itemsPerPageLabel;

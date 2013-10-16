@@ -82,6 +82,11 @@
             <version>${netbeans.target.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-filesystems</artifactId>
+            <version>${netbeans.target.version}</version>
+        </dependency>
+        <dependency>
             <artifactId>org-openide-dialogs</artifactId>
             <groupId>org.netbeans.api</groupId>
             <type>jar</type>

@@ -83,6 +83,10 @@ public class DocumentsListModel extends AbstractListModel<DBObject> {
         }
     }
 
+    public List<DBObject> getDocuments() {
+        return new ArrayList<>(data);
+    }
+    
     public int getItemsPerPage() {
         return itemsPerPage;
     }
