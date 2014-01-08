@@ -76,7 +76,7 @@ public final class CollectionViewTopComponent extends TopComponent {
 
     private final Lookup lookup;
 
-    private final DocumentsListModel listModel;
+    private final DocumentsTableModel tableModel;
 
     private final EditorKit jsonEditorKit = MimeLookup.getLookup("text/x-json").lookup(EditorKit.class);
 
@@ -88,11 +88,13 @@ public final class CollectionViewTopComponent extends TopComponent {
         setName(collectionInfo.getName());
         nameValueLabel.setText(collectionInfo.getName());
         final DBCollection dbCollection = lookup.lookup(DBCollection.class);
-        listModel = new DocumentsListModel(dbCollection);
-        documentsList.setModel(listModel);
-        documentsList.setCellRenderer(new MongoDocumentListCellRenderer());
-        documentsList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        documentsList.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+        tableModel = new DocumentsTableModel(dbCollection);
+        documentsTable.setModel(tableModel);
+        documentsTable.setRowHeight(100);
+        documentsTable.setDefaultEditor(DBObject.class, new MongoDocumentExpendableTableCellEditor());
+        documentsTable.setDefaultRenderer(DBObject.class, new MongoDocumentExpendableTableCellRenderer());
+        documentsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        documentsTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 
             @Override
             public void valueChanged(ListSelectionEvent evt) {
@@ -101,11 +103,11 @@ public final class CollectionViewTopComponent extends TopComponent {
                 }
             }
         });
-        documentsList.addMouseListener(new MouseAdapter() {
+        documentsTable.addMouseListener(new MouseAdapter() {
 
             @Override
             public void mouseClicked(MouseEvent evt) {
-                if (evt.getClickCount() == 2 && documentsList.getSelectedValue() != null) {
+                if (evt.getClickCount() == 2 && documentsTable.getSelectedRow()> -1) {
                     editDocumentButtonActionPerformed(null);
                 }
             }
@@ -118,8 +120,8 @@ public final class CollectionViewTopComponent extends TopComponent {
 
             @Override
             public void run() {
-                listModel.setPage(1);
-                listModel.update();
+                tableModel.setPage(1);
+                tableModel.update();
                 updatePagination();
                 updateDocumentButtonsState();
             }
@@ -131,8 +133,8 @@ public final class CollectionViewTopComponent extends TopComponent {
 
             @Override
             public void run() {
-                int page = listModel.getPage();
-                int pageCount = listModel.getPageCount();
+                int page = tableModel.getPage();
+                int pageCount = tableModel.getPageCount();
                 pageLabel.setText(String.valueOf(page));
                 pageCountLabel.setText(String.valueOf(pageCount));
                 boolean leftButtonsEnabled = page > 1;
@@ -150,7 +152,7 @@ public final class CollectionViewTopComponent extends TopComponent {
 
             @Override
             public void run() {
-                boolean itemSelected = documentsList.getSelectedIndex() > -1;
+                boolean itemSelected = documentsTable.getSelectedRow() > -1;
                 deleteButton.setEnabled(itemSelected);
                 editButton.setEnabled(itemSelected);
             }
@@ -199,7 +201,7 @@ public final class CollectionViewTopComponent extends TopComponent {
 
     private void exportDocumentsAs(File file) {
         try (PrintWriter writer = new PrintWriter(file, "UTF-8")) {
-            for (DBObject document : listModel.getDocuments()) {
+            for (DBObject document : tableModel.getDocuments()) {
                 final String json = JSON.serialize(document);
                 writer.println(json);
                 writer.flush();
@@ -221,8 +223,6 @@ public final class CollectionViewTopComponent extends TopComponent {
 
         nameLabel = new javax.swing.JLabel();
         nameValueLabel = new javax.swing.JLabel();
-        listScrollPane = new javax.swing.JScrollPane();
-        documentsList = new javax.swing.JList<DBObject>();
         itemsPerPageLabel = new javax.swing.JLabel();
         itemsPerPageComboBox = new JComboBox(ITEMS_PER_PAGE_VALUES);
         lastButton = new javax.swing.JButton();
@@ -242,12 +242,12 @@ public final class CollectionViewTopComponent extends TopComponent {
         criteriaArea = new javax.swing.JTextArea();
         refreshButton = new javax.swing.JButton();
         exportButton = new javax.swing.JButton();
+        tableScrollPane = new javax.swing.JScrollPane();
+        documentsTable = new javax.swing.JTable();
 
         org.openide.awt.Mnemonics.setLocalizedText(nameLabel, org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.nameLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(nameValueLabel, org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.nameValueLabel.text")); // NOI18N
-
-        listScrollPane.setViewportView(documentsList);
 
         org.openide.awt.Mnemonics.setLocalizedText(itemsPerPageLabel, org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.itemsPerPageLabel.text")); // NOI18N
 
@@ -337,7 +337,6 @@ public final class CollectionViewTopComponent extends TopComponent {
         criteriaArea.setEditable(false);
         criteriaArea.setColumns(20);
         criteriaArea.setRows(5);
-        criteriaArea.setOpaque(false);
         criteriaScrollPane.setViewportView(criteriaArea);
 
         javax.swing.GroupLayout criteriaPanelLayout = new javax.swing.GroupLayout(criteriaPanel);
@@ -382,6 +381,19 @@ public final class CollectionViewTopComponent extends TopComponent {
             }
         });
 
+        documentsTable.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        tableScrollPane.setViewportView(documentsTable);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -389,9 +401,10 @@ public final class CollectionViewTopComponent extends TopComponent {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(tableScrollPane)
                     .addComponent(criteriaPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(listScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 498, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGap(462, 462, 462)
                         .addComponent(exportButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(firstButton)
@@ -443,7 +456,7 @@ public final class CollectionViewTopComponent extends TopComponent {
                     .addComponent(editButton)
                     .addComponent(refreshButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(listScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 178, Short.MAX_VALUE)
+                .addComponent(tableScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 180, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lastButton)
@@ -467,10 +480,10 @@ public final class CollectionViewTopComponent extends TopComponent {
 
             @Override
             public void run() {
-                int page = listModel.getPage();
+                int page = tableModel.getPage();
                 if (page > 1) {
-                    listModel.setPage(page - 1);
-                    listModel.update();
+                    tableModel.setPage(page - 1);
+                    tableModel.update();
                     updatePagination();
                 }
             }
@@ -482,10 +495,10 @@ public final class CollectionViewTopComponent extends TopComponent {
 
             @Override
             public void run() {
-                int page = listModel.getPage();
-                if (page < listModel.getPageCount()) {
-                    listModel.setPage(page + 1);
-                    listModel.update();
+                int page = tableModel.getPage();
+                if (page < tableModel.getPageCount()) {
+                    tableModel.setPage(page + 1);
+                    tableModel.update();
                     updatePagination();
                 }
             }
@@ -497,15 +510,15 @@ public final class CollectionViewTopComponent extends TopComponent {
 
             @Override
             public void run() {
-                listModel.setPage(listModel.getPageCount());
-                listModel.update();
+                tableModel.setPage(tableModel.getPageCount());
+                tableModel.update();
                 updatePagination();
             }
         }).start();
     }//GEN-LAST:event_lastButtonActionPerformed
 
     private void itemsPerPageComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_itemsPerPageComboBoxActionPerformed
-        listModel.setItemsPerPage((Integer) itemsPerPageComboBox.getSelectedItem());
+        tableModel.setItemsPerPage((Integer) itemsPerPageComboBox.getSelectedItem());
         reload();
     }//GEN-LAST:event_itemsPerPageComboBoxActionPerformed
 
@@ -526,7 +539,7 @@ public final class CollectionViewTopComponent extends TopComponent {
     }//GEN-LAST:event_addDocumentButtonActionPerformed
 
     private void deleteDocumentButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteDocumentButtonActionPerformed
-        final DBObject document = documentsList.getSelectedValue();
+        final DBObject document = tableModel.getRowValue(documentsTable.getSelectedRow());
         final Object dlgResult = DialogDisplayer.getDefault().notify(
                 new NotifyDescriptor.Confirmation(Bundle.confirmDocumentDeletionText(), NotifyDescriptor.YES_NO_OPTION));
         if (dlgResult.equals(NotifyDescriptor.OK_OPTION)) {
@@ -542,7 +555,7 @@ public final class CollectionViewTopComponent extends TopComponent {
     }//GEN-LAST:event_deleteDocumentButtonActionPerformed
 
     private void editDocumentButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editDocumentButtonActionPerformed
-        final DBObject document = documentsList.getSelectedValue();
+        final DBObject document = tableModel.getRowValue(documentsTable.getSelectedRow());
         final DBObject modifiedDocument = showJsonEditor(
                 Bundle.editDocumentTitle(),
                 JSON.serialize(document));
@@ -559,17 +572,17 @@ public final class CollectionViewTopComponent extends TopComponent {
     }//GEN-LAST:event_editDocumentButtonActionPerformed
 
     private void editCriteriaButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editCriteriaButtonActionPerformed
-        final String json = listModel.getCriteria() != null ? JSON.serialize(listModel.getCriteria()) : "";
+        final String json = tableModel.getCriteria() != null ? JSON.serialize(tableModel.getCriteria()) : "";
         final DBObject criteria = showJsonEditor(Bundle.editCriteriaTitle(), json);
         if (criteria != null) {
-            listModel.setCriteria(criteria);
+            tableModel.setCriteria(criteria);
             criteriaArea.setText(JSON.serialize(criteria));
             reload();
         }
     }//GEN-LAST:event_editCriteriaButtonActionPerformed
 
     private void clearCriteriaButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearCriteriaButtonActionPerformed
-        listModel.setCriteria(null);
+        tableModel.setCriteria(null);
         criteriaArea.setText("");
         reload();
     }//GEN-LAST:event_clearCriteriaButtonActionPerformed
@@ -595,7 +608,7 @@ public final class CollectionViewTopComponent extends TopComponent {
     private javax.swing.JPanel criteriaPanel;
     private javax.swing.JScrollPane criteriaScrollPane;
     private javax.swing.JButton deleteButton;
-    private javax.swing.JList<DBObject> documentsList;
+    private javax.swing.JTable documentsTable;
     private javax.swing.JButton editButton;
     private javax.swing.JButton editCriteriaButton;
     private javax.swing.JButton exportButton;
@@ -604,7 +617,6 @@ public final class CollectionViewTopComponent extends TopComponent {
     private javax.swing.JLabel itemsPerPageLabel;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JButton lastButton;
-    private javax.swing.JScrollPane listScrollPane;
     private javax.swing.JLabel nameLabel;
     private javax.swing.JLabel nameValueLabel;
     private javax.swing.JButton nextButton;
@@ -612,6 +624,7 @@ public final class CollectionViewTopComponent extends TopComponent {
     private javax.swing.JLabel pageLabel;
     private javax.swing.JButton previousButton;
     private javax.swing.JButton refreshButton;
+    private javax.swing.JScrollPane tableScrollPane;
     // End of variables declaration//GEN-END:variables
 
     void writeProperties(java.util.Properties p) {

@@ -28,15 +28,15 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.AbstractListModel;
+import javax.swing.table.AbstractTableModel;
 
 /**
  *
  * @author Yann D'Isanto
  */
-public class DocumentsListModel extends AbstractListModel<DBObject> {
+public class DocumentsTableModel extends AbstractTableModel {
 
-    private DBCollection dbCollection;
+    private final DBCollection dbCollection;
 
     private final List<DBObject> data = new ArrayList<>();
 
@@ -48,7 +48,7 @@ public class DocumentsListModel extends AbstractListModel<DBObject> {
 
     private DBObject criteria;
 
-    public DocumentsListModel(DBCollection dbCollection) {
+    public DocumentsTableModel(DBCollection dbCollection) {
         this.dbCollection = dbCollection;
     }
 
@@ -69,8 +69,7 @@ public class DocumentsListModel extends AbstractListModel<DBObject> {
                 data.add(document);
             }
             if (data.size() > 0) {
-                System.out.println(data.size() - 1 + " item(s) added");
-                fireIntervalAdded(this, 0, data.size() - 1);
+                fireTableRowsInserted(0, data.size() - 1);
             }
         }
     }
@@ -79,14 +78,14 @@ public class DocumentsListModel extends AbstractListModel<DBObject> {
         final int size = data.size();
         if (size > 0) {
             data.clear();
-            fireIntervalRemoved(this, 0, size - 1);
+            fireTableRowsDeleted(0, size - 1);
         }
     }
 
     public List<DBObject> getDocuments() {
         return new ArrayList<>(data);
     }
-    
+
     public int getItemsPerPage() {
         return itemsPerPage;
     }
@@ -111,13 +110,40 @@ public class DocumentsListModel extends AbstractListModel<DBObject> {
     }
 
     @Override
-    public int getSize() {
+    public int getColumnCount() {
+        return 1;
+    }
+
+    @Override
+    public String getColumnName(int column) {
+        return "Documents";
+    }
+
+    @Override
+    public Class<?> getColumnClass(int columnIndex) {
+        return DBObject.class;
+    }
+
+    @Override
+    public int getRowCount() {
         return data != null ? data.size() : 0;
     }
 
     @Override
-    public DBObject getElementAt(int index) {
-        return data != null ? data.get(index) : null;
+    public Object getValueAt(int rowIndex, int columnIndex) {
+        return getRowValue(rowIndex);
+    }
+
+    @Override
+    public boolean isCellEditable(int rowIndex, int columnIndex) {
+        return true;
+    }
+
+    public DBObject getRowValue(int rowIndex) {
+        if (rowIndex == -1) {
+            return null;
+        }
+        return data != null ? data.get(rowIndex) : null;
     }
 
     public DBObject getCriteria() {
