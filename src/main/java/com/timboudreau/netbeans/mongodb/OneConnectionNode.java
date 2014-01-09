@@ -23,49 +23,70 @@
  */
 package com.timboudreau.netbeans.mongodb;
 
+import com.mongodb.DBCollection;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
+import com.timboudreau.netbeans.mongodb.views.CollectionViewTopComponent;
 import com.timboudreau.netbeans.nodes.RefreshChildrenAction;
 import java.awt.Image;
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.ConnectException;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.BackingStoreException;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.openide.awt.StatusDisplayer;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 import org.openide.nodes.Sheet;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  *
  * @author Tim Boudreau
  */
+@NbBundle.Messages("ACTION_Delete=Delete")
 class OneConnectionNode extends AbstractNode implements PropertyChangeListener {
 
     private MongoClient mongo;
+
     private static final Logger logger = Logger.getLogger(OneConnectionNode.class.getName());
+
     private final Object lock = new Object();
+
     private final Disconnecter disconnecter = new Disconnecter();
+
     private final InstanceContent content;
+
     private final Problems problems = new Problems();
+
     private final ConnectionConverter converter = new ConnectionConverter();
+
     private volatile boolean problem;
+
     @StaticResource
     private final static String ERROR_BADGE = "com/timboudreau/netbeans/mongodb/error.png"; //NOI18N
 
     private OneConnectionChildren childFactory;
-    
+
     OneConnectionNode(ConnectionInfo connection) {
         this(connection, new InstanceContent());
     }
@@ -77,7 +98,7 @@ class OneConnectionNode extends AbstractNode implements PropertyChangeListener {
     OneConnectionNode(ConnectionInfo connection, InstanceContent content, ProxyLookup lkp) {
         this(connection, content, lkp, new OneConnectionChildren(lkp));
     }
-    
+
     OneConnectionNode(ConnectionInfo connection, InstanceContent content, ProxyLookup lkp, OneConnectionChildren childFactory) {
         super(Children.create(childFactory, true), lkp);
         this.childFactory = childFactory;
@@ -116,10 +137,11 @@ class OneConnectionNode extends AbstractNode implements PropertyChangeListener {
     @Override
     public Action[] getActions(boolean ignored) {
         Action[] orig = super.getActions(ignored);
-        Action[] nue = new Action[orig.length + 2];
-        System.arraycopy(orig, 0, nue, 2, orig.length);
+        Action[] nue = new Action[orig.length + 3];
+        System.arraycopy(orig, 0, nue, 3, orig.length);
         nue[0] = new DisconnectAction(getLookup());
         nue[1] = new RefreshChildrenAction(childFactory);
+        nue[2] = new DeleteAction();
         return nue;
     }
 
@@ -265,4 +287,26 @@ class OneConnectionNode extends AbstractNode implements PropertyChangeListener {
             return id(t);
         }
     }
+
+    private final class DeleteAction extends AbstractAction {
+
+        public DeleteAction() {
+            super(Bundle.ACTION_Delete());
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            final ConnectionInfo info = getLookup().lookup(ConnectionInfo.class);
+            try {
+                // TODO: disconnect
+                info.getPreferences().removeNode();
+                // TODO: close opened collection tabs for this connection
+                ((MongoServicesNode) getParentNode()).getChildrenFactory().refresh();
+            } catch (BackingStoreException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+
+        }
+    }
+
 }

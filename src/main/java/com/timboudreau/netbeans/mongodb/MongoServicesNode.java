@@ -107,6 +107,10 @@ public class MongoServicesNode extends AbstractNode {
         }
     }
 
+    ConnectionChildFactory getChildrenFactory() {
+        return factory;
+    }
+    
     static Preferences prefs() {
         return NbPreferences.forModule(MongoServicesNode.class).node("connections"); //NOI18N
     }

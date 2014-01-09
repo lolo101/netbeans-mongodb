@@ -140,6 +140,10 @@ final class ConnectionInfo implements Comparable<ConnectionInfo>, AutoCloseable 
     String id() {
         return id;
     }
+    
+    Preferences getPreferences() {
+        return node;
+    }
 
     @Override
     public void close() {
