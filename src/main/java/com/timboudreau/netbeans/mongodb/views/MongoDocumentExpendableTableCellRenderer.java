@@ -25,9 +25,11 @@ package com.timboudreau.netbeans.mongodb.views;
 
 import com.mongodb.DBObject;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.util.Map;
+import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -47,10 +49,6 @@ public final class MongoDocumentExpendableTableCellRenderer extends JPanel imple
 
     private final JTree tree = new JTree();
     
-    private final JScrollPane scrollPane = new JScrollPane(tree);
-
-    private final StringBuilder toolTipBuilder = new StringBuilder();
-
     public MongoDocumentExpendableTableCellRenderer() {
         tree.setRootVisible(false);
         tree.setShowsRootHandles(true);
@@ -61,14 +59,16 @@ public final class MongoDocumentExpendableTableCellRenderer extends JPanel imple
         tree.setCellRenderer(treeRenderer);
         
         setLayout(new BorderLayout());
-        add(scrollPane, BorderLayout.CENTER);
+        add(new JScrollPane(tree), BorderLayout.CENTER);
         setPreferredSize(new Dimension(0, 100));
     }
-
 
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
         tree.setModel(new DefaultTreeModel(buildDocumentTree((DBObject) value)));
+        setBorder(hasFocus 
+            ? BorderFactory.createLineBorder(Color.BLUE) 
+            : BorderFactory.createEmptyBorder());
         return this;
     }
     

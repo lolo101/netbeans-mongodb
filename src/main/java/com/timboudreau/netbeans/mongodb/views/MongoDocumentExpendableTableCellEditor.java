@@ -24,10 +24,14 @@
 package com.timboudreau.netbeans.mongodb.views;
 
 import com.mongodb.DBObject;
+import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.util.Map;
 import javax.swing.AbstractCellEditor;
+import javax.swing.BorderFactory;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTree;
@@ -45,8 +49,8 @@ import javax.swing.tree.TreeNode;
 public final class MongoDocumentExpendableTableCellEditor extends AbstractCellEditor implements TableCellEditor {
 
     private final JTree tree = new JTree();
-
-    private final JScrollPane scrollPane = new JScrollPane(tree);
+    
+    private final JPanel panel = new JPanel(new BorderLayout());
 
     private final StringBuilder toolTipBuilder = new StringBuilder();
 
@@ -58,7 +62,9 @@ public final class MongoDocumentExpendableTableCellEditor extends AbstractCellEd
         treeRenderer.setClosedIcon(null);
         treeRenderer.setOpenIcon(null);
         tree.setCellRenderer(treeRenderer);
-        scrollPane.setPreferredSize(new Dimension(0, 100));
+        panel.add(new JScrollPane(tree), BorderLayout.CENTER);
+        panel.setPreferredSize(new Dimension(0, 100));
+        panel.setBorder(BorderFactory.createLineBorder(Color.BLUE));
     }
 
     @Override
@@ -70,16 +76,9 @@ public final class MongoDocumentExpendableTableCellEditor extends AbstractCellEd
     public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
         tree.setRootVisible(false);
         tree.setModel(new DefaultTreeModel(buildDocumentTree((DBObject) value)));
-        return scrollPane;
+        return panel;
     }
 
-//    @Override
-//    public boolean isCellEditable(EventObject e) {
-//        if (e instanceof MouseEvent) {
-//            tree.dispatchEvent(e);
-//        }
-//        return false;
-//    }
     private TreeNode buildDocumentTree(DBObject document) {
         final Map<String, Object> map = document.toMap();
         final DefaultMutableTreeNode root = new DefaultMutableTreeNode(document);
