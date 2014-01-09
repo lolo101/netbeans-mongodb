@@ -28,6 +28,8 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 import java.util.Map;
 import javax.swing.AbstractCellEditor;
 import javax.swing.BorderFactory;
@@ -49,7 +51,7 @@ import javax.swing.tree.TreeNode;
 public final class MongoDocumentExpendableTableCellEditor extends AbstractCellEditor implements TableCellEditor {
 
     private final JTree tree = new JTree();
-    
+
     private final JPanel panel = new JPanel(new BorderLayout());
 
     private final StringBuilder toolTipBuilder = new StringBuilder();
@@ -65,6 +67,14 @@ public final class MongoDocumentExpendableTableCellEditor extends AbstractCellEd
         panel.add(new JScrollPane(tree), BorderLayout.CENTER);
         panel.setPreferredSize(new Dimension(0, 100));
         panel.setBorder(BorderFactory.createLineBorder(Color.BLUE));
+        tree.addFocusListener(new FocusAdapter() {
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                stopCellEditing();
+            }
+
+        });
     }
 
     @Override

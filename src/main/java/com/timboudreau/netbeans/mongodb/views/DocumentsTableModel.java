@@ -48,6 +48,10 @@ public class DocumentsTableModel extends AbstractTableModel {
 
     private DBObject criteria;
 
+    private DBObject projection;
+
+    private DBObject sort;
+
     public DocumentsTableModel(DBCollection dbCollection) {
         this.dbCollection = dbCollection;
     }
@@ -58,7 +62,10 @@ public class DocumentsTableModel extends AbstractTableModel {
             // TODO: error message
             return;
         }
-        try (DBCursor cursor = dbCollection.find(criteria)) {
+        try (DBCursor cursor = dbCollection.find(criteria, projection)) {
+            if(sort != null) {
+                cursor.sort(sort);
+            }
             cursorItemCount = cursor.count();
             DBCursor pageCursor = cursor;
             if (itemsPerPage > 0) {
@@ -153,4 +160,21 @@ public class DocumentsTableModel extends AbstractTableModel {
     public void setCriteria(DBObject criteria) {
         this.criteria = criteria;
     }
+
+    public DBObject getProjection() {
+        return projection;
+    }
+
+    public void setProjection(DBObject projection) {
+        this.projection = projection;
+    }
+
+    public DBObject getSort() {
+        return sort;
+    }
+
+    public void setSort(DBObject sort) {
+        this.sort = sort;
+    }
+    
 }
