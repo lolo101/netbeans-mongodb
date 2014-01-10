@@ -23,6 +23,7 @@
  */
 package com.timboudreau.netbeans.mongodb.views;
 
+import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 import com.mongodb.MongoException;
@@ -33,10 +34,6 @@ import com.timboudreau.netbeans.mongodb.util.Json;
 import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
 import javax.swing.JComboBox;
 import javax.swing.JEditorPane;
 import javax.swing.ListSelectionModel;
@@ -48,13 +45,9 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileChooserBuilder;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
-import org.openide.util.lookup.Lookups;
-import org.openide.windows.WindowManager;
 
 /**
  * Top component which displays something.
@@ -77,8 +70,6 @@ public final class CollectionViewTopComponent extends TopComponent {
 
     private final CollectionInfo collectionInfo;
 
-    private final Lookup lookup;
-
     private final DocumentsTableModel tableModel;
 
     private final EditorKit jsonEditorKit = MimeLookup.getLookup("text/x-json").lookup(EditorKit.class);
@@ -86,9 +77,8 @@ public final class CollectionViewTopComponent extends TopComponent {
     private final QueryEditor queryEditor = new QueryEditor();
 
     public CollectionViewTopComponent(CollectionInfo collectionInfo, Lookup lookup) {
+        super(lookup);
         this.collectionInfo = collectionInfo;
-        this.lookup = lookup;
-        associateLookup(Lookups.singleton(collectionInfo));
         initComponents();
         setName(collectionInfo.getName());
         nameValueLabel.setText(collectionInfo.getName());
@@ -164,7 +154,7 @@ public final class CollectionViewTopComponent extends TopComponent {
         });
     }
 
-    private void updateQueryFromPanel() {
+    private void updateQueryFieldsFromEditor() {
         final DBObject criteria = queryEditor.getCriteria();
         final DBObject projection = queryEditor.getProjection();
         final DBObject sort = queryEditor.getSort();
@@ -202,33 +192,6 @@ public final class CollectionViewTopComponent extends TopComponent {
             }
         }
         return null;
-    }
-
-    private void exportDocuments() {
-        final File home = new File(System.getProperty("user.home"));
-        final File file = new FileChooserBuilder("export-collection-documents")
-            .setTitle("Export documents")
-            .setDefaultWorkingDirectory(home)
-            .setApproveText("Save")
-            .showSaveDialog();
-        //Result will be null if the user clicked cancel or closed the dialog w/o OK
-        if (file != null) {
-            exportDocumentsAs(file);
-        }
-    }
-
-    private void exportDocumentsAs(File file) {
-        try (PrintWriter writer = new PrintWriter(file, "UTF-8")) {
-            for (DBObject document : tableModel.getDocuments()) {
-                final String json = JSON.serialize(document);
-                writer.println(json);
-                writer.flush();
-            }
-        } catch (FileNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (UnsupportedEncodingException ex) {
-            throw new AssertionError();
-        }
     }
 
     /**
@@ -581,7 +544,7 @@ public final class CollectionViewTopComponent extends TopComponent {
             "{}");
         if (document != null) {
             try {
-                final DBCollection dbCollection = lookup.lookup(DBCollection.class);
+                final DBCollection dbCollection = getLookup().lookup(DBCollection.class);
                 dbCollection.insert(document);
                 reload();
             } catch (MongoException ex) {
@@ -597,7 +560,7 @@ public final class CollectionViewTopComponent extends TopComponent {
             new NotifyDescriptor.Confirmation(Bundle.confirmDocumentDeletionText(), NotifyDescriptor.YES_NO_OPTION));
         if (dlgResult.equals(NotifyDescriptor.OK_OPTION)) {
             try {
-                final DBCollection dbCollection = lookup.lookup(DBCollection.class);
+                final DBCollection dbCollection = getLookup().lookup(DBCollection.class);
                 dbCollection.remove(document);
                 reload();
             } catch (MongoException ex) {
@@ -614,7 +577,7 @@ public final class CollectionViewTopComponent extends TopComponent {
             JSON.serialize(document));
         if (modifiedDocument != null) {
             try {
-                final DBCollection dbCollection = lookup.lookup(DBCollection.class);
+                final DBCollection dbCollection = getLookup().lookup(DBCollection.class);
                 dbCollection.save(modifiedDocument);
                 reload();
             } catch (MongoException ex) {
@@ -625,8 +588,8 @@ public final class CollectionViewTopComponent extends TopComponent {
     }//GEN-LAST:event_editDocumentButtonActionPerformed
 
     private void editQueryButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editQueryButtonActionPerformed
-        if (queryEditor.showDialog(WindowManager.getDefault().getMainWindow(), "Edit query")) {
-            updateQueryFromPanel();
+        if (queryEditor.showDialog()) {
+            updateQueryFieldsFromEditor();
         }
     }//GEN-LAST:event_editQueryButtonActionPerformed
 
@@ -634,7 +597,7 @@ public final class CollectionViewTopComponent extends TopComponent {
         queryEditor.setCriteria(null);
         queryEditor.setProjection(null);
         queryEditor.setSort(null);
-        updateQueryFromPanel();
+        updateQueryFieldsFromEditor();
     }//GEN-LAST:event_clearQueryButtonActionPerformed
 
     private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
@@ -642,13 +605,12 @@ public final class CollectionViewTopComponent extends TopComponent {
     }//GEN-LAST:event_refreshButtonActionPerformed
 
     private void exportButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportButtonActionPerformed
-        new Thread(new Runnable() {
-
-            @Override
-            public void run() {
-                exportDocuments();
-            }
-        }).start();
+        ExportPanel.showDialog(
+                getLookup().lookup(DB.class), 
+                collectionInfo.getName(), 
+                queryEditor.getCriteria(), 
+                queryEditor.getProjection(), 
+                queryEditor.getSort());
     }//GEN-LAST:event_exportButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

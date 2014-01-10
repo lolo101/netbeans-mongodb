@@ -27,9 +27,8 @@ import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
 import com.mongodb.util.JSONParseException;
 import com.timboudreau.netbeans.mongodb.util.Json;
-import java.awt.BorderLayout;
 import java.awt.Dialog;
-import java.awt.Window;
+import java.awt.Frame;
 import javax.swing.JDialog;
 import javax.swing.JEditorPane;
 import javax.swing.JOptionPane;
@@ -38,6 +37,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
+import org.openide.windows.WindowManager;
 
 /**
  *
@@ -153,9 +153,9 @@ public final class QueryEditor extends javax.swing.JPanel {
         setEditorValue(sortEditor, sort);
     }
 
-    public boolean showDialog(Window owner, String title) {
-        dialog = new JDialog(owner, title, Dialog.ModalityType.APPLICATION_MODAL);
-        dialog.setTitle(title);
+    public boolean showDialog() {
+        final Frame owner = WindowManager.getDefault().getMainWindow();
+        dialog = new JDialog(owner, "Edit query", Dialog.ModalityType.APPLICATION_MODAL);
         dialog.add(dialogPanel);
         dialog.pack();
         dialog.setLocationRelativeTo(owner);
