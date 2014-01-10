@@ -59,6 +59,10 @@ public final class ExportPanel extends javax.swing.JPanel {
         for (String collection : db.getCollectionNames()) {
             collectionComboBox.addItem(collection);
         }
+        if(collectionComboBox.getItemCount() == 0) {
+            throw new IllegalArgumentException("no collection available");
+        }
+        collectionComboBox.setSelectedIndex(0);
     }
 
     private void updateQueryFieldsFromEditor() {
