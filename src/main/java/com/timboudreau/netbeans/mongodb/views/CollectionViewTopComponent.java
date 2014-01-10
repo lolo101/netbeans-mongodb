@@ -54,14 +54,15 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
 import org.openide.util.lookup.Lookups;
+import org.openide.windows.WindowManager;
 
 /**
  * Top component which displays something.
  */
 @TopComponent.Description(
-        preferredID = "CollectionViewTopComponent",
-        iconBase = "com/timboudreau/netbeans/mongodb/mongo-collection.png",
-        persistenceType = TopComponent.PERSISTENCE_ALWAYS)
+    preferredID = "CollectionViewTopComponent",
+    iconBase = "com/timboudreau/netbeans/mongodb/mongo-collection.png",
+    persistenceType = TopComponent.PERSISTENCE_ALWAYS)
 @Messages({
     "addDocumentTitle=Add new document",
     "editDocumentTitle=Edit document",
@@ -81,6 +82,8 @@ public final class CollectionViewTopComponent extends TopComponent {
     private final DocumentsTableModel tableModel;
 
     private final EditorKit jsonEditorKit = MimeLookup.getLookup("text/x-json").lookup(EditorKit.class);
+
+    private final QueryEditor queryEditor = new QueryEditor();
 
     public CollectionViewTopComponent(CollectionInfo collectionInfo, Lookup lookup) {
         this.collectionInfo = collectionInfo;
@@ -109,7 +112,7 @@ public final class CollectionViewTopComponent extends TopComponent {
 
             @Override
             public void mouseClicked(MouseEvent evt) {
-                if (evt.getClickCount() == 2 && documentsTable.getSelectedRow()> -1) {
+                if (evt.getClickCount() == 2 && documentsTable.getSelectedRow() > -1) {
                     editDocumentButtonActionPerformed(null);
                 }
             }
@@ -161,6 +164,19 @@ public final class CollectionViewTopComponent extends TopComponent {
         });
     }
 
+    private void updateQueryFromPanel() {
+        final DBObject criteria = queryEditor.getCriteria();
+        final DBObject projection = queryEditor.getProjection();
+        final DBObject sort = queryEditor.getSort();
+        criteriaField.setText(criteria != null ? JSON.serialize(criteria) : "");
+        projectionField.setText(projection != null ? JSON.serialize(projection) : "");
+        sortField.setText(sort != null ? JSON.serialize(sort) : "");
+        tableModel.setCriteria(criteria);
+        tableModel.setProjection(projection);
+        tableModel.setSort(sort);
+        reload();
+    }
+
     private DBObject showJsonEditor(String title, String defaultJson) {
         final JEditorPane editor = new JEditorPane();
         if (jsonEditorKit != null) {
@@ -180,7 +196,7 @@ public final class CollectionViewTopComponent extends TopComponent {
                     return (DBObject) JSON.parse(json);
                 } catch (JSONParseException ex) {
                     DialogDisplayer.getDefault().notify(
-                            new NotifyDescriptor.Message(Bundle.invalidJson(), NotifyDescriptor.ERROR_MESSAGE));
+                        new NotifyDescriptor.Message(Bundle.invalidJson(), NotifyDescriptor.ERROR_MESSAGE));
                     doLoop = true;
                 }
             }
@@ -191,10 +207,10 @@ public final class CollectionViewTopComponent extends TopComponent {
     private void exportDocuments() {
         final File home = new File(System.getProperty("user.home"));
         final File file = new FileChooserBuilder("export-collection-documents")
-                .setTitle("Export documents")
-                .setDefaultWorkingDirectory(home)
-                .setApproveText("Save")
-                .showSaveDialog();
+            .setTitle("Export documents")
+            .setDefaultWorkingDirectory(home)
+            .setApproveText("Save")
+            .showSaveDialog();
         //Result will be null if the user clicked cancel or closed the dialog w/o OK
         if (file != null) {
             exportDocumentsAs(file);
@@ -237,25 +253,19 @@ public final class CollectionViewTopComponent extends TopComponent {
         addButton = new javax.swing.JButton();
         editButton = new javax.swing.JButton();
         deleteButton = new javax.swing.JButton();
-        criteriaPanel = new javax.swing.JPanel();
-        editCriteriaButton = new javax.swing.JButton();
-        clearCriteriaButton = new javax.swing.JButton();
-        criteriaScrollPane = new javax.swing.JScrollPane();
-        criteriaArea = new javax.swing.JTextArea();
+        queryPanel = new javax.swing.JPanel();
+        criteriaLabel = new javax.swing.JLabel();
+        criteriaField = new javax.swing.JTextField();
+        projectionLabel = new javax.swing.JLabel();
+        projectionField = new javax.swing.JTextField();
+        sortLabel = new javax.swing.JLabel();
+        sortField = new javax.swing.JTextField();
+        editQueryButton = new javax.swing.JButton();
+        clearQueryButton = new javax.swing.JButton();
         refreshButton = new javax.swing.JButton();
         exportButton = new javax.swing.JButton();
         tableScrollPane = new javax.swing.JScrollPane();
         documentsTable = new javax.swing.JTable();
-        projectionPanel = new javax.swing.JPanel();
-        editProjectionButton = new javax.swing.JButton();
-        clearProjectionButton = new javax.swing.JButton();
-        projectionScrollPane = new javax.swing.JScrollPane();
-        projectionArea = new javax.swing.JTextArea();
-        sortPanel = new javax.swing.JPanel();
-        editSortButton = new javax.swing.JButton();
-        clearSortButton = new javax.swing.JButton();
-        sortScrollPane = new javax.swing.JScrollPane();
-        sortArea = new javax.swing.JTextArea();
 
         org.openide.awt.Mnemonics.setLocalizedText(nameLabel, org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.nameLabel.text")); // NOI18N
 
@@ -330,52 +340,83 @@ public final class CollectionViewTopComponent extends TopComponent {
             }
         });
 
-        criteriaPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.criteriaPanel.border.title"))); // NOI18N
+        queryPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.queryPanel.border.title"))); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(editCriteriaButton, org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.editCriteriaButton.text")); // NOI18N
-        editCriteriaButton.addActionListener(new java.awt.event.ActionListener() {
+        org.openide.awt.Mnemonics.setLocalizedText(criteriaLabel, org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.criteriaLabel.text")); // NOI18N
+
+        criteriaField.setEditable(false);
+        criteriaField.setText(org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.criteriaField.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(projectionLabel, org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.projectionLabel.text")); // NOI18N
+
+        projectionField.setEditable(false);
+        projectionField.setText(org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.projectionField.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(sortLabel, org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.sortLabel.text")); // NOI18N
+
+        sortField.setEditable(false);
+        sortField.setText(org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.sortField.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(editQueryButton, org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.editQueryButton.text")); // NOI18N
+        editQueryButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                editCriteriaButtonActionPerformed(evt);
+                editQueryButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(clearCriteriaButton, org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.clearCriteriaButton.text")); // NOI18N
-        clearCriteriaButton.addActionListener(new java.awt.event.ActionListener() {
+        org.openide.awt.Mnemonics.setLocalizedText(clearQueryButton, org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.clearQueryButton.text")); // NOI18N
+        clearQueryButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                clearCriteriaButtonActionPerformed(evt);
+                clearQueryButtonActionPerformed(evt);
             }
         });
 
-        criteriaArea.setEditable(false);
-        criteriaArea.setColumns(20);
-        criteriaArea.setRows(5);
-        criteriaScrollPane.setViewportView(criteriaArea);
-
-        javax.swing.GroupLayout criteriaPanelLayout = new javax.swing.GroupLayout(criteriaPanel);
-        criteriaPanel.setLayout(criteriaPanelLayout);
-        criteriaPanelLayout.setHorizontalGroup(
-            criteriaPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(criteriaPanelLayout.createSequentialGroup()
+        javax.swing.GroupLayout queryPanelLayout = new javax.swing.GroupLayout(queryPanel);
+        queryPanel.setLayout(queryPanelLayout);
+        queryPanelLayout.setHorizontalGroup(
+            queryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(queryPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(criteriaPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(criteriaScrollPane)
-                    .addGroup(criteriaPanelLayout.createSequentialGroup()
-                        .addComponent(editCriteriaButton)
+                .addGroup(queryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(queryPanelLayout.createSequentialGroup()
+                        .addComponent(editQueryButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(clearCriteriaButton)
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
+                        .addComponent(clearQueryButton)
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, queryPanelLayout.createSequentialGroup()
+                        .addComponent(criteriaLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(criteriaField))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, queryPanelLayout.createSequentialGroup()
+                        .addGroup(queryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(projectionLabel)
+                            .addComponent(sortLabel))
+                        .addGap(6, 6, 6)
+                        .addGroup(queryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(projectionField)
+                            .addComponent(sortField)))))
         );
-        criteriaPanelLayout.setVerticalGroup(
-            criteriaPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(criteriaPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(criteriaPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(editCriteriaButton)
-                    .addComponent(clearCriteriaButton))
+
+        queryPanelLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {criteriaLabel, projectionLabel, sortLabel});
+
+        queryPanelLayout.setVerticalGroup(
+            queryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(queryPanelLayout.createSequentialGroup()
+                .addGroup(queryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(criteriaField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(criteriaLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(criteriaScrollPane)
-                .addContainerGap())
+                .addGroup(queryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(projectionField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(projectionLabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(queryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(sortField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(sortLabel))
+                .addGap(12, 12, 12)
+                .addGroup(queryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(editQueryButton)
+                    .addComponent(clearQueryButton)))
         );
 
         refreshButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/timboudreau/netbeans/mongodb/views/refresh.png"))); // NOI18N
@@ -406,102 +447,6 @@ public final class CollectionViewTopComponent extends TopComponent {
         ));
         tableScrollPane.setViewportView(documentsTable);
 
-        projectionPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.projectionPanel.border.title"))); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(editProjectionButton, org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.editProjectionButton.text")); // NOI18N
-        editProjectionButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                editProjectionButtonActionPerformed(evt);
-            }
-        });
-
-        org.openide.awt.Mnemonics.setLocalizedText(clearProjectionButton, org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.clearProjectionButton.text")); // NOI18N
-        clearProjectionButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                clearProjectionButtonActionPerformed(evt);
-            }
-        });
-
-        projectionArea.setEditable(false);
-        projectionArea.setColumns(20);
-        projectionArea.setRows(5);
-        projectionScrollPane.setViewportView(projectionArea);
-
-        javax.swing.GroupLayout projectionPanelLayout = new javax.swing.GroupLayout(projectionPanel);
-        projectionPanel.setLayout(projectionPanelLayout);
-        projectionPanelLayout.setHorizontalGroup(
-            projectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(projectionPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(projectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(projectionScrollPane)
-                    .addGroup(projectionPanelLayout.createSequentialGroup()
-                        .addComponent(editProjectionButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(clearProjectionButton)
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
-        );
-        projectionPanelLayout.setVerticalGroup(
-            projectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(projectionPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(projectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(editProjectionButton)
-                    .addComponent(clearProjectionButton))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(projectionScrollPane)
-                .addContainerGap())
-        );
-
-        sortPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.sortPanel.border.title"))); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(editSortButton, org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.editSortButton.text")); // NOI18N
-        editSortButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                editSortButtonActionPerformed(evt);
-            }
-        });
-
-        org.openide.awt.Mnemonics.setLocalizedText(clearSortButton, org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.clearSortButton.text")); // NOI18N
-        clearSortButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                clearSortButtonActionPerformed(evt);
-            }
-        });
-
-        sortArea.setEditable(false);
-        sortArea.setColumns(20);
-        sortArea.setRows(5);
-        sortScrollPane.setViewportView(sortArea);
-
-        javax.swing.GroupLayout sortPanelLayout = new javax.swing.GroupLayout(sortPanel);
-        sortPanel.setLayout(sortPanelLayout);
-        sortPanelLayout.setHorizontalGroup(
-            sortPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(sortPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(sortPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(sortScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 240, Short.MAX_VALUE)
-                    .addGroup(sortPanelLayout.createSequentialGroup()
-                        .addComponent(editSortButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(clearSortButton)
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
-        );
-        sortPanelLayout.setVerticalGroup(
-            sortPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(sortPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(sortPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(editSortButton)
-                    .addComponent(clearSortButton))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(sortScrollPane)
-                .addContainerGap())
-        );
-
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -509,7 +454,8 @@ public final class CollectionViewTopComponent extends TopComponent {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(tableScrollPane)
+                    .addComponent(queryPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(tableScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 628, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGap(6, 6, 6)
                         .addComponent(exportButton)
@@ -542,13 +488,7 @@ public final class CollectionViewTopComponent extends TopComponent {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(nameLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(nameValueLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(criteriaPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(projectionPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(sortPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .addComponent(nameValueLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -559,11 +499,8 @@ public final class CollectionViewTopComponent extends TopComponent {
                     .addComponent(nameLabel)
                     .addComponent(nameValueLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(criteriaPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(sortPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(projectionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addGap(18, 18, 18)
+                .addComponent(queryPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(14, 14, 14)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(itemsPerPageLabel)
                     .addComponent(itemsPerPageComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -572,7 +509,7 @@ public final class CollectionViewTopComponent extends TopComponent {
                     .addComponent(editButton)
                     .addComponent(refreshButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(tableScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 180, Short.MAX_VALUE)
+                .addComponent(tableScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 213, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lastButton)
@@ -640,8 +577,8 @@ public final class CollectionViewTopComponent extends TopComponent {
 
     private void addDocumentButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addDocumentButtonActionPerformed
         final DBObject document = showJsonEditor(
-                Bundle.addDocumentTitle(),
-                "{}");
+            Bundle.addDocumentTitle(),
+            "{}");
         if (document != null) {
             try {
                 final DBCollection dbCollection = lookup.lookup(DBCollection.class);
@@ -649,7 +586,7 @@ public final class CollectionViewTopComponent extends TopComponent {
                 reload();
             } catch (MongoException ex) {
                 DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE));
+                    new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE));
             }
         }
     }//GEN-LAST:event_addDocumentButtonActionPerformed
@@ -657,7 +594,7 @@ public final class CollectionViewTopComponent extends TopComponent {
     private void deleteDocumentButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteDocumentButtonActionPerformed
         final DBObject document = tableModel.getRowValue(documentsTable.getSelectedRow());
         final Object dlgResult = DialogDisplayer.getDefault().notify(
-                new NotifyDescriptor.Confirmation(Bundle.confirmDocumentDeletionText(), NotifyDescriptor.YES_NO_OPTION));
+            new NotifyDescriptor.Confirmation(Bundle.confirmDocumentDeletionText(), NotifyDescriptor.YES_NO_OPTION));
         if (dlgResult.equals(NotifyDescriptor.OK_OPTION)) {
             try {
                 final DBCollection dbCollection = lookup.lookup(DBCollection.class);
@@ -665,7 +602,7 @@ public final class CollectionViewTopComponent extends TopComponent {
                 reload();
             } catch (MongoException ex) {
                 DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE));
+                    new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE));
             }
         }
     }//GEN-LAST:event_deleteDocumentButtonActionPerformed
@@ -673,8 +610,8 @@ public final class CollectionViewTopComponent extends TopComponent {
     private void editDocumentButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editDocumentButtonActionPerformed
         final DBObject document = tableModel.getRowValue(documentsTable.getSelectedRow());
         final DBObject modifiedDocument = showJsonEditor(
-                Bundle.editDocumentTitle(),
-                JSON.serialize(document));
+            Bundle.editDocumentTitle(),
+            JSON.serialize(document));
         if (modifiedDocument != null) {
             try {
                 final DBCollection dbCollection = lookup.lookup(DBCollection.class);
@@ -682,26 +619,23 @@ public final class CollectionViewTopComponent extends TopComponent {
                 reload();
             } catch (MongoException ex) {
                 DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE));
+                    new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE));
             }
         }
     }//GEN-LAST:event_editDocumentButtonActionPerformed
 
-    private void editCriteriaButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editCriteriaButtonActionPerformed
-        final String json = tableModel.getCriteria() != null ? JSON.serialize(tableModel.getCriteria()) : "";
-        final DBObject criteria = showJsonEditor(Bundle.editCriteriaTitle(), json);
-        if (criteria != null) {
-            tableModel.setCriteria(criteria);
-            criteriaArea.setText(JSON.serialize(criteria));
-            reload();
+    private void editQueryButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editQueryButtonActionPerformed
+        if (queryEditor.showDialog(WindowManager.getDefault().getMainWindow(), "Edit query")) {
+            updateQueryFromPanel();
         }
-    }//GEN-LAST:event_editCriteriaButtonActionPerformed
+    }//GEN-LAST:event_editQueryButtonActionPerformed
 
-    private void clearCriteriaButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearCriteriaButtonActionPerformed
-        tableModel.setCriteria(null);
-        criteriaArea.setText("");
-        reload();
-    }//GEN-LAST:event_clearCriteriaButtonActionPerformed
+    private void clearQueryButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearQueryButtonActionPerformed
+        queryEditor.setCriteria(null);
+        queryEditor.setProjection(null);
+        queryEditor.setSort(null);
+        updateQueryFromPanel();
+    }//GEN-LAST:event_clearQueryButtonActionPerformed
 
     private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
         reload();
@@ -717,52 +651,15 @@ public final class CollectionViewTopComponent extends TopComponent {
         }).start();
     }//GEN-LAST:event_exportButtonActionPerformed
 
-    private void editProjectionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editProjectionButtonActionPerformed
-        final String json = tableModel.getProjection() != null ? JSON.serialize(tableModel.getProjection()) : "";
-        final DBObject projection = showJsonEditor(Bundle.editProjectionTitle(), json);
-        if (projection != null) {
-            tableModel.setProjection(projection);
-            projectionArea.setText(JSON.serialize(projection));
-            reload();
-        }
-    }//GEN-LAST:event_editProjectionButtonActionPerformed
-
-    private void clearProjectionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearProjectionButtonActionPerformed
-        tableModel.setProjection(null);
-        projectionArea.setText("");
-        reload();
-    }//GEN-LAST:event_clearProjectionButtonActionPerformed
-
-    private void editSortButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editSortButtonActionPerformed
-        final String json = tableModel.getSort() != null ? JSON.serialize(tableModel.getSort()) : "";
-        final DBObject sort = showJsonEditor(Bundle.editSortTitle(), json);
-        if (sort != null) {
-            tableModel.setSort(sort);
-            sortArea.setText(JSON.serialize(sort));
-            reload();
-        }
-    }//GEN-LAST:event_editSortButtonActionPerformed
-
-    private void clearSortButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearSortButtonActionPerformed
-        tableModel.setSort(null);
-        sortArea.setText("");
-        reload();
-    }//GEN-LAST:event_clearSortButtonActionPerformed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
-    private javax.swing.JButton clearCriteriaButton;
-    private javax.swing.JButton clearProjectionButton;
-    private javax.swing.JButton clearSortButton;
-    private javax.swing.JTextArea criteriaArea;
-    private javax.swing.JPanel criteriaPanel;
-    private javax.swing.JScrollPane criteriaScrollPane;
+    private javax.swing.JButton clearQueryButton;
+    private javax.swing.JTextField criteriaField;
+    private javax.swing.JLabel criteriaLabel;
     private javax.swing.JButton deleteButton;
     private javax.swing.JTable documentsTable;
     private javax.swing.JButton editButton;
-    private javax.swing.JButton editCriteriaButton;
-    private javax.swing.JButton editProjectionButton;
-    private javax.swing.JButton editSortButton;
+    private javax.swing.JButton editQueryButton;
     private javax.swing.JButton exportButton;
     private javax.swing.JButton firstButton;
     private javax.swing.JComboBox itemsPerPageComboBox;
@@ -775,13 +672,12 @@ public final class CollectionViewTopComponent extends TopComponent {
     private javax.swing.JLabel pageCountLabel;
     private javax.swing.JLabel pageLabel;
     private javax.swing.JButton previousButton;
-    private javax.swing.JTextArea projectionArea;
-    private javax.swing.JPanel projectionPanel;
-    private javax.swing.JScrollPane projectionScrollPane;
+    private javax.swing.JTextField projectionField;
+    private javax.swing.JLabel projectionLabel;
+    private javax.swing.JPanel queryPanel;
     private javax.swing.JButton refreshButton;
-    private javax.swing.JTextArea sortArea;
-    private javax.swing.JPanel sortPanel;
-    private javax.swing.JScrollPane sortScrollPane;
+    private javax.swing.JTextField sortField;
+    private javax.swing.JLabel sortLabel;
     private javax.swing.JScrollPane tableScrollPane;
     // End of variables declaration//GEN-END:variables
 
