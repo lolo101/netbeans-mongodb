@@ -26,10 +26,10 @@ package com.timboudreau.netbeans.mongodb;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.MongoException;
+import com.timboudreau.netbeans.mongodb.util.TopComponentUtils;
 import com.timboudreau.netbeans.mongodb.views.CollectionViewTopComponent;
 import com.timboudreau.netbeans.mongodb.views.ExportPanel;
 import java.awt.event.ActionEvent;
-import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.openide.DialogDisplayer;
@@ -47,7 +47,6 @@ import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
 
 /**
  *
@@ -56,7 +55,6 @@ import org.openide.windows.WindowManager;
 @Messages({
     "ACTION_DropCollection=Drop Collection",
     "ACTION_RenameCollection=Rename Collection",
-    "ACTION_ExportCollection=Export Collection",
     "# {0} - collection name",
     "dropCollectionConfirmText=Permanently drop ''{0}'' collection?",
     "# {0} - collection name",
@@ -84,7 +82,7 @@ final class CollectionNode extends AbstractNode {
         content.add(new OpenCookie() {
             @Override
             public void open() {
-                TopComponent tc = findTopComponent(collection);
+                TopComponent tc = TopComponentUtils.find(collection);
                 if (tc == null) {
                     tc = new CollectionViewTopComponent(collection, lookup);
                     tc.open();
@@ -117,27 +115,15 @@ final class CollectionNode extends AbstractNode {
     public Action[] getActions(boolean context) {
         return new Action[]{
             SystemAction.get(OpenAction.class),
-            new DropCollectionAction(),
+            new ExportCollectionAction(),
             new RenameCollectionAction(),
-            new ExportCollectionAction()
+            new DropCollectionAction()
         };
     }
 
     @Override
     public Action getPreferredAction() {
         return SystemAction.get(OpenAction.class);
-    }
-
-    private TopComponent findTopComponent(CollectionInfo collection) {
-        final Set<TopComponent> openTopComponents = WindowManager.getDefault().getRegistry().getOpened();
-        for (TopComponent tc : openTopComponents) {
-            if (tc instanceof CollectionViewTopComponent) {
-                if (tc.getLookup().lookup(CollectionInfo.class) == collection) {
-                    return tc;
-                }
-            }
-        }
-        return null;
     }
 
     private class CollectionConverter implements InstanceContent.Convertor<CollectionInfo, DBCollection> {
@@ -180,7 +166,7 @@ final class CollectionNode extends AbstractNode {
                 try {
                     lookup.lookup(DBCollection.class).drop();
                     ((OneDbNode) getParentNode()).refreshChildren();
-                    final TopComponent tc = findTopComponent(ci);
+                    final TopComponent tc = TopComponentUtils.find(ci);
                     if (tc != null) {
                         tc.close();
                     }
@@ -231,7 +217,7 @@ final class CollectionNode extends AbstractNode {
     public class ExportCollectionAction extends AbstractAction {
 
         public ExportCollectionAction() {
-            super(Bundle.ACTION_ExportCollection());
+            super(Bundle.ACTION_Export());
         }
 
         @Override

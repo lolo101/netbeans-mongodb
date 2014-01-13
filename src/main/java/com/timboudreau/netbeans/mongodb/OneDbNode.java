@@ -29,6 +29,7 @@ import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoException;
 import com.timboudreau.netbeans.mongodb.views.ExportPanel;
+import com.timboudreau.netbeans.mongodb.views.ImportPanel;
 import com.timboudreau.netbeans.nodes.RefreshChildrenAction;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
@@ -54,6 +55,7 @@ import org.openide.util.lookup.ProxyLookup;
     "DB_NAME=Database Name",
     "ACTION_AddCollection=Add Collection",
     "ACTION_Export=Export",
+    "ACTION_Import=Import",
     "addCollectionTitle=Add Collection",
     "addCollectionText=Collection name:",
     "# {0} - collection name",
@@ -106,7 +108,8 @@ public class OneDbNode extends AbstractNode {
         return new Action[]{
             new AddCollectionAction(),
             new RefreshChildrenAction(childFactory),
-            new ExportAction()
+            new ExportAction(),
+            new ImportAction()
         };
     }
     
@@ -180,7 +183,6 @@ public class OneDbNode extends AbstractNode {
         }
     }
     
-
     public class ExportAction extends AbstractAction {
 
         public ExportAction() {
@@ -196,6 +198,24 @@ public class OneDbNode extends AbstractNode {
                 null, 
                 null);
 
+        }
+    }
+    
+    public class ImportAction extends AbstractAction {
+
+        public ImportAction() {
+            super(Bundle.ACTION_Import());
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            ImportPanel.showDialog(
+                getLookup().lookup(DB.class), 
+                null, 
+                null, 
+                null, 
+                null);
+            refreshChildren();
         }
     }
 }

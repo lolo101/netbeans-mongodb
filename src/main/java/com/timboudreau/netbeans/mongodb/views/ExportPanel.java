@@ -55,7 +55,6 @@ public final class ExportPanel extends javax.swing.JPanel {
     public ExportPanel(DB db) {
         this.db = db;
         initComponents();
-        collectionComboBox.removeAllItems();
         for (String collection : db.getCollectionNames()) {
             collectionComboBox.addItem(collection);
         }
@@ -87,12 +86,12 @@ public final class ExportPanel extends javax.swing.JPanel {
         final DialogDescriptor desc = new DialogDescriptor(exportPanel, "Export");
         final Object dlgResult = DialogDisplayer.getDefault().notify(desc);
         if (dlgResult.equals(NotifyDescriptor.OK_OPTION)) {
-            export(exportPanel);
+            performExport(exportPanel);
         }
 
     }
 
-    private static void export(ExportPanel exportPanel) {
+    private static void performExport(ExportPanel exportPanel) {
         final String collection = (String) exportPanel.collectionComboBox.getSelectedItem();
         final ExportProperties properties = new ExportProperties(collection)
             .criteria(exportPanel.queryEditor.getCriteria())
@@ -103,6 +102,8 @@ public final class ExportPanel extends javax.swing.JPanel {
         final File file = new FileChooserBuilder("export-collection-documents")
             .setTitle("Export documents")
             .setDefaultWorkingDirectory(home)
+            .setSelectionApprover(new FileChooserConfirmOverrideSelectionApprover())
+            .setFileFilter(new JsonFileFilter())
             .setApproveText("Export")
             .showSaveDialog();
         if (file != null) {

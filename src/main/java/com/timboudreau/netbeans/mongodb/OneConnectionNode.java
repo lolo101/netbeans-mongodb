@@ -23,18 +23,15 @@
  */
 package com.timboudreau.netbeans.mongodb;
 
-import com.mongodb.DBCollection;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
-import com.timboudreau.netbeans.mongodb.views.CollectionViewTopComponent;
+import com.timboudreau.netbeans.mongodb.util.TopComponentUtils;
 import com.timboudreau.netbeans.nodes.RefreshChildrenAction;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.ConnectException;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -45,7 +42,6 @@ import org.netbeans.api.annotations.common.StaticResource;
 import org.openide.awt.StatusDisplayer;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.nodes.Node;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
@@ -57,7 +53,6 @@ import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
 
 /**
  *
@@ -300,7 +295,9 @@ class OneConnectionNode extends AbstractNode implements PropertyChangeListener {
             try {
                 // TODO: disconnect
                 info.getPreferences().removeNode();
-                // TODO: close opened collection tabs for this connection
+                for (TopComponent topComponent : TopComponentUtils.findAll(info)) {
+                    topComponent.close();
+                }
                 ((MongoServicesNode) getParentNode()).getChildrenFactory().refresh();
             } catch (BackingStoreException ex) {
                 Exceptions.printStackTrace(ex);
