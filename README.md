@@ -14,19 +14,17 @@ You can:
 ![NetBeans MongoDB Plugin Screen Shot](screenshot.png "NetBeans MongoDB Plugin Screen Shot")
 
 
-Status
-------
-Stable and works.
-
 Features in progress
 --------------------
  * Documents are displayed as expendable tree in query result list.
  * Add projection and sort for querying
  * Export/Import as json.
 
+
 TODO
 ----
  * Secure system collections (read-only, "system." prefix forbidden for new collections)
+
 
 Build And Run / Downloads
 -------------------------
