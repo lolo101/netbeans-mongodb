@@ -16,20 +16,24 @@ You can:
 
 Status
 ------
-
 Stable and works.
 
+Features in progress
+--------------------
+ * Documents are displayed as expendable tree in query result list.
+ * Add projection and sort for querying
+ * Export/Import as json.
 
+TODO
+----
+ * Secure system collections (read-only, "system." prefix forbidden for new collections)
 
 Build And Run / Downloads
 -------------------------
-
 It's a Maven project built using the NBM Maven Plugin - just check out and build.
 In NetBeans, install using Tools | Plugins on the Downloaded tab.
 
 
-
 License
 -------
-
 MIT license
