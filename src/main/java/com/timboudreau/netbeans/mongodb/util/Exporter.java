@@ -60,13 +60,19 @@ public final class Exporter implements Runnable {
         if (properties.isJsonArray()) {
             output.print("[");
         }
+        boolean first = true;
         for (DBObject document : cursor) {
+            if(first) {
+                first = false;
+            } else if (properties.isJsonArray()) {
+                output.print(",");
+            }
             final String json = JSON.serialize(document);
             output.print(json);
             if (properties.isJsonArray()) {
-                if (cursor.hasNext()) {
-                    output.print(",");
-                }
+//                if (cursor.hasNext()) {
+//                    output.print(",");
+//                }
             } else {
                 output.println();
             }
