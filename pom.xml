@@ -8,6 +8,7 @@
     <packaging>nbm</packaging>
 
     <name>NBMongo</name>
+    <description>A NetBeans plugin for accessing MongoDB.</description>
 
     <licenses>
         <license>
@@ -126,6 +127,11 @@
                 <artifactId>nbm-maven-plugin</artifactId>
                 <version>3.10.1</version>
                 <extensions>true</extensions>
+                <configuration>
+                    <author>Yann D'Isanto</author>
+                    <licenseName>MIT License</licenseName>
+                    <licenseFile>MIT-LICENSE.txt</licenseFile>
+                </configuration>
             </plugin>
 
             <plugin>
