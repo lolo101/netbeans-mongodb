@@ -131,6 +131,9 @@
                     <author>Yann D'Isanto</author>
                     <licenseName>MIT License</licenseName>
                     <licenseFile>MIT-LICENSE.txt</licenseFile>
+                    <keystore>private/keystore</keystore>
+                    <keystorealias></keystorealias>
+                    <keystorepassword></keystorepassword>
                 </configuration>
             </plugin>
 
