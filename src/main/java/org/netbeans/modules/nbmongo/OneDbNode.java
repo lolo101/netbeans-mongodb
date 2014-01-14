@@ -28,11 +28,11 @@ import com.mongodb.DB;
 import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoException;
-import org.netbeans.modules.nbmongo.ui.ImportPanel;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.nbmongo.ui.wizards.ExportWizardAction;
+import org.netbeans.modules.nbmongo.ui.wizards.ImportWizardAction;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.AbstractNode;
@@ -108,10 +108,16 @@ public class OneDbNode extends AbstractNode {
             new AddCollectionAction(),
             new RefreshChildrenAction(childFactory),
             new ExportWizardAction(getLookup()),
-            new ImportAction()
+            new ImportWizardAction(getLookup(), new Runnable() {
+
+                @Override
+                public void run() {
+                    refreshChildren();
+                }
+            })
         };
     }
-    
+
     public void refreshChildren() {
         childFactory.refresh();
     }
@@ -150,8 +156,8 @@ public class OneDbNode extends AbstractNode {
         @Override
         public void actionPerformed(ActionEvent e) {
             final NotifyDescriptor.InputLine input = new NotifyDescriptor.InputLine(
-                    Bundle.addCollectionText(),
-                    Bundle.addCollectionTitle());
+                Bundle.addCollectionText(),
+                Bundle.addCollectionTitle());
             boolean doLoop = true;
             while (doLoop) {
                 doLoop = false;
@@ -165,7 +171,7 @@ public class OneDbNode extends AbstractNode {
                         if (db.getCollectionNames().contains(collectionName)) {
                             DialogDisplayer.getDefault().notify(
                                 new NotifyDescriptor.Message(
-                                    Bundle.collectionAlreadyExists(collectionName), 
+                                    Bundle.collectionAlreadyExists(collectionName),
                                     NotifyDescriptor.ERROR_MESSAGE));
                             doLoop = true;
                         } else {
@@ -174,29 +180,12 @@ public class OneDbNode extends AbstractNode {
                         }
                     } catch (MongoException ex) {
                         DialogDisplayer.getDefault().notify(
-                                new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE));
+                            new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE));
                     }
 
                 }
             }
         }
     }
-    
-    public class ImportAction extends AbstractAction {
 
-        public ImportAction() {
-            super(Bundle.ACTION_Import());
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            ImportPanel.showDialog(
-                getLookup().lookup(DB.class), 
-                null, 
-                null, 
-                null, 
-                null);
-            refreshChildren();
-        }
-    }
 }

@@ -24,60 +24,54 @@
 package org.netbeans.modules.nbmongo.ui.wizards;
 
 import com.mongodb.DB;
-import com.mongodb.DBObject;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.io.UnsupportedEncodingException;
-import java.io.Writer;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
-import org.netbeans.modules.nbmongo.util.ExportProperties;
-import org.netbeans.modules.nbmongo.util.Exporter;
+import org.netbeans.modules.nbmongo.util.ImportProperties;
+import org.netbeans.modules.nbmongo.util.Importer;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 
-@Messages({"ACTION_Export=Export"})
-public final class ExportWizardAction extends AbstractAction {
+@Messages({"ACTION_Import=Import"})
+public final class ImportWizardAction extends AbstractAction {
 
     public static final String PROP_COLLECTION = "collection";
-    public static final String PROP_CRITERIA = "criteria";
-    public static final String PROP_PROJECTION = "projection";
-    public static final String PROP_SORT = "sort";
+
     public static final String PROP_FILE = "file";
+
     public static final String PROP_ENCODING = "encoding";
-    public static final String PROP_JSON_ARRAY = "jsonArray";
-    
+
+    public static final String PROP_DROP = "drop";
+
     private final Lookup lookup;
     
-    private final Map<String, Object> defaultProperties;
+    private final Runnable onSuccess;
 
-    public ExportWizardAction(Lookup lookup) {
-        this(lookup, new HashMap<String, Object>());
-    }
-    
-    public ExportWizardAction(Lookup lookup, Map<String, Object> defaultProperties) {
-        super(Bundle.ACTION_Export());
+    public ImportWizardAction(Lookup lookup, Runnable onSuccess) {
+        super(Bundle.ACTION_Import());
         this.lookup = lookup;
-        this.defaultProperties = defaultProperties;
+        this.onSuccess = onSuccess;
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         List<WizardDescriptor.Panel<WizardDescriptor>> panels = new ArrayList<>();
-        panels.add(new ExportWizardPanel1(lookup.lookup(DB.class)));
-        panels.add(new ExportWizardPanel2());
+        panels.add(new ImportWizardPanel1(lookup.lookup(DB.class)));
         String[] steps = new String[panels.size()];
         for (int i = 0; i < panels.size(); i++) {
             Component c = panels.get(i).getComponent();
@@ -92,25 +86,20 @@ public final class ExportWizardAction extends AbstractAction {
                 jc.putClientProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, true);
             }
         }
-        final WizardDescriptor wiz = new WizardDescriptor(new WizardDescriptor.ArrayIterator<>(panels));
-        for (Map.Entry<String, Object> entry : defaultProperties.entrySet()) {
-            wiz.putProperty(entry.getKey(), entry.getValue());
-        }
-        
+        WizardDescriptor wiz = new WizardDescriptor(new WizardDescriptor.ArrayIterator<>(panels));
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
         wiz.setTitleFormat(new MessageFormat("{0}"));
-        wiz.setTitle(Bundle.ACTION_Export());
+        wiz.setTitle(Bundle.ACTION_Import());
         if (DialogDisplayer.getDefault().notify(wiz) == WizardDescriptor.FINISH_OPTION) {
-            final ExportProperties properties = new ExportProperties()
-                .collection((String) wiz.getProperty(PROP_COLLECTION))
-                .criteria((DBObject) wiz.getProperty(PROP_CRITERIA))
-                .projection((DBObject) wiz.getProperty(PROP_PROJECTION))
-                .sort((DBObject) wiz.getProperty(PROP_SORT))
-                .jsonArray((Boolean) wiz.getProperty(PROP_JSON_ARRAY));
             final File file = (File) wiz.getProperty(PROP_FILE);
             final Charset encoding = (Charset) wiz.getProperty(PROP_ENCODING);
-            try (Writer writer = new PrintWriter(file, encoding.name())) {
-                new Exporter(lookup.lookup(DB.class), properties, writer).run();
+            final ImportProperties properties = new ImportProperties()
+                .collection((String) wiz.getProperty(PROP_COLLECTION))
+                .drop((Boolean) wiz.getProperty(PROP_DROP));
+            try (InputStream input = new FileInputStream(file)) {
+                final Reader reader = new InputStreamReader(input, encoding.name());
+                new Importer(lookup.lookup(DB.class), properties, reader).run();
+                onSuccess.run();
             } catch (UnsupportedEncodingException ex) {
                 throw new AssertionError();
             } catch (IOException ex) {

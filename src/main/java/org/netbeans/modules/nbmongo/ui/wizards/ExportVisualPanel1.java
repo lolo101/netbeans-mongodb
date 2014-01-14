@@ -42,10 +42,7 @@ public final class ExportVisualPanel1 extends JPanel {
 
     private final QueryEditor queryEditor = new QueryEditor();
 
-    private final DB db;
-
     public ExportVisualPanel1(DB db) {
-        this.db = db;
         initComponents();
         for (String collection : db.getCollectionNames()) {
             collectionComboBox.addItem(collection);

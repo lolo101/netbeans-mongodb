@@ -23,6 +23,7 @@
  */
 package org.netbeans.modules.nbmongo.ui.wizards;
 
+import com.mongodb.DB;
 import java.io.File;
 import java.nio.charset.Charset;
 import javax.swing.JCheckBox;
@@ -31,65 +32,92 @@ import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.JTextComponent;
 import org.netbeans.modules.nbmongo.ui.JsonFileFilter;
-import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle.Messages;
 
 @Messages({
-    "ExportFileStep=File options",
-    "# {0} - file name",
-    "file-exists-warning=\"{0}\" file already exists"})
-public final class ExportVisualPanel2 extends JPanel {
+    "ImportOptionsStep=Import options"})
+public final class ImportVisualPanel1 extends JPanel {
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     private final JFileChooser fileChooser;
-    
-    private WizardDescriptor wizard;
 
-    public ExportVisualPanel2() {
+    private final JTextComponent collectionEditor;
+
+    /**
+     * Creates new form ImportVisualPanel1
+     */
+    public ImportVisualPanel1(DB db) {
         initComponents();
+        collectionEditor = (JTextComponent) collectionComboBox.getEditor().getEditorComponent();
+        dropCheckBox.setVisible(false);
         final File home = new File(System.getProperty("user.home"));
         fileChooser = new FileChooserBuilder("import-export-filechooser")
-            .setTitle("Export documents")
+            .setTitle("Import documents")
             .setDefaultWorkingDirectory(home)
+            .setApproveText("Import")
             .setFileFilter(new JsonFileFilter())
             .setFilesOnly(true)
-            .setApproveText("Export")
             .createFileChooser();
+        for (String collection : db.getCollectionNames()) {
+            collectionComboBox.addItem(collection);
+        }
         for (Charset charset : Charset.availableCharsets().values()) {
             encodingComboBox.addItem(charset);
         }
+        final DocumentListener documentListener = new DocumentListener() {
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                changeSupport.fireChange();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                changeSupport.fireChange();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                changeSupport.fireChange();
+            }
+
+        };
+        fileField.getDocument().addDocumentListener(documentListener);
+        collectionEditor.getDocument().addDocumentListener(documentListener);
     }
 
     @Override
     public String getName() {
-        return Bundle.ExportFileStep();
-    }
-
-    JTextField getFileField() {
-        return fileField;
+        return Bundle.ImportOptionsStep();
     }
 
     JFileChooser getFileChooser() {
         return fileChooser;
     }
 
+    JTextField getFileField() {
+        return fileField;
+    }
+
     JComboBox getEncodingComboBox() {
         return encodingComboBox;
     }
 
-    JCheckBox getJsonArrayCheckBox() {
-        return jsonArrayCheckBox;
+    JTextComponent getCollectionEditor() {
+        return collectionEditor;
     }
 
-    void setWizard(WizardDescriptor wizard) {
-        this.wizard = wizard;
+    JCheckBox getDropCheckBox() {
+        return dropCheckBox;
     }
 
-    
     public final void addChangeListener(ChangeListener l) {
         changeSupport.addChangeListener(l);
     }
@@ -111,28 +139,29 @@ public final class ExportVisualPanel2 extends JPanel {
         browseFileButton = new javax.swing.JButton();
         encodingLabel = new javax.swing.JLabel();
         encodingComboBox = new javax.swing.JComboBox();
-        jsonArrayCheckBox = new javax.swing.JCheckBox();
+        collectionComboBox = new javax.swing.JComboBox<String>();
+        collectionLabel = new javax.swing.JLabel();
+        dropCheckBox = new javax.swing.JCheckBox();
 
-        org.openide.awt.Mnemonics.setLocalizedText(fileLabel, org.openide.util.NbBundle.getMessage(ExportVisualPanel2.class, "ExportVisualPanel2.fileLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(fileLabel, org.openide.util.NbBundle.getMessage(ImportVisualPanel1.class, "ImportVisualPanel1.fileLabel.text")); // NOI18N
 
         fileField.setEditable(false);
-        fileField.setText(org.openide.util.NbBundle.getMessage(ExportVisualPanel2.class, "ExportVisualPanel2.fileField.text")); // NOI18N
+        fileField.setText(org.openide.util.NbBundle.getMessage(ImportVisualPanel1.class, "ImportVisualPanel1.fileField.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(browseFileButton, org.openide.util.NbBundle.getMessage(ExportVisualPanel2.class, "ExportVisualPanel2.browseFileButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(browseFileButton, org.openide.util.NbBundle.getMessage(ImportVisualPanel1.class, "ImportVisualPanel1.browseFileButton.text")); // NOI18N
         browseFileButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browseFileButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(encodingLabel, org.openide.util.NbBundle.getMessage(ExportVisualPanel2.class, "ExportVisualPanel2.encodingLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(encodingLabel, org.openide.util.NbBundle.getMessage(ImportVisualPanel1.class, "ImportVisualPanel1.encodingLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jsonArrayCheckBox, org.openide.util.NbBundle.getMessage(ExportVisualPanel2.class, "ExportVisualPanel2.jsonArrayCheckBox.text")); // NOI18N
-        jsonArrayCheckBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jsonArrayCheckBoxActionPerformed(evt);
-            }
-        });
+        collectionComboBox.setEditable(true);
+
+        org.openide.awt.Mnemonics.setLocalizedText(collectionLabel, org.openide.util.NbBundle.getMessage(ImportVisualPanel1.class, "ImportVisualPanel1.collectionLabel.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(dropCheckBox, org.openide.util.NbBundle.getMessage(ImportVisualPanel1.class, "ImportVisualPanel1.dropCheckBox.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -142,11 +171,15 @@ public final class ExportVisualPanel2 extends JPanel {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jsonArrayCheckBox)
-                        .addGap(0, 226, Short.MAX_VALUE))
+                        .addComponent(dropCheckBox)
+                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addGroup(layout.createSequentialGroup()
+                                .addComponent(collectionLabel)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(collectionComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 284, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                                 .addComponent(encodingLabel)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(encodingComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -171,31 +204,34 @@ public final class ExportVisualPanel2 extends JPanel {
                     .addComponent(encodingLabel)
                     .addComponent(encodingComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
-                .addComponent(jsonArrayCheckBox)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(collectionLabel)
+                    .addComponent(collectionComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addComponent(dropCheckBox)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void browseFileButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseFileButtonActionPerformed
-        if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+        if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             final File file = fileChooser.getSelectedFile();
-            fileField.setText(file.getAbsolutePath());
-            final String warning = file.exists() ? Bundle.file_exists_warning(file.getName()) : "";
-            wizard.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, warning);
-            changeSupport.fireChange();
+            if (file != null) {
+                fileField.setText(file.getAbsolutePath());
+                final String collectionName = file.getName().replaceAll("\\.json$", "");
+                collectionEditor.setText(collectionName);
+            }
         }
     }//GEN-LAST:event_browseFileButtonActionPerformed
 
-    private void jsonArrayCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jsonArrayCheckBoxActionPerformed
-        changeSupport.fireChange();
-    }//GEN-LAST:event_jsonArrayCheckBoxActionPerformed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseFileButton;
+    private javax.swing.JComboBox<String> collectionComboBox;
+    private javax.swing.JLabel collectionLabel;
+    private javax.swing.JCheckBox dropCheckBox;
     private javax.swing.JComboBox encodingComboBox;
     private javax.swing.JLabel encodingLabel;
     private javax.swing.JTextField fileField;
     private javax.swing.JLabel fileLabel;
-    private javax.swing.JCheckBox jsonArrayCheckBox;
     // End of variables declaration//GEN-END:variables
 }
