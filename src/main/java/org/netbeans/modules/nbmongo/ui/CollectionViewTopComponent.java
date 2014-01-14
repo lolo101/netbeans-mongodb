@@ -23,7 +23,6 @@
  */
 package org.netbeans.modules.nbmongo.ui;
 
-import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 import com.mongodb.MongoException;
@@ -89,8 +88,8 @@ public final class CollectionViewTopComponent extends TopComponent {
         tableModel = new DocumentsTableModel(dbCollection);
         documentsTable.setModel(tableModel);
         documentsTable.setRowHeight(100);
-        documentsTable.setDefaultEditor(DBObject.class, new MongoDocumentExpendableTableCellEditor());
-        documentsTable.setDefaultRenderer(DBObject.class, new MongoDocumentExpendableTableCellRenderer());
+        documentsTable.setDefaultEditor(DBObject.class, new MongoDocumentExpendableTableCell());
+        documentsTable.setDefaultRenderer(DBObject.class, new MongoDocumentExpendableTableCell());
         documentsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         documentsTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 

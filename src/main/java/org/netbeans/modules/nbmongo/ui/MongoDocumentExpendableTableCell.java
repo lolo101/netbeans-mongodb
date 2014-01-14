@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2013 Yann D'Isanto.
+ * Copyright 2014 Yann D'Isanto.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,6 +38,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTree;
 import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
@@ -45,18 +46,17 @@ import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 
 /**
+ * Documents expendable table cell renderer and editor.
  *
  * @author Yann D'Isanto
  */
-public final class MongoDocumentExpendableTableCellEditor extends AbstractCellEditor implements TableCellEditor {
+public final class MongoDocumentExpendableTableCell extends AbstractCellEditor implements TableCellEditor, TableCellRenderer {
 
     private final JTree tree = new JTree();
 
     private final JPanel panel = new JPanel(new BorderLayout());
 
-    private final StringBuilder toolTipBuilder = new StringBuilder();
-
-    public MongoDocumentExpendableTableCellEditor() {
+    public MongoDocumentExpendableTableCell() {
         tree.setRootVisible(false);
         tree.setShowsRootHandles(true);
         DefaultTreeCellRenderer treeRenderer = new DefaultTreeCellRenderer();
@@ -86,6 +86,15 @@ public final class MongoDocumentExpendableTableCellEditor extends AbstractCellEd
     public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
         tree.setRootVisible(false);
         tree.setModel(new DefaultTreeModel(buildDocumentTree((DBObject) value)));
+        return panel;
+    }
+
+    @Override
+    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+        tree.setModel(new DefaultTreeModel(buildDocumentTree((DBObject) value)));
+        panel.setBorder(hasFocus
+            ? BorderFactory.createLineBorder(Color.BLUE)
+            : BorderFactory.createEmptyBorder());
         return panel;
     }
 
