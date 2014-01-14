@@ -109,6 +109,9 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JComboBox" name="encodingComboBox">
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;Charset&gt;"/>
+      </AuxValues>
     </Component>
     <Component class="javax.swing.JComboBox" name="collectionComboBox">
       <Properties>

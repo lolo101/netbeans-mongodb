@@ -67,6 +67,7 @@ public final class Importer implements Runnable {
         }
     }
     
+    @SuppressWarnings("unchecked")
     private List<DBObject> parseLine(String line) {
         final Object obj = JSON.parse(line);
         if(obj instanceof List) {

@@ -110,7 +110,7 @@ public final class ExportVisualPanel2 extends JPanel {
         fileField = new javax.swing.JTextField();
         browseFileButton = new javax.swing.JButton();
         encodingLabel = new javax.swing.JLabel();
-        encodingComboBox = new javax.swing.JComboBox();
+        encodingComboBox = new javax.swing.JComboBox<Charset>();
         jsonArrayCheckBox = new javax.swing.JCheckBox();
 
         org.openide.awt.Mnemonics.setLocalizedText(fileLabel, org.openide.util.NbBundle.getMessage(ExportVisualPanel2.class, "ExportVisualPanel2.fileLabel.text")); // NOI18N
@@ -192,7 +192,7 @@ public final class ExportVisualPanel2 extends JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseFileButton;
-    private javax.swing.JComboBox encodingComboBox;
+    private javax.swing.JComboBox<Charset> encodingComboBox;
     private javax.swing.JLabel encodingLabel;
     private javax.swing.JTextField fileField;
     private javax.swing.JLabel fileLabel;

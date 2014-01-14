@@ -138,7 +138,7 @@ public final class ImportVisualPanel1 extends JPanel {
         fileField = new javax.swing.JTextField();
         browseFileButton = new javax.swing.JButton();
         encodingLabel = new javax.swing.JLabel();
-        encodingComboBox = new javax.swing.JComboBox();
+        encodingComboBox = new javax.swing.JComboBox<Charset>();
         collectionComboBox = new javax.swing.JComboBox<String>();
         collectionLabel = new javax.swing.JLabel();
         dropCheckBox = new javax.swing.JCheckBox();
@@ -229,7 +229,7 @@ public final class ImportVisualPanel1 extends JPanel {
     private javax.swing.JComboBox<String> collectionComboBox;
     private javax.swing.JLabel collectionLabel;
     private javax.swing.JCheckBox dropCheckBox;
-    private javax.swing.JComboBox encodingComboBox;
+    private javax.swing.JComboBox<Charset> encodingComboBox;
     private javax.swing.JLabel encodingLabel;
     private javax.swing.JTextField fileField;
     private javax.swing.JLabel fileLabel;

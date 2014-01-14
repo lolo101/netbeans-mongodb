@@ -207,7 +207,7 @@ public final class CollectionViewTopComponent extends TopComponent {
         nameLabel = new javax.swing.JLabel();
         nameValueLabel = new javax.swing.JLabel();
         itemsPerPageLabel = new javax.swing.JLabel();
-        itemsPerPageComboBox = new JComboBox(ITEMS_PER_PAGE_VALUES);
+        itemsPerPageComboBox = new JComboBox<>(ITEMS_PER_PAGE_VALUES);
         lastButton = new javax.swing.JButton();
         nextButton = new javax.swing.JButton();
         firstButton = new javax.swing.JButton();
@@ -626,7 +626,7 @@ public final class CollectionViewTopComponent extends TopComponent {
     private javax.swing.JButton editQueryButton;
     private javax.swing.JButton exportButton;
     private javax.swing.JButton firstButton;
-    private javax.swing.JComboBox itemsPerPageComboBox;
+    private javax.swing.JComboBox<Integer> itemsPerPageComboBox;
     private javax.swing.JLabel itemsPerPageLabel;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JButton lastButton;

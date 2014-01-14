@@ -98,6 +98,7 @@ public final class MongoDocumentExpendableTableCell extends AbstractCellEditor i
         return panel;
     }
 
+    @SuppressWarnings("unchecked")
     private TreeNode buildDocumentTree(DBObject document) {
         final Map<String, Object> map = document.toMap();
         final DefaultMutableTreeNode root = new DefaultMutableTreeNode(document);
@@ -107,6 +108,7 @@ public final class MongoDocumentExpendableTableCell extends AbstractCellEditor i
         return root;
     }
 
+    @SuppressWarnings("unchecked")
     private MutableTreeNode buildTreeNode(Map.Entry<String, Object> entry) {
         if (entry.getValue() instanceof Map) {
             final Map<String, Object> map = (Map<String, Object>) entry.getValue();
