@@ -28,11 +28,11 @@ import com.mongodb.DB;
 import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoException;
-import org.netbeans.modules.nbmongo.ui.ExportPanel;
 import org.netbeans.modules.nbmongo.ui.ImportPanel;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import org.netbeans.modules.nbmongo.ui.wizards.ExportWizardAction;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.AbstractNode;
@@ -107,7 +107,7 @@ public class OneDbNode extends AbstractNode {
         return new Action[]{
             new AddCollectionAction(),
             new RefreshChildrenAction(childFactory),
-            new ExportAction(),
+            new ExportWizardAction(getLookup()),
             new ImportAction()
         };
     }
@@ -179,24 +179,6 @@ public class OneDbNode extends AbstractNode {
 
                 }
             }
-        }
-    }
-    
-    public class ExportAction extends AbstractAction {
-
-        public ExportAction() {
-            super(Bundle.ACTION_Export());
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            ExportPanel.showDialog(
-                getLookup().lookup(DB.class), 
-                null, 
-                null, 
-                null, 
-                null);
-
         }
     }
     

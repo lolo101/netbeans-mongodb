@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2014 Yann D'Isanto.
+ * Copyright 2014 PVVQ7166.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,50 +21,58 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.netbeans.modules.nbmongo.ui;
+package org.netbeans.modules.nbmongo.ui.wizards;
 
 import com.mongodb.DB;
 import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
-import org.netbeans.modules.nbmongo.util.ExportProperties;
-import org.netbeans.modules.nbmongo.util.Exporter;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-import java.io.Writer;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileChooserBuilder;
-import org.openide.util.Exceptions;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.JComboBox;
+import javax.swing.JPanel;
+import javax.swing.event.ChangeListener;
+import org.netbeans.modules.nbmongo.ui.QueryEditor;
+import org.openide.util.ChangeSupport;
+import org.openide.util.NbBundle.Messages;
 
-/**
- *
- * @author Yann D'Isanto
- */
-public final class ExportPanel extends javax.swing.JPanel {
+@Messages({"ExportQueryStep=Query options"})
+public final class ExportVisualPanel1 extends JPanel {
+
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     private final QueryEditor queryEditor = new QueryEditor();
 
     private final DB db;
 
-    /**
-     * Creates new form ExportPanel
-     */
-    public ExportPanel(DB db) {
+    public ExportVisualPanel1(DB db) {
         this.db = db;
         initComponents();
         for (String collection : db.getCollectionNames()) {
             collectionComboBox.addItem(collection);
         }
-        if(collectionComboBox.getItemCount() == 0) {
-            throw new IllegalArgumentException("no collection available");
-        }
-        collectionComboBox.setSelectedIndex(0);
+        collectionComboBox.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                changeSupport.fireChange();
+            }
+        });
     }
 
-    private void updateQueryFieldsFromEditor() {
+    @Override
+    public String getName() {
+        return Bundle.ExportQueryStep();
+    }
+
+    JComboBox<String> getCollectionComboBox() {
+        return collectionComboBox;
+    }
+
+    QueryEditor getQueryEditor() {
+        return queryEditor;
+    }
+
+    void updateQueryFieldsFromEditor() {
         final DBObject criteria = queryEditor.getCriteria();
         final DBObject projection = queryEditor.getProjection();
         final DBObject sort = queryEditor.getSort();
@@ -73,49 +81,12 @@ public final class ExportPanel extends javax.swing.JPanel {
         sortField.setText(sort != null ? JSON.serialize(sort) : "");
     }
 
-    public static void showDialog(DB db, String collection, DBObject criteria, DBObject projection, DBObject sort) {
-        final ExportPanel exportPanel = new ExportPanel(db);
-        if (collection != null) {
-            exportPanel.collectionComboBox.setSelectedItem(collection);
-        }
-        exportPanel.queryEditor.setCriteria(criteria);
-        exportPanel.queryEditor.setProjection(projection);
-        exportPanel.queryEditor.setSort(sort);
-        exportPanel.updateQueryFieldsFromEditor();
-
-        final DialogDescriptor desc = new DialogDescriptor(exportPanel, "Export");
-        final Object dlgResult = DialogDisplayer.getDefault().notify(desc);
-        if (dlgResult.equals(NotifyDescriptor.OK_OPTION)) {
-            performExport(exportPanel);
-        }
-
+    public final void addChangeListener(ChangeListener l) {
+        changeSupport.addChangeListener(l);
     }
 
-    private static void performExport(ExportPanel exportPanel) {
-        final String collection = (String) exportPanel.collectionComboBox.getSelectedItem();
-        final ExportProperties properties = new ExportProperties(collection)
-            .criteria(exportPanel.queryEditor.getCriteria())
-            .projection(exportPanel.queryEditor.getProjection())
-            .sort(exportPanel.queryEditor.getSort())
-            .jsonArray(exportPanel.jsonArrayCheckBox.isSelected());
-        final File home = new File(System.getProperty("user.home"));
-        final File file = new FileChooserBuilder("import-export-filechooser")
-            .setTitle("Export documents")
-            .setDefaultWorkingDirectory(home)
-            .setSelectionApprover(new FileChooserConfirmOverrideSelectionApprover())
-            .setFileFilter(new JsonFileFilter())
-            .setApproveText("Export")
-            .showSaveDialog();
-        if (file != null) {
-            // TODO: confirm if file already exists
-            try (Writer writer = new PrintWriter(file, "UTF-8")) {
-                new Exporter(exportPanel.db, properties, writer).run();
-            } catch (UnsupportedEncodingException ex) {
-                throw new AssertionError();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
+    public final void removeChangeListener(ChangeListener l) {
+        changeSupport.removeChangeListener(l);
     }
 
     /**
@@ -123,13 +94,11 @@ public final class ExportPanel extends javax.swing.JPanel {
      * WARNING: Do NOT modify this code. The content of this method is always
      * regenerated by the Form Editor.
      */
-    @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
         collectionLabel = new javax.swing.JLabel();
         collectionComboBox = new javax.swing.JComboBox<String>();
-        jsonArrayCheckBox = new javax.swing.JCheckBox();
         queryPanel = new javax.swing.JPanel();
         editQueryButton = new javax.swing.JButton();
         clearQueryButton = new javax.swing.JButton();
@@ -140,21 +109,18 @@ public final class ExportPanel extends javax.swing.JPanel {
         criteriaField = new javax.swing.JTextField();
         projectionField = new javax.swing.JTextField();
 
-        org.openide.awt.Mnemonics.setLocalizedText(collectionLabel, org.openide.util.NbBundle.getMessage(ExportPanel.class, "ExportPanel.collectionLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(collectionLabel, org.openide.util.NbBundle.getMessage(ExportVisualPanel1.class, "ExportVisualPanel1.collectionLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jsonArrayCheckBox, org.openide.util.NbBundle.getMessage(ExportPanel.class, "ExportPanel.jsonArrayCheckBox.text")); // NOI18N
-        jsonArrayCheckBox.setHorizontalTextPosition(javax.swing.SwingConstants.LEFT);
+        queryPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(ExportVisualPanel1.class, "ExportVisualPanel1.queryPanel.border.title"))); // NOI18N
 
-        queryPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(ExportPanel.class, "ExportPanel.queryPanel.border.title"))); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(editQueryButton, org.openide.util.NbBundle.getMessage(ExportPanel.class, "ExportPanel.editQueryButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(editQueryButton, org.openide.util.NbBundle.getMessage(ExportVisualPanel1.class, "ExportVisualPanel1.editQueryButton.text")); // NOI18N
         editQueryButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 editQueryButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(clearQueryButton, org.openide.util.NbBundle.getMessage(ExportPanel.class, "ExportPanel.clearQueryButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(clearQueryButton, org.openide.util.NbBundle.getMessage(ExportVisualPanel1.class, "ExportVisualPanel1.clearQueryButton.text")); // NOI18N
         clearQueryButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 clearQueryButtonActionPerformed(evt);
@@ -163,11 +129,11 @@ public final class ExportPanel extends javax.swing.JPanel {
 
         sortField.setEditable(false);
 
-        org.openide.awt.Mnemonics.setLocalizedText(sortLabel, org.openide.util.NbBundle.getMessage(ExportPanel.class, "ExportPanel.sortLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(sortLabel, org.openide.util.NbBundle.getMessage(ExportVisualPanel1.class, "ExportVisualPanel1.sortLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(projectionLabel, org.openide.util.NbBundle.getMessage(ExportPanel.class, "ExportPanel.projectionLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(projectionLabel, org.openide.util.NbBundle.getMessage(ExportVisualPanel1.class, "ExportVisualPanel1.projectionLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(criteriaLabel, org.openide.util.NbBundle.getMessage(ExportPanel.class, "ExportPanel.criteriaLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(criteriaLabel, org.openide.util.NbBundle.getMessage(ExportVisualPanel1.class, "ExportVisualPanel1.criteriaLabel.text")); // NOI18N
 
         criteriaField.setEditable(false);
 
@@ -234,16 +200,11 @@ public final class ExportPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jsonArrayCheckBox)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(collectionLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(collectionComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                            .addComponent(queryPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addContainerGap())))
+                        .addComponent(collectionLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(collectionComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(queryPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -254,8 +215,6 @@ public final class ExportPanel extends javax.swing.JPanel {
                     .addComponent(collectionComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(queryPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jsonArrayCheckBox)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -273,7 +232,6 @@ public final class ExportPanel extends javax.swing.JPanel {
         updateQueryFieldsFromEditor();
     }//GEN-LAST:event_clearQueryButtonActionPerformed
 
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton clearQueryButton;
     private javax.swing.JComboBox<String> collectionComboBox;
@@ -281,7 +239,6 @@ public final class ExportPanel extends javax.swing.JPanel {
     private javax.swing.JTextField criteriaField;
     private javax.swing.JLabel criteriaLabel;
     private javax.swing.JButton editQueryButton;
-    private javax.swing.JCheckBox jsonArrayCheckBox;
     private javax.swing.JTextField projectionField;
     private javax.swing.JLabel projectionLabel;
     private javax.swing.JPanel queryPanel;

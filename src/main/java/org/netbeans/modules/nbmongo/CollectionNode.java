@@ -28,10 +28,12 @@ import com.mongodb.DBCollection;
 import com.mongodb.MongoException;
 import org.netbeans.modules.nbmongo.util.TopComponentUtils;
 import org.netbeans.modules.nbmongo.ui.CollectionViewTopComponent;
-import org.netbeans.modules.nbmongo.ui.ExportPanel;
 import java.awt.event.ActionEvent;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import org.netbeans.modules.nbmongo.ui.wizards.ExportWizardAction;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.OpenAction;
@@ -113,9 +115,11 @@ final class CollectionNode extends AbstractNode {
 
     @Override
     public Action[] getActions(boolean context) {
+        final Map<String, Object> properties = new HashMap<>();
+        properties.put(ExportWizardAction.PROP_COLLECTION, collection.getName());
         return new Action[]{
             SystemAction.get(OpenAction.class),
-            new ExportCollectionAction(),
+            new ExportWizardAction(getLookup(), properties),
             new RenameCollectionAction(),
             new DropCollectionAction()
         };
@@ -211,24 +215,6 @@ final class CollectionNode extends AbstractNode {
                         new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE));
                 }
             }
-        }
-    }
-
-    public class ExportCollectionAction extends AbstractAction {
-
-        public ExportCollectionAction() {
-            super(Bundle.ACTION_Export());
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            ExportPanel.showDialog(
-                getLookup().lookup(DB.class), 
-                collection.getName(), 
-                null, 
-                null, 
-                null);
-
         }
     }
 }

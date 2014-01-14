@@ -34,6 +34,8 @@ import org.netbeans.modules.nbmongo.util.Json;
 import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.JComboBox;
 import javax.swing.JEditorPane;
 import javax.swing.ListSelectionModel;
@@ -42,6 +44,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.EditorKit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.modules.nbmongo.ui.wizards.ExportWizardAction;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -605,12 +608,12 @@ public final class CollectionViewTopComponent extends TopComponent {
     }//GEN-LAST:event_refreshButtonActionPerformed
 
     private void exportButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportButtonActionPerformed
-        ExportPanel.showDialog(
-                getLookup().lookup(DB.class), 
-                collectionInfo.getName(), 
-                queryEditor.getCriteria(), 
-                queryEditor.getProjection(), 
-                queryEditor.getSort());
+        final Map<String, Object> properties = new HashMap<>();
+        properties.put(ExportWizardAction.PROP_COLLECTION, collectionInfo.getName());
+        properties.put("criteria", queryEditor.getCriteria());
+        properties.put("projection", queryEditor.getProjection());
+        properties.put("sort", queryEditor.getSort());
+        new ExportWizardAction(getLookup(), properties).actionPerformed(evt);
     }//GEN-LAST:event_exportButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
