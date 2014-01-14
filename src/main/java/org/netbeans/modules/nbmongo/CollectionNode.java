@@ -26,6 +26,7 @@ package org.netbeans.modules.nbmongo;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.MongoException;
+import java.awt.Image;
 import org.netbeans.modules.nbmongo.util.TopComponentUtils;
 import org.netbeans.modules.nbmongo.ui.CollectionViewTopComponent;
 import java.awt.event.ActionEvent;
@@ -33,7 +34,9 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.nbmongo.ui.wizards.ExportWizardAction;
+import org.netbeans.modules.nbmongo.util.SystemCollectionPredicate;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.OpenAction;
@@ -41,6 +44,7 @@ import org.openide.cookies.OpenCookie;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Sheet;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.actions.SystemAction;
@@ -53,6 +57,7 @@ import org.openide.windows.TopComponent;
 /**
  *
  * @author Tim Boudreau
+ * @author Yann D'Isanto
  */
 @Messages({
     "ACTION_DropCollection=Drop Collection",
@@ -61,7 +66,19 @@ import org.openide.windows.TopComponent;
     "dropCollectionConfirmText=Permanently drop ''{0}'' collection?",
     "# {0} - collection name",
     "renameCollectionText=rename ''{0}'' to:"})
-final class CollectionNode extends AbstractNode {
+public final class CollectionNode extends AbstractNode {
+
+    @StaticResource
+    private static final String COLLECTION_ICON_PATH
+        = "org/netbeans/modules/nbmongo/images/table.gif"; //NOI18N
+
+    @StaticResource
+    private static final String SYSTEM_COLLECTION_ICON_PATH
+        = "org/netbeans/modules/nbmongo/images/tableSystem.gif"; //NOI18N
+
+    public static final Image COLLECTION_ICON = ImageUtilities.loadImage(COLLECTION_ICON_PATH);
+
+    public static final Image SYSTEM_COLLECTION_ICON = ImageUtilities.loadImage(SYSTEM_COLLECTION_ICON_PATH);
 
     private final Lookup lookup;
 
@@ -93,12 +110,20 @@ final class CollectionNode extends AbstractNode {
             }
         });
         System.out.println("db for collection node: " + getLookup().lookup(DB.class));
-        setIconBaseWithExtension(MongoServicesNode.MONGO_COLLECTION);
     }
 
     @Override
     public String getName() {
         return collection.getName();
+    }
+
+    @Override
+    public Image getIcon(int ignored) {
+        if (SystemCollectionPredicate.get().eval(collection.getName())) {
+            return SYSTEM_COLLECTION_ICON;
+        } else {
+            return COLLECTION_ICON;
+        }
     }
 
     @Override
@@ -117,11 +142,17 @@ final class CollectionNode extends AbstractNode {
     public Action[] getActions(boolean context) {
         final Map<String, Object> properties = new HashMap<>();
         properties.put(ExportWizardAction.PROP_COLLECTION, collection.getName());
+        final Action renameAction = new RenameCollectionAction();
+        final Action dropAction = new DropCollectionAction();
+        if (SystemCollectionPredicate.get().eval(collection.getName())) {
+            renameAction.setEnabled(false);
+            dropAction.setEnabled(false);
+        }
         return new Action[]{
             SystemAction.get(OpenAction.class),
             new ExportWizardAction(getLookup(), properties),
-            new RenameCollectionAction(),
-            new DropCollectionAction()
+            renameAction,
+            dropAction
         };
     }
 

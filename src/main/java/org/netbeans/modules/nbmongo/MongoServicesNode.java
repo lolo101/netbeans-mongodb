@@ -48,6 +48,7 @@ import org.openide.util.NbPreferences;
  * The services tab node for MongoDB connections.
  *
  * @author Tim Boudreau
+ * @author Yann D'Isanto
  */
 @ServicesTabNodeRegistration(displayName = "Mongo DB", iconResource = MONGO_ICON, position = 3, name = "mongodb")
 @Messages("MongoNodeName=Mongo DB")
@@ -56,19 +57,7 @@ public class MongoServicesNode extends AbstractNode {
     @StaticResource
     public static final String MONGO_ICON
             = "org/netbeans/modules/nbmongo/images/mongo-small.png"; //NOI18N
-    @StaticResource
-    public static final String MONGO_DB
-            = "org/netbeans/modules/nbmongo/images/mongo-db.png"; //NOI18N
-    @StaticResource
-    public static final String MONGO_COLLECTION
-            = "org/netbeans/modules/nbmongo/images/mongo-collection.png"; //NOI18N
-    @StaticResource
-    public static final String MONGO_CONNECTION
-            = "org/netbeans/modules/nbmongo/images/mongo-connection.png"; //NOI18N
-    @StaticResource
-    public static final String MONGO_ITEM
-            = "org/netbeans/modules/nbmongo/images/mongo-item.png"; //NOI18N
-
+    
     private final ConnectionChildFactory factory;
 
     public MongoServicesNode() {

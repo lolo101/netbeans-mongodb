@@ -56,13 +56,26 @@ import org.openide.windows.TopComponent;
 /**
  *
  * @author Tim Boudreau
+ * @author Yann D'Isanto
  */
 @NbBundle.Messages("ACTION_Delete=Delete")
 class OneConnectionNode extends AbstractNode implements PropertyChangeListener {
 
-    private MongoClient mongo;
+    @StaticResource
+    private static final String CONNECTION_ICON_PATH = 
+        "org/netbeans/modules/nbmongo/images/connection.gif"; //NOI18N
+    
+    @StaticResource
+    private static final String CONNECTION_DISCONNECTED_ICON_PATH
+            = "org/netbeans/modules/nbmongo/images/connectionDisconnected.gif"; //NOI18N
 
-    private static final Logger logger = Logger.getLogger(OneConnectionNode.class.getName());
+    private static final Image CONNECTION_ICON = ImageUtilities.loadImage(CONNECTION_ICON_PATH); //NOI18N
+
+    private static final Image CONNECTION_DISCONNECTED_ICON = ImageUtilities.loadImage(CONNECTION_DISCONNECTED_ICON_PATH);
+    
+    private static final Logger LOG = Logger.getLogger(OneConnectionNode.class.getName());
+    
+    private MongoClient mongo;
 
     private final Object lock = new Object();
 
@@ -75,9 +88,6 @@ class OneConnectionNode extends AbstractNode implements PropertyChangeListener {
     private final ConnectionConverter converter = new ConnectionConverter();
 
     private volatile boolean problem;
-
-    @StaticResource
-    private final static String ERROR_BADGE = "org/netbeans/modules/nbmongo/images/error.png"; //NOI18N
 
     private OneConnectionChildren childFactory;
 
@@ -101,7 +111,7 @@ class OneConnectionNode extends AbstractNode implements PropertyChangeListener {
         content.add(connection, converter);
         setDisplayName(connection.getDisplayName());
         setName(connection.id());
-        setIconBaseWithExtension(MongoServicesNode.MONGO_CONNECTION);
+//        setIconBaseWithExtension(CONNECTION_ICON);
         connection.addPropertyChangeListener(WeakListeners.propertyChange(this, connection));
     }
 
@@ -115,12 +125,13 @@ class OneConnectionNode extends AbstractNode implements PropertyChangeListener {
 
     @Override
     public Image getIcon(int ignored) {
-        Image result = super.getIcon(ignored);
-        if (isProblem()) {
-            Image errorBadge = ImageUtilities.loadImage(ERROR_BADGE);
-            result = ImageUtilities.mergeImages(result, errorBadge, 0, 0);
-        }
-        return result;
+//        Image result = super.getIcon(ignored);
+//        if (isProblem()) {
+//            Image errorBadge = ImageUtilities.loadImage(ERROR_BADGE);
+//            result = ImageUtilities.mergeImages(result, errorBadge, 0, 0);
+//        }
+//        return result;
+        return isProblem() ? CONNECTION_DISCONNECTED_ICON : CONNECTION_ICON;
     }
 
     @Override
@@ -170,7 +181,7 @@ class OneConnectionNode extends AbstractNode implements PropertyChangeListener {
             if (logMessage == null) {
                 logMessage = "Problem connecting to " + connection;
             }
-            logger.log(Level.FINE, logMessage, ex); //NOI18N
+            LOG.log(Level.FINE, logMessage, ex); //NOI18N
             String msg = ex.getLocalizedMessage();
             if (msg != null) {
                 setShortDescription(msg);
@@ -193,7 +204,7 @@ class OneConnectionNode extends AbstractNode implements PropertyChangeListener {
                 }
             } catch (Exception e) {
                 disconnecter.close();
-                logger.log(Level.INFO, "Reconnecting", e);
+                LOG.log(Level.INFO, "Reconnecting", e);
             } finally {
                 ConnectionInfo info = getLookup().lookup(ConnectionInfo.class);
                 content.remove(info, converter);

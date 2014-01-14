@@ -43,7 +43,9 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.EditorKit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.modules.nbmongo.CollectionNode;
 import org.netbeans.modules.nbmongo.ui.wizards.ExportWizardAction;
+import org.netbeans.modules.nbmongo.util.SystemCollectionPredicate;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -56,7 +58,6 @@ import org.openide.windows.TopComponent;
  */
 @TopComponent.Description(
     preferredID = "CollectionViewTopComponent",
-    iconBase = "org/netbeans/modules/nbmongo/images/mongo-collection.png",
     persistenceType = TopComponent.PERSISTENCE_ALWAYS)
 @Messages({
     "addDocumentTitle=Add new document",
@@ -71,6 +72,8 @@ public final class CollectionViewTopComponent extends TopComponent {
     private static final Integer[] ITEMS_PER_PAGE_VALUES = {10, 20, 50, 100};
 
     private final CollectionInfo collectionInfo;
+    
+    private final boolean isSystemCollection;
 
     private final DocumentsTableModel tableModel;
 
@@ -81,9 +84,13 @@ public final class CollectionViewTopComponent extends TopComponent {
     public CollectionViewTopComponent(CollectionInfo collectionInfo, Lookup lookup) {
         super(lookup);
         this.collectionInfo = collectionInfo;
+        isSystemCollection = SystemCollectionPredicate.get().eval(collectionInfo.getName());
         initComponents();
         setName(collectionInfo.getName());
-        nameValueLabel.setText(collectionInfo.getName());
+        setIcon(isSystemCollection
+            ? CollectionNode.SYSTEM_COLLECTION_ICON
+            : CollectionNode.COLLECTION_ICON);
+
         final DBCollection dbCollection = lookup.lookup(DBCollection.class);
         tableModel = new DocumentsTableModel(dbCollection);
         documentsTable.setModel(tableModel);
@@ -150,8 +157,9 @@ public final class CollectionViewTopComponent extends TopComponent {
             @Override
             public void run() {
                 boolean itemSelected = documentsTable.getSelectedRow() > -1;
-                deleteButton.setEnabled(itemSelected);
-                editButton.setEnabled(itemSelected);
+                addButton.setEnabled(isSystemCollection == false);
+                deleteButton.setEnabled(itemSelected && isSystemCollection == false);
+                editButton.setEnabled(itemSelected && isSystemCollection == false);
             }
         });
     }
@@ -204,8 +212,6 @@ public final class CollectionViewTopComponent extends TopComponent {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        nameLabel = new javax.swing.JLabel();
-        nameValueLabel = new javax.swing.JLabel();
         itemsPerPageLabel = new javax.swing.JLabel();
         itemsPerPageComboBox = new JComboBox<>(ITEMS_PER_PAGE_VALUES);
         lastButton = new javax.swing.JButton();
@@ -231,10 +237,6 @@ public final class CollectionViewTopComponent extends TopComponent {
         exportButton = new javax.swing.JButton();
         tableScrollPane = new javax.swing.JScrollPane();
         documentsTable = new javax.swing.JTable();
-
-        org.openide.awt.Mnemonics.setLocalizedText(nameLabel, org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.nameLabel.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(nameValueLabel, org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.nameValueLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(itemsPerPageLabel, org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.itemsPerPageLabel.text")); // NOI18N
 
@@ -449,23 +451,15 @@ public final class CollectionViewTopComponent extends TopComponent {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(editButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(deleteButton))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(nameLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(nameValueLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .addComponent(deleteButton)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(nameLabel)
-                    .addComponent(nameValueLabel))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(queryPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(14, 14, 14)
+                .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(itemsPerPageLabel)
                     .addComponent(itemsPerPageComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -474,7 +468,7 @@ public final class CollectionViewTopComponent extends TopComponent {
                     .addComponent(editButton)
                     .addComponent(refreshButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(tableScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 213, Short.MAX_VALUE)
+                .addComponent(tableScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 109, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lastButton)
@@ -630,8 +624,6 @@ public final class CollectionViewTopComponent extends TopComponent {
     private javax.swing.JLabel itemsPerPageLabel;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JButton lastButton;
-    private javax.swing.JLabel nameLabel;
-    private javax.swing.JLabel nameValueLabel;
     private javax.swing.JButton nextButton;
     private javax.swing.JLabel pageCountLabel;
     private javax.swing.JLabel pageLabel;
