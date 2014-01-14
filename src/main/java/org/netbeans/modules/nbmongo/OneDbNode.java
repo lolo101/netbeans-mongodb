@@ -32,6 +32,8 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.annotations.common.StaticResource;
+import org.netbeans.modules.nbmongo.ui.CollectionNameValidator;
+import org.netbeans.modules.nbmongo.ui.ValidatingInputLine;
 import org.netbeans.modules.nbmongo.ui.wizards.ExportWizardAction;
 import org.netbeans.modules.nbmongo.ui.wizards.ImportWizardAction;
 import org.openide.DialogDisplayer;
@@ -57,7 +59,6 @@ import org.openide.util.lookup.ProxyLookup;
     "ACTION_AddCollection=Add Collection",
     "ACTION_Export=Export",
     "ACTION_Import=Import",
-    "addCollectionTitle=Add Collection",
     "addCollectionText=Collection name:",
     "# {0} - collection name",
     "collectionAlreadyExists=Collection ''{0}'' already exists"})
@@ -65,8 +66,8 @@ public class OneDbNode extends AbstractNode {
 
     @StaticResource
     private static final String DB_ICON_PATH
-            = "org/netbeans/modules/nbmongo/images/database.gif"; //NOI18N
-    
+        = "org/netbeans/modules/nbmongo/images/database.gif"; //NOI18N
+
     private final OneDBChildren childFactory;
 
     private final Lookup lookup;
@@ -161,35 +162,23 @@ public class OneDbNode extends AbstractNode {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            final NotifyDescriptor.InputLine input = new NotifyDescriptor.InputLine(
+            final NotifyDescriptor.InputLine input = new ValidatingInputLine(
                 Bundle.addCollectionText(),
-                Bundle.addCollectionTitle());
-            boolean doLoop = true;
-            while (doLoop) {
-                doLoop = false;
-                final Object dlgResult = DialogDisplayer.getDefault().notify(input);
-                if (dlgResult.equals(NotifyDescriptor.OK_OPTION)) {
-
-                    final String collectionName = input.getInputText();
-                    final DB db = lookup.lookup(DB.class);
-                    final DBObject collectionOptions = new BasicDBObject("capped", false);
-                    try {
-                        if (db.getCollectionNames().contains(collectionName)) {
-                            DialogDisplayer.getDefault().notify(
-                                new NotifyDescriptor.Message(
-                                    Bundle.collectionAlreadyExists(collectionName),
-                                    NotifyDescriptor.ERROR_MESSAGE));
-                            doLoop = true;
-                        } else {
-                            db.createCollection(collectionName, collectionOptions);
-                            childFactory.refresh();
-                        }
-                    } catch (MongoException ex) {
-                        DialogDisplayer.getDefault().notify(
-                            new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE));
-                    }
-
+                Bundle.ACTION_AddCollection(), 
+                new CollectionNameValidator(lookup));
+            final Object dlgResult = DialogDisplayer.getDefault().notify(input);
+            if (dlgResult.equals(NotifyDescriptor.OK_OPTION)) {
+                final String collectionName = input.getInputText().trim();
+                final DB db = lookup.lookup(DB.class);
+                final DBObject collectionOptions = new BasicDBObject("capped", false);
+                try {
+                    db.createCollection(collectionName, collectionOptions);
+                    childFactory.refresh();
+                } catch (MongoException ex) {
+                    DialogDisplayer.getDefault().notify(
+                        new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE));
                 }
+
             }
         }
     }

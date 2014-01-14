@@ -35,6 +35,8 @@ import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.annotations.common.StaticResource;
+import org.netbeans.modules.nbmongo.ui.CollectionNameValidator;
+import org.netbeans.modules.nbmongo.ui.ValidatingInputLine;
 import org.netbeans.modules.nbmongo.ui.wizards.ExportWizardAction;
 import org.netbeans.modules.nbmongo.util.SystemCollectionPredicate;
 import org.openide.DialogDisplayer;
@@ -109,7 +111,6 @@ public final class CollectionNode extends AbstractNode {
                 tc.requestActive();
             }
         });
-        System.out.println("db for collection node: " + getLookup().lookup(DB.class));
     }
 
     @Override
@@ -222,24 +223,15 @@ public final class CollectionNode extends AbstractNode {
         @Override
         public void actionPerformed(ActionEvent e) {
             final CollectionInfo ci = lookup.lookup(CollectionInfo.class);
-            final NotifyDescriptor.InputLine input = new NotifyDescriptor.InputLine(
+            final NotifyDescriptor.InputLine input = new ValidatingInputLine(
                 Bundle.renameCollectionText(ci.getName()),
-                Bundle.ACTION_RenameCollection(),
-                NotifyDescriptor.OK_CANCEL_OPTION,
-                NotifyDescriptor.PLAIN_MESSAGE);
+                Bundle.ACTION_RenameCollection(), 
+                new CollectionNameValidator(lookup));
             input.setInputText(ci.getName());
             final Object dlgResult = DialogDisplayer.getDefault().notify(input);
             if (dlgResult.equals(NotifyDescriptor.OK_OPTION)) {
-                final String newName = input.getInputText().trim();
-                if (newName.isEmpty()) {
-                    // error?
-                    return;
-                }
-                if (newName.equals(ci.getName())) {
-                    return;
-                }
                 try {
-                    lookup.lookup(DBCollection.class).rename(newName);
+                    lookup.lookup(DBCollection.class).rename(input.getInputText().trim());
                     ((OneDbNode) getParentNode()).refreshChildren();
                 } catch (MongoException ex) {
                     DialogDisplayer.getDefault().notify(
