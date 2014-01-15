@@ -25,12 +25,13 @@ package org.netbeans.modules.nbmongo;
 
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
+import com.mongodb.MongoException;
 import org.netbeans.modules.nbmongo.util.TopComponentUtils;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.net.ConnectException;
+import java.net.UnknownHostException;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -44,7 +45,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.AbstractLookup;
@@ -58,23 +59,27 @@ import org.openide.windows.TopComponent;
  * @author Tim Boudreau
  * @author Yann D'Isanto
  */
-@NbBundle.Messages("ACTION_Delete=Delete")
+@Messages({
+    "ACTION_Delete=Delete",
+    "ACTION_Connect=Connect",
+    "ACTION_Disconnect=Disconnect"
+})
 class OneConnectionNode extends AbstractNode implements PropertyChangeListener {
 
     @StaticResource
-    private static final String CONNECTION_ICON_PATH = 
-        "org/netbeans/modules/nbmongo/images/connection.gif"; //NOI18N
-    
+    private static final String CONNECTION_ICON_PATH
+        = "org/netbeans/modules/nbmongo/images/connection.gif"; //NOI18N
+
     @StaticResource
     private static final String CONNECTION_DISCONNECTED_ICON_PATH
-            = "org/netbeans/modules/nbmongo/images/connectionDisconnected.gif"; //NOI18N
+        = "org/netbeans/modules/nbmongo/images/connectionDisconnected.gif"; //NOI18N
 
     private static final Image CONNECTION_ICON = ImageUtilities.loadImage(CONNECTION_ICON_PATH); //NOI18N
 
     private static final Image CONNECTION_DISCONNECTED_ICON = ImageUtilities.loadImage(CONNECTION_DISCONNECTED_ICON_PATH);
-    
+
     private static final Logger LOG = Logger.getLogger(OneConnectionNode.class.getName());
-    
+
     private MongoClient mongo;
 
     private final Object lock = new Object();
@@ -111,12 +116,15 @@ class OneConnectionNode extends AbstractNode implements PropertyChangeListener {
         content.add(connection, converter);
         setDisplayName(connection.getDisplayName());
         setName(connection.id());
-//        setIconBaseWithExtension(CONNECTION_ICON);
         connection.addPropertyChangeListener(WeakListeners.propertyChange(this, connection));
     }
 
     private void setProblem(boolean problem) {
         this.problem = problem;
+    }
+
+    private boolean isConnected() {
+        return mongo != null && mongo.getConnector().isOpen();
     }
 
     private boolean isProblem() {
@@ -131,7 +139,9 @@ class OneConnectionNode extends AbstractNode implements PropertyChangeListener {
 //            result = ImageUtilities.mergeImages(result, errorBadge, 0, 0);
 //        }
 //        return result;
-        return isProblem() ? CONNECTION_DISCONNECTED_ICON : CONNECTION_ICON;
+        return isConnected()
+            ? CONNECTION_ICON
+            : CONNECTION_DISCONNECTED_ICON;
     }
 
     @Override
@@ -141,36 +151,45 @@ class OneConnectionNode extends AbstractNode implements PropertyChangeListener {
 
     @Override
     public Action[] getActions(boolean ignored) {
-        Action[] orig = super.getActions(ignored);
-        Action[] nue = new Action[orig.length + 3];
+        final Action[] orig = super.getActions(ignored);
+        final Action[] nue = new Action[orig.length + 3];
         System.arraycopy(orig, 0, nue, 3, orig.length);
-        nue[0] = new DisconnectAction(getLookup());
-        nue[1] = new RefreshChildrenAction(childFactory);
+        final Action refreshAction = new RefreshChildrenAction(childFactory);
+        refreshAction.setEnabled(isConnected());
+        nue[0] = isConnected() ? new DisconnectAction() : new ConnectAction();
+        nue[1] = refreshAction;
         nue[2] = new DeleteAction();
         return nue;
     }
 
+    @Override
+    public Action getPreferredAction() {
+        return isConnected() ? null : new ConnectAction();
+    }
+    
     private MongoClient connect(boolean create) {
         synchronized (lock) {
+            System.out.println("connect: create=" + create);
             if (create && (mongo == null || !mongo.getConnector().isOpen())) {
-                ConnectionInfo connection = getLookup().lookup(ConnectionInfo.class);
+                final ConnectionInfo connection = getLookup().lookup(ConnectionInfo.class);
                 try {
                     mongo = new MongoClient(new MongoClientURI(connection.getMongoURI()));
                     content.add(disconnecter);
                     setProblem(false);
-                } catch (Exception ex) {
+                } catch (MongoException ex) {
                     problems.handleException(ex, null);
-                    if (ex instanceof ConnectException) {
-                        // replaces the children so we can try again
-                        disconnecter.close();
-                    }
+                } catch (UnknownHostException ex) {
+                    problems.handleException(ex, null);
+                    // replaces the children so we can try again
+                    disconnecter.close();
                 }
+                fireIconChange();
             }
         }
         return mongo;
     }
 
-    private class Problems extends ConnectionProblems {
+    private final class Problems extends ConnectionProblems {
 
         @Override
         public void handleException(Exception ex, String logMessage) {
@@ -240,12 +259,10 @@ class OneConnectionNode extends AbstractNode implements PropertyChangeListener {
         }
     }
 
-    private class Disconnecter extends MongoDisconnect implements Runnable {
+    private final class Disconnecter extends MongoDisconnect implements Runnable {
 
         @Override
         public void close() {
-            childFactory = new OneConnectionChildren(getLookup());
-            setChildren(Children.create(childFactory, true));
             RequestProcessor.getDefault().post(this);
             setProblem(false);
             setShortDescription("");
@@ -267,14 +284,16 @@ class OneConnectionNode extends AbstractNode implements PropertyChangeListener {
                 content.remove(info, converter);
                 content.add(info, converter);
             }
+            fireIconChange();
+            childFactory.refresh();
         }
     }
 
-    private class ConnectionConverter implements InstanceContent.Convertor<ConnectionInfo, MongoClient> {
+    private final class ConnectionConverter implements InstanceContent.Convertor<ConnectionInfo, MongoClient> {
 
         @Override
         public MongoClient convert(ConnectionInfo t) {
-            return connect(true);
+            return connect(false);
         }
 
         @Override
@@ -303,7 +322,7 @@ class OneConnectionNode extends AbstractNode implements PropertyChangeListener {
         public void actionPerformed(ActionEvent e) {
             final ConnectionInfo info = getLookup().lookup(ConnectionInfo.class);
             try {
-                // TODO: disconnect
+                disconnecter.close();
                 info.getPreferences().removeNode();
                 for (TopComponent topComponent : TopComponentUtils.findAll(info)) {
                     topComponent.close();
@@ -316,4 +335,30 @@ class OneConnectionNode extends AbstractNode implements PropertyChangeListener {
         }
     }
 
+    private final class ConnectAction extends AbstractAction {
+
+        public ConnectAction() {
+            super(Bundle.ACTION_Connect());
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            connect(true);
+            childFactory.refresh();
+        }
+
+    }
+    
+    private final class DisconnectAction extends AbstractAction {
+
+        public DisconnectAction() {
+            super(Bundle.ACTION_Disconnect());
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            disconnecter.close();
+        }
+
+    }
 }

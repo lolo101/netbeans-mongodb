@@ -37,36 +37,24 @@ import org.openide.util.Lookup;
 final class OneConnectionChildren extends RefreshableChildFactory<DbInfo> {
 
     private final Lookup lookup;
-    private MongoClient client;
-    private ConnectionInfo connectionInfo;
 
     public OneConnectionChildren(Lookup lookup) {
         this.lookup = lookup;
     }
 
     @Override
-    protected void addNotify() {
-        client = lookup.lookup(MongoClient.class);
-        connectionInfo = lookup.lookup(ConnectionInfo.class);
-    }
-
-    @Override
-    protected void removeNotify() {
-        if (client != null) {
-            client.close();
-        }
-    }
-
-    @Override
     protected boolean createKeys(final List<DbInfo> list) {
-        ConnectionProblems problems = lookup.lookup(ConnectionProblems.class);
-        if (client != null) {
+        final ConnectionProblems problems = lookup.lookup(ConnectionProblems.class);
+        final ConnectionInfo connectionInfo = lookup.lookup(ConnectionInfo.class);
+        final MongoClient client = lookup.lookup(MongoClient.class);
+
+        if (client != null && client.getConnector().isOpen()) {
             problems.invoke(new Callable<Void>() {
                 @Override
                 public Void call() throws Exception {
                     final MongoClientURI uri = new MongoClientURI(connectionInfo.getMongoURI());
                     final String connectionDBName = uri.getDatabase();
-                    if(connectionDBName != null) {
+                    if (connectionDBName != null) {
                         list.add(new DbInfo(lookup, connectionDBName));
                     } else {
                         for (String dbName : client.getDatabaseNames()) {
