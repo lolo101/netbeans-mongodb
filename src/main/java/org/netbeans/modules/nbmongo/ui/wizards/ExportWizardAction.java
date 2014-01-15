@@ -28,10 +28,6 @@ import com.mongodb.DBObject;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-import java.io.Writer;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -41,10 +37,11 @@ import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
 import org.netbeans.modules.nbmongo.util.ExportProperties;
+import org.netbeans.modules.nbmongo.util.ExportPropertiesBuilder;
+import org.netbeans.modules.nbmongo.util.ExportTask;
 import org.netbeans.modules.nbmongo.util.Exporter;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 
@@ -52,21 +49,27 @@ import org.openide.util.NbBundle.Messages;
 public final class ExportWizardAction extends AbstractAction {
 
     public static final String PROP_COLLECTION = "collection";
+
     public static final String PROP_CRITERIA = "criteria";
+
     public static final String PROP_PROJECTION = "projection";
+
     public static final String PROP_SORT = "sort";
+
     public static final String PROP_FILE = "file";
+
     public static final String PROP_ENCODING = "encoding";
+
     public static final String PROP_JSON_ARRAY = "jsonArray";
-    
+
     private final Lookup lookup;
-    
+
     private final Map<String, Object> defaultProperties;
 
     public ExportWizardAction(Lookup lookup) {
         this(lookup, new HashMap<String, Object>());
     }
-    
+
     public ExportWizardAction(Lookup lookup, Map<String, Object> defaultProperties) {
         super(Bundle.ACTION_Export());
         this.lookup = lookup;
@@ -96,26 +99,23 @@ public final class ExportWizardAction extends AbstractAction {
         for (Map.Entry<String, Object> entry : defaultProperties.entrySet()) {
             wiz.putProperty(entry.getKey(), entry.getValue());
         }
-        
+
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
         wiz.setTitleFormat(new MessageFormat("{0}"));
         wiz.setTitle(Bundle.ACTION_Export());
         if (DialogDisplayer.getDefault().notify(wiz) == WizardDescriptor.FINISH_OPTION) {
-            final ExportProperties properties = new ExportProperties()
+            final ExportProperties properties = new ExportPropertiesBuilder()
                 .collection((String) wiz.getProperty(PROP_COLLECTION))
                 .criteria((DBObject) wiz.getProperty(PROP_CRITERIA))
                 .projection((DBObject) wiz.getProperty(PROP_PROJECTION))
                 .sort((DBObject) wiz.getProperty(PROP_SORT))
-                .jsonArray((Boolean) wiz.getProperty(PROP_JSON_ARRAY));
-            final File file = (File) wiz.getProperty(PROP_FILE);
-            final Charset encoding = (Charset) wiz.getProperty(PROP_ENCODING);
-            try (Writer writer = new PrintWriter(file, encoding.name())) {
-                new Exporter(lookup.lookup(DB.class), properties, writer).run();
-            } catch (UnsupportedEncodingException ex) {
-                throw new AssertionError();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+                .jsonArray((Boolean) wiz.getProperty(PROP_JSON_ARRAY))
+                .file((File) wiz.getProperty(PROP_FILE))
+                .encoding((Charset) wiz.getProperty(PROP_ENCODING))
+                .build();
+            new ExportTask(
+                new Exporter(lookup.lookup(DB.class), properties))
+                .run();
         }
     }
 

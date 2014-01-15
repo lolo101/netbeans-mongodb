@@ -27,12 +27,6 @@ import com.mongodb.DB;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -40,10 +34,11 @@ import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
 import org.netbeans.modules.nbmongo.util.ImportProperties;
+import org.netbeans.modules.nbmongo.util.ImportPropertiesBuilder;
+import org.netbeans.modules.nbmongo.util.ImportTask;
 import org.netbeans.modules.nbmongo.util.Importer;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 
@@ -59,7 +54,7 @@ public final class ImportWizardAction extends AbstractAction {
     public static final String PROP_DROP = "drop";
 
     private final Lookup lookup;
-    
+
     private final Runnable onSuccess;
 
     public ImportWizardAction(Lookup lookup, Runnable onSuccess) {
@@ -91,20 +86,15 @@ public final class ImportWizardAction extends AbstractAction {
         wiz.setTitleFormat(new MessageFormat("{0}"));
         wiz.setTitle(Bundle.ACTION_Import());
         if (DialogDisplayer.getDefault().notify(wiz) == WizardDescriptor.FINISH_OPTION) {
-            final File file = (File) wiz.getProperty(PROP_FILE);
-            final Charset encoding = (Charset) wiz.getProperty(PROP_ENCODING);
-            final ImportProperties properties = new ImportProperties()
+            final ImportProperties properties = new ImportPropertiesBuilder()
                 .collection((String) wiz.getProperty(PROP_COLLECTION))
-                .drop((Boolean) wiz.getProperty(PROP_DROP));
-            try (InputStream input = new FileInputStream(file)) {
-                final Reader reader = new InputStreamReader(input, encoding.name());
-                new Importer(lookup.lookup(DB.class), properties, reader).run();
-                onSuccess.run();
-            } catch (UnsupportedEncodingException ex) {
-                throw new AssertionError();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+                .drop((Boolean) wiz.getProperty(PROP_DROP))
+                .file((File) wiz.getProperty(PROP_FILE))
+                .encoding((Charset) wiz.getProperty(PROP_ENCODING))
+                .build();
+            new ImportTask(
+                new Importer(lookup.lookup(DB.class), properties))
+                .run();
         }
     }
 

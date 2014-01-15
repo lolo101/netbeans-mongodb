@@ -21,48 +21,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 package org.netbeans.modules.nbmongo.util;
 
-import java.io.File;
-import java.nio.charset.Charset;
-import java.util.Objects;
+import org.openide.util.NbBundle.Messages;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Yann D'Isanto
  */
-public final class ImportProperties {
-    
-    private final String collection;
-    
-    private final boolean drop;
+@Messages({
+    "# {0} - collection name",
+    "TASK_export_label=\"{0}\" collection export"
+})
+public final class ExportTask extends AbstractTask<Exporter> {
 
-    private final File file;
-    
-    private final Charset encoding;
+    private static final RequestProcessor REQUEST_PROCESSOR = new RequestProcessor("export tasks", 1, true);
 
-    public ImportProperties(String collection, boolean drop, File file, Charset encoding) {
-        this.collection = Objects.requireNonNull(collection);
-        this.drop = drop;
-        this.file = Objects.requireNonNull(file);
-        this.encoding = Objects.requireNonNull(encoding);
+    public ExportTask(Exporter exporter) {
+        super(REQUEST_PROCESSOR, exporter);
     }
 
-    public String getCollection() {
-        return collection;
-    }
-
-    public boolean isDrop() {
-        return drop;
-    }
-
-    public File getFile() {
-        return file;
-    }
-
-    public Charset getEncoding() {
-        return encoding;
+    @Override
+    public String getLabel() {
+        return Bundle.TASK_export_label(getRunnable().getProperties().getCollection());
     }
 
 }

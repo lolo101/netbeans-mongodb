@@ -28,7 +28,10 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,38 +47,45 @@ public final class Importer implements Runnable {
 
     private final ImportProperties properties;
 
-    private final Reader reader;
-
-    public Importer(DB db, ImportProperties properties, Reader reader) {
+    public Importer(DB db, ImportProperties properties) {
         this.db = db;
         this.properties = properties;
-        this.reader = reader;
     }
-    
 
     @Override
     public void run() {
-        final DBCollection collection = db.getCollection(properties.getCollection());
-        final BufferedReader br = new BufferedReader(reader);
-        try {
-            String line;
-            while ((line = br.readLine()) != null) {
-                collection.insert(parseLine(line));
-            }
+        try (InputStream input = new FileInputStream(properties.getFile())) {
+            importFrom(new InputStreamReader(input, properties.getEncoding().name()));
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
     }
-    
+
+    private void importFrom(Reader reader) throws IOException {
+        final DBCollection collection = db.getCollection(properties.getCollection());
+        final BufferedReader br = new BufferedReader(reader);
+        String line;
+        while ((line = br.readLine()) != null) {
+            if(Thread.interrupted()) {
+                return;
+            }
+            collection.insert(parseLine(line));
+        }
+    }
+
     @SuppressWarnings("unchecked")
     private List<DBObject> parseLine(String line) {
         final Object obj = JSON.parse(line);
-        if(obj instanceof List) {
+        if (obj instanceof List) {
             return (List<DBObject>) obj;
         }
         final List<DBObject> list = new ArrayList<>(1);
         list.add((DBObject) obj);
         return list;
+    }
+
+    public ImportProperties getProperties() {
+        return properties;
     }
 
 }

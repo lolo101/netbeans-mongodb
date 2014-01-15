@@ -23,67 +23,52 @@
  */
 package org.netbeans.modules.nbmongo.util;
 
-import com.mongodb.DBObject;
 import java.io.File;
 import java.nio.charset.Charset;
-import java.util.Objects;
 
 /**
  *
  * @author Yann D'Isanto
  */
-public final class ExportProperties {
+public final class ImportPropertiesBuilder {
 
-    private final String collection;
+    private String collection;
 
-    private final DBObject criteria;
+    private boolean drop;
 
-    private final DBObject projection;
+    private File file;
 
-    private final DBObject sort;
+    private Charset encoding;
 
-    private final boolean jsonArray;
-    
-    private final File file;
-    
-    private final Charset encoding;
-
-    public ExportProperties(String collection, DBObject criteria, DBObject projection, DBObject sort, boolean jsonArray, File file, Charset encoding) {
-        this.collection = Objects.requireNonNull(collection);
-        this.criteria = criteria;
-        this.projection = projection;
-        this.sort = sort;
-        this.jsonArray = jsonArray;
-        this.file = Objects.requireNonNull(file);
-        this.encoding = Objects.requireNonNull(encoding);
+    public ImportPropertiesBuilder() {
+        this(null);
     }
 
-    public String getCollection() {
-        return collection;
+    public ImportPropertiesBuilder(String collection) {
+        this.collection = collection;
     }
 
-    public DBObject getCriteria() {
-        return criteria;
+    public ImportPropertiesBuilder collection(String collection) {
+        this.collection = collection;
+        return this;
     }
 
-    public DBObject getProjection() {
-        return projection;
+    public ImportPropertiesBuilder drop(boolean drop) {
+        this.drop = drop;
+        return this;
     }
 
-    public DBObject getSort() {
-        return sort;
+    public ImportPropertiesBuilder file(File file) {
+        this.file = file;
+        return this;
     }
 
-    public boolean isJsonArray() {
-        return jsonArray;
+    public ImportPropertiesBuilder encoding(Charset encoding) {
+        this.encoding = encoding;
+        return this;
     }
 
-    public File getFile() {
-        return file;
+    public ImportProperties build() {
+        return new ImportProperties(collection, drop, file, encoding);
     }
-
-    public Charset getEncoding() {
-        return encoding;
-    }
-    
 }

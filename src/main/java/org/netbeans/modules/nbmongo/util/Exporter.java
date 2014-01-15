@@ -28,8 +28,14 @@ import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
+import java.io.File;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -41,17 +47,43 @@ public final class Exporter implements Runnable {
 
     private final ExportProperties properties;
 
-    private final Writer writer;
-
-    public Exporter(DB db, ExportProperties properties, Writer writer) {
+    public Exporter(DB db, ExportProperties properties) {
         this.db = db;
         this.properties = properties;
-        this.writer = writer;
     }
 
     @Override
     public void run() {
-        PrintWriter output = new PrintWriter(writer);
+        try {
+            exportTo(properties.getFile().toPath());
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    private void exportTo(Path exportPath) throws IOException {
+        final File exportFile = exportPath.toFile();
+        Path backupPath = null;
+        if (exportFile.exists()) {
+            backupPath = new File(exportFile.getName() + ".export-backup").toPath();
+            Files.move(exportPath, backupPath, StandardCopyOption.REPLACE_EXISTING);
+        }
+        try (Writer writer = new PrintWriter(exportFile, properties.getEncoding().name())) {
+            export(writer);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        if (Thread.interrupted()) {
+            if (backupPath != null) {
+                Files.move(backupPath, exportPath, StandardCopyOption.REPLACE_EXISTING);
+            } else {
+                Files.delete(exportPath);
+            }
+        }
+    }
+
+    private void export(Writer writer) {
+        final PrintWriter output = new PrintWriter(writer);
         final DBCollection collection = db.getCollection(properties.getCollection());
         final DBCursor cursor = collection.find(properties.getCriteria(), properties.getProjection());
         if (properties.getSort() != null) {
@@ -62,6 +94,9 @@ public final class Exporter implements Runnable {
         }
         boolean first = true;
         for (DBObject document : cursor) {
+            if (Thread.interrupted()) {
+                return;
+            }
             if (first) {
                 first = false;
             } else if (properties.isJsonArray()) {
@@ -79,4 +114,9 @@ public final class Exporter implements Runnable {
         }
         output.flush();
     }
+
+    public ExportProperties getProperties() {
+        return properties;
+    }
+
 }
