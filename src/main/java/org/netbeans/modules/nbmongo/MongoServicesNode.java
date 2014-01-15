@@ -25,7 +25,6 @@ package org.netbeans.modules.nbmongo;
 
 import org.netbeans.modules.nbmongo.ui.NewConnectionPanel;
 import com.mongodb.DBTCPConnector;
-import static org.netbeans.modules.nbmongo.MongoServicesNode.MONGO_ICON;
 import java.awt.event.ActionEvent;
 import java.lang.reflect.Field;
 import java.util.logging.Logger;
@@ -34,7 +33,6 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -50,14 +48,10 @@ import org.openide.util.NbPreferences;
  * @author Tim Boudreau
  * @author Yann D'Isanto
  */
-@ServicesTabNodeRegistration(displayName = "Mongo DB", iconResource = MONGO_ICON, position = 3, name = "mongodb")
+@ServicesTabNodeRegistration(displayName = "Mongo DB", iconResource = Images.MONGO_ICON_PATH, position = 3, name = "mongodb")
 @Messages("MongoNodeName=Mongo DB")
-public class MongoServicesNode extends AbstractNode {
+public final class MongoServicesNode extends AbstractNode {
 
-    @StaticResource
-    public static final String MONGO_ICON
-            = "org/netbeans/modules/nbmongo/images/mongo-small.png"; //NOI18N
-    
     private final ConnectionChildFactory factory;
 
     public MongoServicesNode() {
@@ -68,7 +62,7 @@ public class MongoServicesNode extends AbstractNode {
         super(Children.create(factory, false));
         this.factory = factory;
         setDisplayName(Bundle.MongoNodeName());
-        setIconBaseWithExtension(MONGO_ICON);
+        setIconBaseWithExtension(Images.MONGO_ICON_PATH);
     }
 
     static {

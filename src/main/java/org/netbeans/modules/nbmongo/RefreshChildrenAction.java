@@ -32,7 +32,7 @@ import org.openide.util.NbBundle.Messages;
  * @author Yann D'Isanto
  */
 @Messages("LBL_refresh=Refresh")
-public final class RefreshChildrenAction extends AbstractAction {
+final class RefreshChildrenAction extends AbstractAction {
 
     private final RefreshableChildFactory<?> childFactory;
 

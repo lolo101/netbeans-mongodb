@@ -38,13 +38,11 @@ import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.netbeans.api.annotations.common.StaticResource;
 import org.openide.awt.StatusDisplayer;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
@@ -64,19 +62,7 @@ import org.openide.windows.TopComponent;
     "ACTION_Connect=Connect",
     "ACTION_Disconnect=Disconnect"
 })
-class OneConnectionNode extends AbstractNode implements PropertyChangeListener {
-
-    @StaticResource
-    private static final String CONNECTION_ICON_PATH
-        = "org/netbeans/modules/nbmongo/images/connection.gif"; //NOI18N
-
-    @StaticResource
-    private static final String CONNECTION_DISCONNECTED_ICON_PATH
-        = "org/netbeans/modules/nbmongo/images/connectionDisconnected.gif"; //NOI18N
-
-    private static final Image CONNECTION_ICON = ImageUtilities.loadImage(CONNECTION_ICON_PATH); //NOI18N
-
-    private static final Image CONNECTION_DISCONNECTED_ICON = ImageUtilities.loadImage(CONNECTION_DISCONNECTED_ICON_PATH);
+final class OneConnectionNode extends AbstractNode implements PropertyChangeListener {
 
     private static final Logger LOG = Logger.getLogger(OneConnectionNode.class.getName());
 
@@ -140,8 +126,8 @@ class OneConnectionNode extends AbstractNode implements PropertyChangeListener {
 //        }
 //        return result;
         return isConnected()
-            ? CONNECTION_ICON
-            : CONNECTION_DISCONNECTED_ICON;
+            ? Images.CONNECTION_ICON
+            : Images.CONNECTION_DISCONNECTED_ICON;
     }
 
     @Override
@@ -166,10 +152,9 @@ class OneConnectionNode extends AbstractNode implements PropertyChangeListener {
     public Action getPreferredAction() {
         return isConnected() ? null : new ConnectAction();
     }
-    
+
     private MongoClient connect(boolean create) {
         synchronized (lock) {
-            System.out.println("connect: create=" + create);
             if (create && (mongo == null || !mongo.getConnector().isOpen())) {
                 final ConnectionInfo connection = getLookup().lookup(ConnectionInfo.class);
                 try {
@@ -348,7 +333,7 @@ class OneConnectionNode extends AbstractNode implements PropertyChangeListener {
         }
 
     }
-    
+
     private final class DisconnectAction extends AbstractAction {
 
         public DisconnectAction() {

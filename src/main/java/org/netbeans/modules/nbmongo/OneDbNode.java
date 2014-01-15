@@ -31,7 +31,6 @@ import com.mongodb.MongoException;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.nbmongo.ui.CollectionNameValidator;
 import org.netbeans.modules.nbmongo.ui.ValidatingInputLine;
 import org.netbeans.modules.nbmongo.ui.wizards.ExportWizardAction;
@@ -62,11 +61,7 @@ import org.openide.util.lookup.ProxyLookup;
     "addCollectionText=Collection name:",
     "# {0} - collection name",
     "collectionAlreadyExists=Collection ''{0}'' already exists"})
-public class OneDbNode extends AbstractNode {
-
-    @StaticResource
-    private static final String DB_ICON_PATH
-        = "org/netbeans/modules/nbmongo/images/database.gif"; //NOI18N
+final class OneDbNode extends AbstractNode {
 
     private final OneDBChildren childFactory;
 
@@ -95,7 +90,7 @@ public class OneDbNode extends AbstractNode {
         content.add(info, new DBConverter());
         setName(info.dbName);
         setDisplayName(info.dbName);
-        setIconBaseWithExtension(DB_ICON_PATH);
+        setIconBaseWithExtension(Images.DB_ICON_PATH);
     }
 
     @Override

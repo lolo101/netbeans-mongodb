@@ -29,7 +29,7 @@ import org.openide.nodes.ChildFactory;
  *
  * @author Yann D'Isanto
  */
-public abstract class RefreshableChildFactory<T> extends ChildFactory.Detachable<T> {
+abstract class RefreshableChildFactory<T> extends ChildFactory.Detachable<T> {
     
     public final void refresh() {
         refresh(false);

@@ -43,7 +43,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.EditorKit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.modules.nbmongo.CollectionNode;
+import org.netbeans.modules.nbmongo.Images;
 import org.netbeans.modules.nbmongo.ui.wizards.ExportWizardAction;
 import org.netbeans.modules.nbmongo.util.SystemCollectionPredicate;
 import org.openide.DialogDescriptor;
@@ -88,8 +88,8 @@ public final class CollectionViewTopComponent extends TopComponent {
         initComponents();
         setName(collectionInfo.getName());
         setIcon(isSystemCollection
-            ? CollectionNode.SYSTEM_COLLECTION_ICON
-            : CollectionNode.COLLECTION_ICON);
+            ? Images.SYSTEM_COLLECTION_ICON
+            : Images.COLLECTION_ICON);
 
         final DBCollection dbCollection = lookup.lookup(DBCollection.class);
         tableModel = new DocumentsTableModel(dbCollection);

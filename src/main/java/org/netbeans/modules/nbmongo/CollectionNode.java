@@ -34,7 +34,6 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.nbmongo.ui.CollectionNameValidator;
 import org.netbeans.modules.nbmongo.ui.ValidatingInputLine;
 import org.netbeans.modules.nbmongo.ui.wizards.ExportWizardAction;
@@ -46,7 +45,6 @@ import org.openide.cookies.OpenCookie;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Sheet;
-import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.actions.SystemAction;
@@ -68,19 +66,7 @@ import org.openide.windows.TopComponent;
     "dropCollectionConfirmText=Permanently drop ''{0}'' collection?",
     "# {0} - collection name",
     "renameCollectionText=rename ''{0}'' to:"})
-public final class CollectionNode extends AbstractNode {
-
-    @StaticResource
-    private static final String COLLECTION_ICON_PATH
-        = "org/netbeans/modules/nbmongo/images/table.gif"; //NOI18N
-
-    @StaticResource
-    private static final String SYSTEM_COLLECTION_ICON_PATH
-        = "org/netbeans/modules/nbmongo/images/tableSystem.gif"; //NOI18N
-
-    public static final Image COLLECTION_ICON = ImageUtilities.loadImage(COLLECTION_ICON_PATH);
-
-    public static final Image SYSTEM_COLLECTION_ICON = ImageUtilities.loadImage(SYSTEM_COLLECTION_ICON_PATH);
+final class CollectionNode extends AbstractNode {
 
     private final Lookup lookup;
 
@@ -121,9 +107,9 @@ public final class CollectionNode extends AbstractNode {
     @Override
     public Image getIcon(int ignored) {
         if (SystemCollectionPredicate.get().eval(collection.getName())) {
-            return SYSTEM_COLLECTION_ICON;
+            return Images.SYSTEM_COLLECTION_ICON;
         } else {
-            return COLLECTION_ICON;
+            return Images.COLLECTION_ICON;
         }
     }
 
