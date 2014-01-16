@@ -8,22 +8,11 @@ You can:
  * Connect to MongoDB using mongo standard uri
  * Browse collections
  * Create/Rename/Delete collections
- * Browse documents (a json criteria can be specified)
+ * Browse documents (json criteria/projection/sort can be specified)
  * Add/Edit/Delete documents as json
+ * Import/Export json
 
 ![NetBeans MongoDB Plugin Screen Shot](screenshot.png "NetBeans MongoDB Plugin Screen Shot")
-
-
-Features in progress
---------------------
- * Documents are displayed as expendable tree in query result list.
- * Add projection and sort for querying
- * Export/Import as json.
-
-
-TODO
-----
- * Secure system collections (read-only, "system." prefix forbidden for new collections)
 
 
 Build And Run / Downloads
