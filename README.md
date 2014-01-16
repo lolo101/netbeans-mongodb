@@ -12,8 +12,6 @@ You can:
  * Add/Edit/Delete documents as json
  * Import/Export json
 
-![NetBeans MongoDB Plugin Screen Shot](screenshot.png "NetBeans MongoDB Plugin Screen Shot")
-
 
 Build And Run / Downloads
 -------------------------
