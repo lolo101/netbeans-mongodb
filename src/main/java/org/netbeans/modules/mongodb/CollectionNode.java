@@ -37,6 +37,7 @@ import javax.swing.Action;
 import org.netbeans.modules.mongodb.ui.CollectionNameValidator;
 import org.netbeans.modules.mongodb.ui.ValidatingInputLine;
 import org.netbeans.modules.mongodb.ui.wizards.ExportWizardAction;
+import org.netbeans.modules.mongodb.ui.wizards.ImportWizardAction;
 import org.netbeans.modules.mongodb.util.SystemCollectionPredicate;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -129,15 +130,19 @@ final class CollectionNode extends AbstractNode {
     public Action[] getActions(boolean context) {
         final Map<String, Object> properties = new HashMap<>();
         properties.put(ExportWizardAction.PROP_COLLECTION, collection.getName());
+        properties.put(ImportWizardAction.PROP_COLLECTION, collection.getName());
+        final Action importAction = new ImportWizardAction(getLookup(), properties);
         final Action renameAction = new RenameCollectionAction();
         final Action dropAction = new DropCollectionAction();
         if (SystemCollectionPredicate.get().eval(collection.getName())) {
+            importAction.setEnabled(false);
             renameAction.setEnabled(false);
             dropAction.setEnabled(false);
         }
         return new Action[]{
             SystemAction.get(OpenAction.class),
             new ExportWizardAction(getLookup(), properties),
+            importAction,
             renameAction,
             dropAction
         };

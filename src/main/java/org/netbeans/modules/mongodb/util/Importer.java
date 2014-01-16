@@ -46,18 +46,29 @@ public final class Importer implements Runnable {
     private final DB db;
 
     private final ImportProperties properties;
+    
+    private final Runnable onDone;
 
     public Importer(DB db, ImportProperties properties) {
-        this.db = db;
-        this.properties = properties;
+        this(db, properties, null);
     }
 
+    public Importer(DB db, ImportProperties properties, Runnable onDone) {
+        this.db = db;
+        this.properties = properties;
+        this.onDone = onDone;
+    }
+
+    
     @Override
     public void run() {
         try (InputStream input = new FileInputStream(properties.getFile())) {
             importFrom(new InputStreamReader(input, properties.getEncoding().name()));
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
+        }
+        if(onDone != null) {
+            onDone.run();
         }
     }
 

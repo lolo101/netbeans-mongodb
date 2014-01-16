@@ -30,7 +30,9 @@ import java.io.File;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.JComponent;
 import org.netbeans.modules.mongodb.util.ImportProperties;
@@ -55,12 +57,23 @@ public final class ImportWizardAction extends AbstractAction {
 
     private final Lookup lookup;
 
-    private final Runnable onSuccess;
+    private final Runnable onDone;
 
-    public ImportWizardAction(Lookup lookup, Runnable onSuccess) {
+    private final Map<String, Object> defaultProperties;
+
+    public ImportWizardAction(Lookup lookup, Map<String, Object> defaultProperties) {
+        this(lookup, null, defaultProperties);
+    }
+
+    public ImportWizardAction(Lookup lookup, Runnable onDone) {
+        this(lookup, onDone, new HashMap<String, Object>());
+    }
+
+    public ImportWizardAction(Lookup lookup, Runnable onDone, Map<String, Object> defaultProperties) {
         super(Bundle.ACTION_Import());
         this.lookup = lookup;
-        this.onSuccess = onSuccess;
+        this.onDone = onDone;
+        this.defaultProperties = defaultProperties;
     }
 
     @Override
@@ -82,6 +95,10 @@ public final class ImportWizardAction extends AbstractAction {
             }
         }
         WizardDescriptor wiz = new WizardDescriptor(new WizardDescriptor.ArrayIterator<>(panels));
+        for (Map.Entry<String, Object> entry : defaultProperties.entrySet()) {
+            wiz.putProperty(entry.getKey(), entry.getValue());
+        }
+
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
         wiz.setTitleFormat(new MessageFormat("{0}"));
         wiz.setTitle(Bundle.ACTION_Import());
@@ -93,7 +110,7 @@ public final class ImportWizardAction extends AbstractAction {
                 .encoding((Charset) wiz.getProperty(PROP_ENCODING))
                 .build();
             new ImportTask(
-                new Importer(lookup.lookup(DB.class), properties))
+                new Importer(lookup.lookup(DB.class), properties, onDone))
                 .run();
         }
     }

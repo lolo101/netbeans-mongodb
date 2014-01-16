@@ -218,8 +218,10 @@ public final class ImportVisualPanel1 extends JPanel {
             final File file = fileChooser.getSelectedFile();
             if (file != null) {
                 fileField.setText(file.getAbsolutePath());
-                final String collectionName = file.getName().replaceAll("\\.json$", "");
-                collectionEditor.setText(collectionName);
+                if (collectionEditor.getText().trim().isEmpty()) {
+                    final String collectionName = file.getName().replaceAll("\\.json$", "");
+                    collectionEditor.setText(collectionName);
+                }
             }
         }
     }//GEN-LAST:event_browseFileButtonActionPerformed

@@ -87,7 +87,6 @@ public class ImportWizardPanel1 implements WizardDescriptor.ValidatingPanel<Wiza
     @Override
     public void readSettings(WizardDescriptor wiz) {
         final ImportVisualPanel1 panel = getComponent();
-//        panel.setWizard(wiz);
         final JFileChooser fileChooser = panel.getFileChooser();
         final File file = (File) wiz.getProperty(ImportWizardAction.PROP_FILE);
         fileChooser.setSelectedFile(file);
