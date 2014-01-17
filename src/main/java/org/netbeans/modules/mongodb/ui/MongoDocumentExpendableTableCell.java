@@ -28,22 +28,30 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.awt.event.ActionEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.Map;
+import javax.swing.AbstractAction;
 import javax.swing.AbstractCellEditor;
 import javax.swing.BorderFactory;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTree;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.MutableTreeNode;
-import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreeCellRenderer;
+import javax.swing.tree.TreePath;
+import org.netbeans.modules.mongodb.util.JsonProperty;
 
 /**
  * Documents expendable table cell renderer and editor.
@@ -59,10 +67,7 @@ public final class MongoDocumentExpendableTableCell extends AbstractCellEditor i
     public MongoDocumentExpendableTableCell() {
         tree.setRootVisible(false);
         tree.setShowsRootHandles(true);
-        DefaultTreeCellRenderer treeRenderer = new DefaultTreeCellRenderer();
-        treeRenderer.setLeafIcon(null);
-        treeRenderer.setClosedIcon(null);
-        treeRenderer.setOpenIcon(null);
+        final TreeCellRenderer treeRenderer = new JsonTreeCellRenderer();
         tree.setCellRenderer(treeRenderer);
         panel.add(new JScrollPane(tree), BorderLayout.CENTER);
         panel.setPreferredSize(new Dimension(0, 100));
@@ -75,53 +80,104 @@ public final class MongoDocumentExpendableTableCell extends AbstractCellEditor i
             }
 
         });
+        
+//        tree.addMouseListener(new MouseAdapter() {
+//            @Override
+//            public void mousePressed(MouseEvent e) {
+//                if (e.isPopupTrigger()) {
+//                    doPop(e);
+//                }
+//            }
+//
+//            @Override
+//            public void mouseReleased(MouseEvent e) {
+//                if (e.isPopupTrigger()) {
+//                    doPop(e);
+//                }
+//            }
+//
+//            private void doPop(MouseEvent e) {
+//                if (e.isPopupTrigger()) {
+//                    final int selRow = tree.getRowForLocation(e.getX(), e.getY());
+//                    final TreePath selPath = tree.getPathForLocation(e.getX(), e.getY());
+//                    if (selRow != -1) {
+//                        final JsonPropertyNode node = (JsonPropertyNode) selPath.getLastPathComponent();
+//                        createContextMenu(node)
+//                            .show(e.getComponent(), e.getX(), e.getY());
+//                    }
+//                }
+//            }
+//
+//        });
     }
 
     @Override
     public Object getCellEditorValue() {
-        return ((DefaultMutableTreeNode) tree.getModel().getRoot()).getUserObject();
+        return ((ImmutableTreeNode) tree.getModel().getRoot()).getUserObject();
     }
 
     @Override
     public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
         tree.setRootVisible(false);
-        tree.setModel(new DefaultTreeModel(buildDocumentTree((DBObject) value)));
+        tree.setModel(new DefaultTreeModel(new DBObjectTreeNode((DBObject) value)));
         return panel;
     }
 
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-        tree.setModel(new DefaultTreeModel(buildDocumentTree((DBObject) value)));
+        tree.setModel(new DefaultTreeModel(new DBObjectTreeNode((DBObject) value)));
         panel.setBorder(hasFocus
             ? BorderFactory.createLineBorder(Color.BLUE)
             : BorderFactory.createEmptyBorder());
         return panel;
     }
 
-    @SuppressWarnings("unchecked")
-    private TreeNode buildDocumentTree(DBObject document) {
-        final Map<String, Object> map = document.toMap();
-        final DefaultMutableTreeNode root = new DefaultMutableTreeNode(document);
-        for (Map.Entry<String, Object> entry : map.entrySet()) {
-            root.add(buildTreeNode(entry));
-        }
-        return root;
+    public JPopupMenu createContextMenu(JsonPropertyNode node) {
+        final JPopupMenu menu = new JPopupMenu();
+        menu.add(new JMenuItem(new CopyKeyToClipboardAction(node.getUserObject())));
+        menu.add(new JMenuItem(new CopyValueToClipboardAction(node.getUserObject())));
+        return menu;
     }
 
-    @SuppressWarnings("unchecked")
-    private MutableTreeNode buildTreeNode(Map.Entry<String, Object> entry) {
-        if (entry.getValue() instanceof Map) {
-            final Map<String, Object> map = (Map<String, Object>) entry.getValue();
-            return buildTreeNode(entry.getKey(), map);
-        }
-        return new DefaultMutableTreeNode(entry.getKey() + ": " + entry.getValue());
-    }
+    private static class CopyKeyToClipboardAction extends AbstractAction {
 
-    private MutableTreeNode buildTreeNode(String name, Map<String, Object> value) {
-        final DefaultMutableTreeNode node = new DefaultMutableTreeNode(name);
-        for (Map.Entry<String, Object> entry : value.entrySet()) {
-            node.add(buildTreeNode(entry));
+        private final JsonProperty property;
+
+        public CopyKeyToClipboardAction(JsonProperty property) {
+            super("Copy key");
+            this.property = property;
         }
-        return node;
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            final StringSelection stringSelection = new StringSelection(property.getName());
+            final Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+            clipboard.setContents(stringSelection, null);
+        }
+
+    }
+    
+    private static class CopyValueToClipboardAction extends AbstractAction {
+
+        private final JsonProperty property;
+
+        public CopyValueToClipboardAction(JsonProperty property) {
+            super("Copy Value");
+            this.property = property;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            final StringSelection stringSelection = new StringSelection(getValueAsString());
+            final Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+            clipboard.setContents(stringSelection, null);
+        }
+
+        private String getValueAsString() {
+            if(property.getValue() instanceof Map) {
+                return "TODO";
+            }
+            return property.getValue().toString();
+        }
     }
 }
