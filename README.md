@@ -15,9 +15,12 @@ Available features:
 ![NetBeans MongoDB Plugin Screen Shot](screenshot.png "NetBeans MongoDB Plugin Screen Shot")
 
 
-Build And Run / Downloads
--------------------------
-It's a Maven project built using the NBM Maven Plugin - just check out and build.
+Get and Install
+---------------
+
+The latest release is available on the netbeans plugin portal, you can download it [here](http://plugins.netbeans.org/plugin/52638/nbmongo)
+
+If you want to try the development version, as it's a Maven project built using the NBM Maven Plugin, just check out and build.
 In NetBeans, install using Tools | Plugins on the Downloaded tab.
 
 
