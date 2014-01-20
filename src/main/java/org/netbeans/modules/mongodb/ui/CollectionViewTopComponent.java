@@ -31,8 +31,6 @@ import com.mongodb.util.JSONParseException;
 import org.netbeans.modules.mongodb.CollectionInfo;
 import org.netbeans.modules.mongodb.util.Json;
 import java.awt.Dimension;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.ImageIcon;
@@ -73,7 +71,7 @@ public final class CollectionViewTopComponent extends TopComponent {
     private static final Integer[] ITEMS_PER_PAGE_VALUES = {10, 20, 50, 100};
 
     private final CollectionInfo collectionInfo;
-    
+
     private final boolean isSystemCollection;
 
     private final DocumentsTableModel tableModel;
@@ -105,15 +103,6 @@ public final class CollectionViewTopComponent extends TopComponent {
             public void valueChanged(ListSelectionEvent evt) {
                 if (!evt.getValueIsAdjusting()) {
                     updateDocumentButtonsState();
-                }
-            }
-        });
-        documentsTable.addMouseListener(new MouseAdapter() {
-
-            @Override
-            public void mouseClicked(MouseEvent evt) {
-                if (evt.getClickCount() == 2 && documentsTable.getSelectedRow() > -1) {
-                    editDocumentButtonActionPerformed(null);
                 }
             }
         });

@@ -23,7 +23,9 @@
  */
 package org.netbeans.modules.mongodb.ui;
 
+import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
+import com.mongodb.util.JSON;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -46,23 +48,32 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTree;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.mongodb.util.JsonProperty;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * Documents expendable table cell renderer and editor.
  *
  * @author Yann D'Isanto
  */
+@Messages({
+    "ACTION_copyDocumentToClipboard=Copy document",
+    "ACTION_copyKeyToClipboard=Copy key",
+    "ACTION_copyValueToClipboard=Copy value"})
 public final class MongoDocumentExpendableTableCell extends AbstractCellEditor implements TableCellEditor, TableCellRenderer {
 
     private final JTree tree = new JTree();
 
     private final JPanel panel = new JPanel(new BorderLayout());
+
+    private boolean popup = false;
 
     public MongoDocumentExpendableTableCell() {
         tree.setRootVisible(false);
@@ -76,39 +87,45 @@ public final class MongoDocumentExpendableTableCell extends AbstractCellEditor i
 
             @Override
             public void focusLost(FocusEvent e) {
-                stopCellEditing();
+                if (popup == false) {
+                    stopCellEditing();
+                }
             }
 
         });
-        
-//        tree.addMouseListener(new MouseAdapter() {
-//            @Override
-//            public void mousePressed(MouseEvent e) {
-//                if (e.isPopupTrigger()) {
-//                    doPop(e);
-//                }
-//            }
-//
-//            @Override
-//            public void mouseReleased(MouseEvent e) {
-//                if (e.isPopupTrigger()) {
-//                    doPop(e);
-//                }
-//            }
-//
-//            private void doPop(MouseEvent e) {
-//                if (e.isPopupTrigger()) {
-//                    final int selRow = tree.getRowForLocation(e.getX(), e.getY());
-//                    final TreePath selPath = tree.getPathForLocation(e.getX(), e.getY());
-//                    if (selRow != -1) {
-//                        final JsonPropertyNode node = (JsonPropertyNode) selPath.getLastPathComponent();
-//                        createContextMenu(node)
-//                            .show(e.getComponent(), e.getX(), e.getY());
-//                    }
-//                }
-//            }
-//
-//        });
+        tree.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if (e.isPopupTrigger()) {
+                    final TreePath path = tree.getClosestPathForLocation(e.getX(), e.getY());
+                    if (path != null) {
+                        tree.setSelectionPath(path);
+                    }
+                    final JsonPropertyNode node = path != null
+                        ? (JsonPropertyNode) path.getLastPathComponent()
+                        : null;
+                    final JPopupMenu menu = createContextMenu(node);
+                    menu.addPopupMenuListener(new PopupMenuListener() {
+
+                        @Override
+                        public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+                        }
+
+                        @Override
+                        public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+                            popup = false;
+                        }
+
+                        @Override
+                        public void popupMenuCanceled(PopupMenuEvent e) {
+                        }
+                    });
+                    popup = true;
+                    menu.show(e.getComponent(), e.getX(), e.getY());
+                }
+            }
+
+        });
     }
 
     @Override
@@ -118,7 +135,6 @@ public final class MongoDocumentExpendableTableCell extends AbstractCellEditor i
 
     @Override
     public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-        tree.setRootVisible(false);
         tree.setModel(new DefaultTreeModel(new DBObjectTreeNode((DBObject) value)));
         return panel;
     }
@@ -129,22 +145,46 @@ public final class MongoDocumentExpendableTableCell extends AbstractCellEditor i
         panel.setBorder(hasFocus
             ? BorderFactory.createLineBorder(Color.BLUE)
             : BorderFactory.createEmptyBorder());
+        if(hasFocus) {
+            table.editCellAt(row, column);
+        }
         return panel;
     }
 
     public JPopupMenu createContextMenu(JsonPropertyNode node) {
         final JPopupMenu menu = new JPopupMenu();
-        menu.add(new JMenuItem(new CopyKeyToClipboardAction(node.getUserObject())));
-        menu.add(new JMenuItem(new CopyValueToClipboardAction(node.getUserObject())));
+        menu.add(new JMenuItem(new CopyDocumentToClipboardAction()));
+        if (node != null) {
+            menu.addSeparator();
+            menu.add(new JMenuItem(new CopyKeyToClipboardAction(node.getUserObject())));
+            menu.add(new JMenuItem(new CopyValueToClipboardAction(node.getUserObject())));
+        }
         return menu;
     }
 
-    private static class CopyKeyToClipboardAction extends AbstractAction {
+    private final class CopyDocumentToClipboardAction extends AbstractAction {
+
+        public CopyDocumentToClipboardAction() {
+            super(Bundle.ACTION_copyDocumentToClipboard());
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            final DBObjectTreeNode rootNode = (DBObjectTreeNode) tree.getModel().getRoot();
+            final StringSelection stringSelection = new StringSelection(
+                JSON.serialize(rootNode.getUserObject()));
+            final Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+            clipboard.setContents(stringSelection, null);
+        }
+
+    }
+
+    private static final class CopyKeyToClipboardAction extends AbstractAction {
 
         private final JsonProperty property;
 
         public CopyKeyToClipboardAction(JsonProperty property) {
-            super("Copy key");
+            super(Bundle.ACTION_copyKeyToClipboard());
             this.property = property;
         }
 
@@ -156,13 +196,13 @@ public final class MongoDocumentExpendableTableCell extends AbstractCellEditor i
         }
 
     }
-    
-    private static class CopyValueToClipboardAction extends AbstractAction {
+
+    private static final class CopyValueToClipboardAction extends AbstractAction {
 
         private final JsonProperty property;
 
         public CopyValueToClipboardAction(JsonProperty property) {
-            super("Copy Value");
+            super(Bundle.ACTION_copyValueToClipboard());
             this.property = property;
         }
 
@@ -174,8 +214,8 @@ public final class MongoDocumentExpendableTableCell extends AbstractCellEditor i
         }
 
         private String getValueAsString() {
-            if(property.getValue() instanceof Map) {
-                return "TODO";
+            if (property.getValue() instanceof Map) {
+                return JSON.serialize(new BasicDBObject((Map) property.getValue()));
             }
             return property.getValue().toString();
         }
