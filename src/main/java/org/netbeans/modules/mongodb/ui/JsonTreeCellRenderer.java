@@ -26,6 +26,7 @@ package org.netbeans.modules.mongodb.ui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Font;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JLabel;
@@ -47,6 +48,8 @@ public final class JsonTreeCellRenderer extends JPanel implements TreeCellRender
 
     static {
         final Color caramel = new Color(0xC68E17);
+        final Color purple = new Color(0x4B088A);
+        COLORS.put(String.class, purple);
         COLORS.put(Integer.class, caramel);
         COLORS.put(Double.class, caramel);
         COLORS.put(Boolean.class, Color.BLUE);
@@ -87,6 +90,8 @@ public final class JsonTreeCellRenderer extends JPanel implements TreeCellRender
         add(keyLabel, BorderLayout.WEST);
         add(valueLabel, BorderLayout.CENTER);
         setOpaque(true);
+        keyLabel.setFont(
+            keyLabel.getFont().deriveFont(Font.BOLD));
         inited = true;
     }
 
