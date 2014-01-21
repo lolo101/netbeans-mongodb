@@ -41,6 +41,8 @@
     </repositories>
 
     <dependencies>
+        
+        <!-- ##### NetBeans Dependencies ##### -->
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-api-annotations-common</artifactId>
@@ -48,20 +50,7 @@
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
-            <artifactId>org-openide-nodes</artifactId>
-            <version>${netbeans.target.version}</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <artifactId>org-openide-util</artifactId>
-            <groupId>org.netbeans.api</groupId>
-            <type>jar</type>
-            <version>RELEASE74</version>
-        </dependency>
-        <dependency>
-            <artifactId>org-openide-util-lookup</artifactId>
-            <groupId>org.netbeans.api</groupId>
-            <type>jar</type>
+            <artifactId>org-netbeans-api-progress</artifactId>
             <version>${netbeans.target.version}</version>
         </dependency>
         <dependency>
@@ -71,31 +60,8 @@
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>org.mongodb</groupId>
-            <artifactId>mongo-java-driver</artifactId>
-            <version>2.11.1</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <artifactId>org-openide-awt</artifactId>
             <groupId>org.netbeans.api</groupId>
-            <type>jar</type>
-            <version>RELEASE74</version>
-        </dependency>
-        <dependency>
-            <groupId>org.netbeans.api</groupId>
-            <artifactId>org-openide-filesystems</artifactId>
-            <version>${netbeans.target.version}</version>
-        </dependency>
-        <dependency>
-            <artifactId>org-openide-dialogs</artifactId>
-            <groupId>org.netbeans.api</groupId>
-            <type>jar</type>
-            <version>RELEASE74</version>
-        </dependency>
-        <dependency>
-            <groupId>org.netbeans.api</groupId>
-            <artifactId>org-openide-windows</artifactId>
+            <artifactId>org-netbeans-modules-editor-mimelookup</artifactId>
             <version>${netbeans.target.version}</version>
         </dependency>
         <dependency>
@@ -110,14 +76,56 @@
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
-            <artifactId>org-netbeans-modules-editor-mimelookup</artifactId>
+            <artifactId>org-openide-awt</artifactId>
+            <type>jar</type>
             <version>${netbeans.target.version}</version>
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
-            <artifactId>org-netbeans-api-progress</artifactId>
+            <artifactId>org-openide-dialogs</artifactId>
+            <type>jar</type>
             <version>${netbeans.target.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-filesystems</artifactId>
+            <version>${netbeans.target.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-nodes</artifactId>
+            <version>${netbeans.target.version}</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-util</artifactId>
+            <type>jar</type>
+            <version>${netbeans.target.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-util-lookup</artifactId>
+            <type>jar</type>
+            <version>${netbeans.target.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-windows</artifactId>
+            <version>${netbeans.target.version}</version>
+        </dependency>
+        
+        
+        <!-- ##### MongoDB Dependencies ##### -->
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongo-java-driver</artifactId>
+            <version>2.11.1</version>
+            <type>jar</type>
+        </dependency>
+        
+        
+        <!-- ##### Other Dependencies ##### -->
         <dependency>
             <groupId>com.github.jsonj</groupId>
             <artifactId>jsonj</artifactId>
