@@ -24,6 +24,7 @@
 package org.netbeans.modules.mongodb;
 
 import java.lang.reflect.InvocationTargetException;
+import org.netbeans.modules.mongodb.ui.ReadOnlyPropertyWrapper;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
@@ -33,10 +34,12 @@ import org.openide.util.NbBundle.Messages;
  * @author Yann D'Isanto
  */
 @Messages("ConnectionURI=Mongo URI")
-public class ConnectionURIProperty extends PropertySupport.ReadWrite<String> {
+public final class ConnectionURIProperty extends PropertySupport.ReadWrite<String> {
+
+    public static final String NAME = "connectionURI";
 
     private static final String MONGO_URI_PREFIX = "mongodb://";
-    
+
     private final Lookup lkp;
 
     ConnectionURIProperty(Lookup lkp) {
@@ -55,10 +58,15 @@ public class ConnectionURIProperty extends PropertySupport.ReadWrite<String> {
         final ConnectionInfo info = lkp.lookup(ConnectionInfo.class);
         if (info != null) {
             final StringBuilder uriBuilder = new StringBuilder(t);
-            if(!t.startsWith(MONGO_URI_PREFIX)) {
+            if (!t.startsWith(MONGO_URI_PREFIX)) {
                 uriBuilder.insert(0, MONGO_URI_PREFIX);
             }
             info.setMongoURI(t);
         }
     }
+
+    public PropertySupport.ReadOnly<String> readOnly() {
+        return new ReadOnlyPropertyWrapper<>(this);
+    }
+
 }

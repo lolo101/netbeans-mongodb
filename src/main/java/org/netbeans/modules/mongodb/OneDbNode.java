@@ -99,7 +99,7 @@ final class OneDbNode extends AbstractNode {
         Sheet.Set set = Sheet.createPropertiesSet();
         set.put(new DatabaseNameProperty(getLookup()));
         set.put(new ConnectionNameProperty(getLookup()));
-        set.put(new ConnectionURIProperty(getLookup()));
+        set.put(new ConnectionURIProperty(getLookup()).readOnly());
         sheet.put(set);
         return sheet;
     }

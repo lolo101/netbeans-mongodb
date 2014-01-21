@@ -33,8 +33,11 @@ import org.openide.util.Lookup;
 /**
  *
  * @author Tim Boudreau
+ * @author Yann D'Isanto
  */
 final class OneConnectionChildren extends RefreshableChildFactory<DbInfo> {
+
+    private OneConnectionNode parentNode;
 
     private final Lookup lookup;
 
@@ -44,11 +47,14 @@ final class OneConnectionChildren extends RefreshableChildFactory<DbInfo> {
 
     @Override
     protected boolean createKeys(final List<DbInfo> list) {
+        if(parentNode == null) {
+            return true;
+        }
         final ConnectionProblems problems = lookup.lookup(ConnectionProblems.class);
         final ConnectionInfo connectionInfo = lookup.lookup(ConnectionInfo.class);
         final MongoClient client = lookup.lookup(MongoClient.class);
-
-        if (client != null && client.getConnector().isOpen()) {
+       
+        if (client != null && client.getConnector().isOpen() && parentNode.isProblem() == false) {
             problems.invoke(new Callable<Void>() {
                 @Override
                 public Void call() throws Exception {
@@ -72,4 +78,13 @@ final class OneConnectionChildren extends RefreshableChildFactory<DbInfo> {
     protected Node createNodeForKey(DbInfo key) {
         return new OneDbNode(key);
     }
+
+    public OneConnectionNode getParentNode() {
+        return parentNode;
+    }
+
+    public void setParentNode(OneConnectionNode parentNode) {
+        this.parentNode = parentNode;
+    }
+
 }

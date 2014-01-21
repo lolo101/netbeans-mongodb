@@ -38,6 +38,9 @@ import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import org.netbeans.api.progress.ProgressUtils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -60,7 +63,8 @@ import org.openide.windows.TopComponent;
 @Messages({
     "ACTION_Delete=Delete",
     "ACTION_Connect=Connect",
-    "ACTION_Disconnect=Disconnect"
+    "ACTION_Disconnect=Disconnect",
+    "waitWhileConnecting=Please wait while connecting to mongo database"
 })
 final class OneConnectionNode extends AbstractNode implements PropertyChangeListener {
 
@@ -102,6 +106,7 @@ final class OneConnectionNode extends AbstractNode implements PropertyChangeList
         content.add(connection, converter);
         setDisplayName(connection.getDisplayName());
         setName(connection.id());
+        childFactory.setParentNode(this);
         connection.addPropertyChangeListener(WeakListeners.propertyChange(this, connection));
     }
 
@@ -110,21 +115,15 @@ final class OneConnectionNode extends AbstractNode implements PropertyChangeList
     }
 
     private boolean isConnected() {
-        return mongo != null && mongo.getConnector().isOpen();
+        return mongo != null && mongo.getConnector().isOpen() && isProblem() == false;
     }
 
-    private boolean isProblem() {
+    protected boolean isProblem() {
         return problem;
     }
 
     @Override
     public Image getIcon(int ignored) {
-//        Image result = super.getIcon(ignored);
-//        if (isProblem()) {
-//            Image errorBadge = ImageUtilities.loadImage(ERROR_BADGE);
-//            result = ImageUtilities.mergeImages(result, errorBadge, 0, 0);
-//        }
-//        return result;
         return isConnected()
             ? Images.CONNECTION_ICON
             : Images.CONNECTION_DISCONNECTED_ICON;
@@ -160,24 +159,40 @@ final class OneConnectionNode extends AbstractNode implements PropertyChangeList
         return isConnected() ? null : new ConnectAction();
     }
 
-    private MongoClient connect(boolean create) {
-        synchronized (lock) {
-            if (create && (mongo == null || !mongo.getConnector().isOpen())) {
-                final ConnectionInfo connection = getLookup().lookup(ConnectionInfo.class);
-                try {
-                    mongo = new MongoClient(new MongoClientURI(connection.getMongoURI()));
-                    content.add(disconnecter);
-                    setProblem(false);
-                } catch (MongoException ex) {
-                    problems.handleException(ex, null);
-                } catch (UnknownHostException ex) {
-                    problems.handleException(ex, null);
-                    // replaces the children so we can try again
-                    disconnecter.close();
+    private MongoClient connect(final boolean create) {
+        ProgressUtils.showProgressDialogAndRun(new Runnable() {
+
+            @Override
+            public void run() {
+                synchronized (lock) {
+                    if (create && isConnected() == false) {
+                        final ConnectionInfo connection = getLookup().lookup(ConnectionInfo.class);
+                        try {
+                            mongo = new MongoClient(new MongoClientURI(connection.getMongoURI()));
+                            mongo.getDatabaseNames();  // ensure connection works
+                            content.add(disconnecter);
+                            setProblem(false);
+                            fireIconChange();
+                            childFactory.refresh();
+                            updateSheet();
+                        } catch (MongoException ex) {
+                            setProblem(true);
+                            DialogDisplayer.getDefault().notify(
+                                new NotifyDescriptor.Message(
+                                    "error connectiong to mongo database: " + ex.getLocalizedMessage(),
+                                    NotifyDescriptor.ERROR_MESSAGE));
+                        } catch (UnknownHostException ex) {
+                            setProblem(true);
+                            DialogDisplayer.getDefault().notify(
+                                new NotifyDescriptor.Message(
+                                    "unknown server: " + ex.getLocalizedMessage(),
+                                    NotifyDescriptor.ERROR_MESSAGE));
+                        }
+
+                    }
                 }
-                fireIconChange();
             }
-        }
+        }, Bundle.waitWhileConnecting());
         return mongo;
     }
 
@@ -228,14 +243,23 @@ final class OneConnectionNode extends AbstractNode implements PropertyChangeList
 
     @Override
     protected Sheet createSheet() {
-        Sheet sheet = Sheet.createDefault();
-        Sheet.Set set = Sheet.createPropertiesSet();
-        set.put(new ConnectionNameProperty(getLookup()));
-        set.put(new ConnectionURIProperty(getLookup()));
-        sheet.put(set);
+        final Sheet sheet = Sheet.createDefault();
+        sheet.put(buildSheetSet());
         return sheet;
     }
-
+    
+    private Sheet.Set buildSheetSet() {
+        final Sheet.Set set = Sheet.createPropertiesSet();
+        set.put(new ConnectionNameProperty(getLookup()));
+        final ConnectionURIProperty uriProperty = new ConnectionURIProperty(getLookup());
+        set.put(isConnected() ? uriProperty.readOnly() : uriProperty);
+        return set;
+    }
+    
+    private void updateSheet() {
+        getSheet().put(buildSheetSet());
+    }
+    
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         switch (evt.getPropertyName()) {
@@ -267,6 +291,7 @@ final class OneConnectionNode extends AbstractNode implements PropertyChangeList
                 synchronized (lock) {
                     client = mongo;
                     mongo = null;
+                    updateSheet();
                 }
                 if (client != null) {
                     client.close();
@@ -336,7 +361,6 @@ final class OneConnectionNode extends AbstractNode implements PropertyChangeList
         @Override
         public void actionPerformed(ActionEvent e) {
             connect(true);
-            childFactory.refresh();
         }
 
     }

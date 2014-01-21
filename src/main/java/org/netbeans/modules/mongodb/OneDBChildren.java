@@ -45,7 +45,7 @@ final class OneDBChildren extends RefreshableChildFactory<CollectionInfo> {
 
     @Override
     protected boolean createKeys(final List<CollectionInfo> list) {
-        ConnectionProblems problems = lookup.lookup(ConnectionProblems.class);
+        final ConnectionProblems problems = lookup.lookup(ConnectionProblems.class);
         problems.invoke(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
