@@ -138,13 +138,20 @@ final class OneConnectionNode extends AbstractNode implements PropertyChangeList
     @Override
     public Action[] getActions(boolean ignored) {
         final Action[] orig = super.getActions(ignored);
-        final Action[] nue = new Action[orig.length + 3];
-        System.arraycopy(orig, 0, nue, 3, orig.length);
+        final Action[] nue = new Action[orig.length + 6];
+        System.arraycopy(orig, 0, nue, 6, orig.length);
         final Action refreshAction = new RefreshChildrenAction(childFactory);
+        final Action connectAction = new ConnectAction();
+        final Action disconnectAction = new DisconnectAction();
         refreshAction.setEnabled(isConnected());
-        nue[0] = isConnected() ? new DisconnectAction() : new ConnectAction();
-        nue[1] = refreshAction;
-        nue[2] = new DeleteAction();
+        connectAction.setEnabled(isConnected() == false);
+        disconnectAction.setEnabled(isConnected());
+        nue[0] = connectAction;
+        nue[1] = disconnectAction;
+        nue[2] = null;
+        nue[3] = new DeleteAction();
+        nue[4] = refreshAction;
+        nue[5] = null;
         return nue;
     }
 

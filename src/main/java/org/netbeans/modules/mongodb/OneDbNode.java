@@ -109,6 +109,7 @@ final class OneDbNode extends AbstractNode {
         return new Action[]{
             new AddCollectionAction(),
             new RefreshChildrenAction(childFactory),
+            null,
             new ExportWizardAction(getLookup()),
             new ImportWizardAction(getLookup(), new Runnable() {
 

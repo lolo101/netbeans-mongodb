@@ -141,10 +141,12 @@ final class CollectionNode extends AbstractNode {
         }
         return new Action[]{
             SystemAction.get(OpenAction.class),
-            new ExportWizardAction(getLookup(), properties),
-            importAction,
+            null,
+            dropAction,
             renameAction,
-            dropAction
+            null,
+            new ExportWizardAction(getLookup(), properties),
+            importAction
         };
     }
 
