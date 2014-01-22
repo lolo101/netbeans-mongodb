@@ -25,7 +25,6 @@ package org.netbeans.modules.mongodb.ui;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -40,6 +39,9 @@ import javax.swing.border.Border;
 import javax.swing.plaf.UIResource;
 import javax.swing.tree.TreeCellRenderer;
 import org.bson.types.ObjectId;
+import org.netbeans.modules.mongodb.ui.options.JsonTreeCellRendererOptions;
+import org.netbeans.modules.mongodb.ui.options.JsonTreeCellRendererOptions.LabelCategory;
+import org.netbeans.modules.mongodb.ui.options.JsonTreeCellRendererOptions.LabelFontConf;
 import org.netbeans.modules.mongodb.util.JsonProperty;
 
 /**
@@ -48,17 +50,18 @@ import org.netbeans.modules.mongodb.util.JsonProperty;
  */
 public final class JsonTreeCellRenderer extends JPanel implements TreeCellRenderer {
 
-    private static final Map<Class<?>, Color> COLORS = new HashMap<>();
+    private static final Map<Class<?>, LabelCategory> LABEL_CATEGORIES = new HashMap<>();
 
     static {
-        final Color caramel = new Color(0xC68E17);
-        final Color purple = new Color(0x4B088A);
-        COLORS.put(String.class, purple);
-        COLORS.put(Integer.class, caramel);
-        COLORS.put(Double.class, caramel);
-        COLORS.put(Boolean.class, Color.BLUE);
-        COLORS.put(ObjectId.class, Color.GRAY);
+        LABEL_CATEGORIES.put(String.class, LabelCategory.STRING_VALUE);
+        LABEL_CATEGORIES.put(Integer.class, LabelCategory.INT_VALUE);
+        LABEL_CATEGORIES.put(Double.class, LabelCategory.DECIMAL_VALUE);
+        LABEL_CATEGORIES.put(Boolean.class, LabelCategory.BOOLEAN_VALUE);
+        LABEL_CATEGORIES.put(ObjectId.class, LabelCategory.ID);
+
     }
+
+    private final JsonTreeCellRendererOptions options = JsonTreeCellRendererOptions.getDefault();
 
     private final JLabel keyLabel = new JLabel();
 
@@ -72,11 +75,6 @@ public final class JsonTreeCellRenderer extends JPanel implements TreeCellRender
      * Color to use for the foreground for selected nodes.
      */
     private Color textSelectionColor;
-
-    /**
-     * Color to use for the foreground for non-selected nodes.
-     */
-    private Color textNonSelectionColor;
 
     /**
      * Color to use for the background when a node is selected.
@@ -96,24 +94,22 @@ public final class JsonTreeCellRenderer extends JPanel implements TreeCellRender
     public JsonTreeCellRenderer() {
         super(new GridBagLayout());
         add(keyLabel, new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0,
-            GridBagConstraints.WEST,
-            GridBagConstraints.NONE,
-            new Insets(0, 0, 0, 2), 0, 0));
+                GridBagConstraints.WEST,
+                GridBagConstraints.NONE,
+                new Insets(0, 0, 0, 2), 0, 0));
         add(valueLabel, new GridBagConstraints(1, 0, 1, 1, 10.0, 1.0,
-            GridBagConstraints.WEST,
-            GridBagConstraints.HORIZONTAL,
-            new Insets(0, 0, 0, 1), 2, 0));
-
+                GridBagConstraints.WEST,
+                GridBagConstraints.HORIZONTAL,
+                new Insets(0, 0, 0, 1), 2, 0));
         setOpaque(true);
-        keyLabel.setFont(
-            keyLabel.getFont().deriveFont(Font.BOLD));
+        keyLabel.setOpaque(true);
+        valueLabel.setOpaque(true);
         inited = true;
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
-        keyLabel.setForeground(selected ? getTextSelectionColor() : getTextNonSelectionColor());
         setBackground(selected ? getBackgroundSelectionColor() : getBackgroundNonSelectionColor());
         setBorder(selected ? selectionBorder : nonSelectionBorder);
         if (value instanceof DBObjectTreeNode) {
@@ -128,17 +124,25 @@ public final class JsonTreeCellRenderer extends JPanel implements TreeCellRender
     private void computRendererForJsonPropertyNode(JsonPropertyNode node, boolean selected) {
         final JsonProperty property = node.getUserObject();
         if (node.isLeaf()) {
-            keyLabel.setText(buildJsonKey(property.getName()));
             final Object value = property.getValue();
+            final LabelCategory valueLabelCategory = LABEL_CATEGORIES.get(value.getClass());
+            final LabelFontConf keyFontConf = options.getLabelFontConf((value instanceof ObjectId) ? LabelCategory.ID : LabelCategory.KEY);
+            final LabelFontConf valueFontConf = options.getLabelFontConf(valueLabelCategory);
+
+            keyLabel.setText(buildJsonKey(property.getName()));
+            keyLabel.setFont(keyFontConf.getFont());
             valueLabel.setText(value instanceof String ? buildJsonString(value) : value.toString());
-            final Color foreground = COLORS.get(value.getClass());
+            valueLabel.setFont(valueFontConf.getFont());
             if (selected) {
+                keyLabel.setForeground(getTextSelectionColor());
+                keyLabel.setBackground(getBackgroundSelectionColor());
                 valueLabel.setForeground(getTextSelectionColor());
+                valueLabel.setBackground(getBackgroundSelectionColor());
             } else {
-                valueLabel.setForeground(foreground != null ? foreground : getTextNonSelectionColor());
-            }
-            if (value instanceof ObjectId) {
-                keyLabel.setForeground(selected ? getTextSelectionColor() : COLORS.get(ObjectId.class));
+                keyLabel.setForeground(keyFontConf.getForeground());
+                keyLabel.setBackground(keyFontConf.getBackground());
+                valueLabel.setForeground(valueFontConf.getForeground());
+                valueLabel.setBackground(valueFontConf.getBackground());
             }
         } else {
             keyLabel.setText(property.getName());
@@ -171,20 +175,16 @@ public final class JsonTreeCellRenderer extends JPanel implements TreeCellRender
         // value.
         if (!inited || (getTextSelectionColor() instanceof UIResource)) {
             setTextSelectionColor(
-                UIManager.getColor("Tree.selectionForeground"));
-        }
-        if (!inited || (getTextNonSelectionColor() instanceof UIResource)) {
-            setTextNonSelectionColor(
-                UIManager.getColor("Tree.textForeground"));
+                    UIManager.getColor("Tree.selectionForeground"));
         }
         if (!inited || (getBackgroundSelectionColor() instanceof UIResource)) {
             setBackgroundSelectionColor(
-                UIManager.getColor("Tree.selectionBackground"));
+                    UIManager.getColor("Tree.selectionBackground"));
         }
         if (!inited
-            || (getBackgroundNonSelectionColor() instanceof UIResource)) {
+                || (getBackgroundNonSelectionColor() instanceof UIResource)) {
             setBackgroundNonSelectionColor(
-                UIManager.getColor("Tree.textBackground"));
+                    UIManager.getColor("Tree.textBackground"));
         }
     }
 
@@ -200,20 +200,6 @@ public final class JsonTreeCellRenderer extends JPanel implements TreeCellRender
      */
     public Color getTextSelectionColor() {
         return textSelectionColor;
-    }
-
-    /**
-     * Sets the color the text is drawn with when the node isn't selected.
-     */
-    public void setTextNonSelectionColor(Color newColor) {
-        textNonSelectionColor = newColor;
-    }
-
-    /**
-     * Returns the color the text is drawn with when the node isn't selected.
-     */
-    public Color getTextNonSelectionColor() {
-        return textNonSelectionColor;
     }
 
     /**
