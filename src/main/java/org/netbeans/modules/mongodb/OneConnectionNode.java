@@ -39,11 +39,13 @@ import java.util.prefs.BackingStoreException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.progress.ProgressUtils;
+import org.netbeans.modules.mongodb.beans.MongoClientURIPropertyEditor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
@@ -168,7 +170,7 @@ final class OneConnectionNode extends AbstractNode implements PropertyChangeList
                     if (create && isConnected() == false) {
                         final ConnectionInfo connection = getLookup().lookup(ConnectionInfo.class);
                         try {
-                            mongo = new MongoClient(new MongoClientURI(connection.getMongoURI()));
+                            mongo = new MongoClient(connection.getMongoURI());
                             mongo.getDatabaseNames();  // ensure connection works
                             content.add(disconnecter);
                             setProblem(false);
@@ -247,19 +249,32 @@ final class OneConnectionNode extends AbstractNode implements PropertyChangeList
         sheet.put(buildSheetSet());
         return sheet;
     }
-    
+
     private Sheet.Set buildSheetSet() {
         final Sheet.Set set = Sheet.createPropertiesSet();
         set.put(new ConnectionNameProperty(getLookup()));
-        final ConnectionURIProperty uriProperty = new ConnectionURIProperty(getLookup());
-        set.put(isConnected() ? uriProperty.readOnly() : uriProperty);
+        if (isConnected()) {
+            set.put(new ConnectionURIReadOnlyProperty(getLookup()));
+        } else {
+            final ConnectionInfo connection = getLookup().lookup(ConnectionInfo.class);
+            try {
+                final PropertySupport.Reflection<MongoClientURI> uriProperty = 
+                    new PropertySupport.Reflection<>(connection, MongoClientURI.class, "mongoURI");
+                uriProperty.setPropertyEditorClass(MongoClientURIPropertyEditor.class);
+                uriProperty.setDisplayName(Bundle.ConnectionURI());
+                set.put(uriProperty);
+            } catch (NoSuchMethodException ex) {
+                Exceptions.printStackTrace(ex);
+                throw new AssertionError();
+            }
+        }
         return set;
     }
-    
+
     private void updateSheet() {
         getSheet().put(buildSheetSet());
     }
-    
+
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         switch (evt.getPropertyName()) {

@@ -23,8 +23,8 @@
  */
 package org.netbeans.modules.mongodb;
 
+import com.mongodb.MongoClientURI;
 import java.lang.reflect.InvocationTargetException;
-import org.netbeans.modules.mongodb.ui.ReadOnlyPropertyWrapper;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
@@ -34,39 +34,19 @@ import org.openide.util.NbBundle.Messages;
  * @author Yann D'Isanto
  */
 @Messages("ConnectionURI=Mongo URI")
-public final class ConnectionURIProperty extends PropertySupport.ReadWrite<String> {
-
-    public static final String NAME = "connectionURI";
+public final class ConnectionURIReadOnlyProperty extends PropertySupport.ReadOnly<MongoClientURI> {
 
     private static final String MONGO_URI_PREFIX = "mongodb://";
 
     private final Lookup lkp;
 
-    ConnectionURIProperty(Lookup lkp) {
-        super("connectionURI", String.class, Bundle.ConnectionURI(), null);
+    ConnectionURIReadOnlyProperty(Lookup lkp) {
+        super("mongoURI", MongoClientURI.class, Bundle.ConnectionURI(), null);
         this.lkp = lkp;
     }
 
     @Override
-    public String getValue() throws IllegalAccessException, InvocationTargetException {
-        final ConnectionInfo info = lkp.lookup(ConnectionInfo.class);
-        return info == null ? "[no value]" : info.getMongoURI();
+    public MongoClientURI getValue() throws IllegalAccessException, InvocationTargetException {
+        return lkp.lookup(ConnectionInfo.class).getMongoURI();
     }
-
-    @Override
-    public void setValue(String t) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        final ConnectionInfo info = lkp.lookup(ConnectionInfo.class);
-        if (info != null) {
-            final StringBuilder uriBuilder = new StringBuilder(t);
-            if (!t.startsWith(MONGO_URI_PREFIX)) {
-                uriBuilder.insert(0, MONGO_URI_PREFIX);
-            }
-            info.setMongoURI(t);
-        }
-    }
-
-    public PropertySupport.ReadOnly<String> readOnly() {
-        return new ReadOnlyPropertyWrapper<>(this);
-    }
-
 }

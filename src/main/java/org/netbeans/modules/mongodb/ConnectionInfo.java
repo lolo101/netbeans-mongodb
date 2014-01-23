@@ -23,6 +23,7 @@
  */
 package org.netbeans.modules.mongodb;
 
+import com.mongodb.MongoClientURI;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.prefs.BackingStoreException;
@@ -34,15 +35,20 @@ import org.openide.util.Parameters;
  *
  * @author Tim Boudreau
  */
-final class ConnectionInfo implements Comparable<ConnectionInfo>, AutoCloseable {
+public final class ConnectionInfo implements Comparable<ConnectionInfo>, AutoCloseable {
 
     public static final String PREFS_KEY_DISPLAY_NAME = "displayName"; //NOI18N
+
     public static final String PREFS_KEY_ID = "id"; //NOI18N
+
     public static final String PREFS_KEY_URI = "uri"; //NOI18N
+
     public static final String DEFAULT_URI = "mongodb://localhost"; //NOI18N
 
     private final Preferences node;
+
     private final String id;
+
     private static volatile int count;
 
     private final PropertyChangeSupport supp = new PropertyChangeSupport(this);
@@ -75,7 +81,7 @@ final class ConnectionInfo implements Comparable<ConnectionInfo>, AutoCloseable 
     }
 
     public String getDisplayName() {
-        return node.get(PREFS_KEY_DISPLAY_NAME, getMongoURI());
+        return node.get(PREFS_KEY_DISPLAY_NAME, getMongoURI().getURI());
     }
 
     public void setDisplayName(String displayName) {
@@ -91,18 +97,29 @@ final class ConnectionInfo implements Comparable<ConnectionInfo>, AutoCloseable 
         }
     }
 
-    public String getMongoURI() {
-        return node.get(PREFS_KEY_URI, DEFAULT_URI);
+    public MongoClientURI getMongoURI() {
+        return new MongoClientURI(node.get(PREFS_KEY_URI, DEFAULT_URI));
     }
+//    public String getMongoURI() {
+//        return node.get(PREFS_KEY_URI, DEFAULT_URI);
+//    }
 
-    public void setMongoURI(String uri) {
+    public void setMongoURI(MongoClientURI uri) {
         Parameters.notNull(PREFS_KEY_URI, uri);
-        final String old = getMongoURI();
+        final MongoClientURI old = getMongoURI();
         if (!old.equals(uri)) {
-            node.put(PREFS_KEY_URI, uri);
+            node.put(PREFS_KEY_URI, uri.getURI());
             supp.firePropertyChange(PREFS_KEY_URI, old, uri);
         }
     }
+//    public void setMongoURI(String uri) {
+//        Parameters.notNull(PREFS_KEY_URI, uri);
+//        final String old = getMongoURI();
+//        if (!old.equals(uri)) {
+//            node.put(PREFS_KEY_URI, uri);
+//            supp.firePropertyChange(PREFS_KEY_URI, old, uri);
+//        }
+//    }
 
     @Override
     public String toString() {
@@ -140,7 +157,7 @@ final class ConnectionInfo implements Comparable<ConnectionInfo>, AutoCloseable 
     String id() {
         return id;
     }
-    
+
     Preferences getPreferences() {
         return node;
     }

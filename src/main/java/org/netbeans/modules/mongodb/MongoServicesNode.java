@@ -25,6 +25,7 @@ package org.netbeans.modules.mongodb;
 
 import org.netbeans.modules.mongodb.ui.NewConnectionPanel;
 import com.mongodb.DBTCPConnector;
+import com.mongodb.MongoClientURI;
 import java.awt.event.ActionEvent;
 import java.lang.reflect.Field;
 import java.util.logging.Logger;
@@ -80,13 +81,10 @@ public final class MongoServicesNode extends AbstractNode {
             if (mongoLogger != null) {
                 mongoLogger.setUseParentHandlers(false);
             }
-        } catch (NoSuchFieldException ex) {
-            ex.printStackTrace();
-        } catch (SecurityException ex) {
-            ex.printStackTrace();
-        } catch (IllegalArgumentException ex) {
-            ex.printStackTrace();
-        } catch (IllegalAccessException ex) {
+        } catch (NoSuchFieldException 
+            | SecurityException 
+            | IllegalArgumentException 
+            | IllegalAccessException ex) {
             ex.printStackTrace();
         }
     }
@@ -94,7 +92,7 @@ public final class MongoServicesNode extends AbstractNode {
     ConnectionChildFactory getChildrenFactory() {
         return factory;
     }
-    
+
     static Preferences prefs() {
         return NbPreferences.forModule(MongoServicesNode.class).node("connections"); //NOI18N
     }
@@ -114,20 +112,18 @@ public final class MongoServicesNode extends AbstractNode {
         @Override
         @Messages("TTL_newConnection=New MongoDB Connection")
         public void actionPerformed(ActionEvent e) {
-            final NewConnectionPanel pnl = new NewConnectionPanel();
-            final DialogDescriptor desc = new DialogDescriptor(pnl, Bundle.TTL_newConnection());
-
-            pnl.addChangeListener(new ChangeListener() {
+            final NewConnectionPanel panel = new NewConnectionPanel();
+            final DialogDescriptor desc = new DialogDescriptor(panel, Bundle.TTL_newConnection());
+            panel.setNotificationLineSupport(desc.createNotificationLineSupport());
+            panel.addChangeListener(new ChangeListener() {
                 @Override
                 public void stateChanged(ChangeEvent e) {
-                    desc.setValid(pnl.isOk());
+                    desc.setValid(panel.isOk());
                 }
             });
-            Object dlgResult = DialogDisplayer.getDefault().notify(desc);
-            System.out.println("DLG RESULT " + dlgResult);
-            if (dlgResult.equals(NotifyDescriptor.OK_OPTION)) {
-                final String uri = pnl.getMongoURI();
-                final String name = pnl.getConnectionName();
+            if (NotifyDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(desc))) {
+                final MongoClientURI uri = panel.getMongoURI();
+                final String name = panel.getConnectionName();
                 final Preferences prefs = prefs();
                 try (ConnectionInfo info = new ConnectionInfo(prefs)) {
                     if (!name.isEmpty()) {

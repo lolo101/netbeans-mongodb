@@ -24,7 +24,6 @@
 package org.netbeans.modules.mongodb;
 
 import com.mongodb.MongoClient;
-import com.mongodb.MongoClientURI;
 import java.util.List;
 import java.util.concurrent.Callable;
 import org.openide.nodes.Node;
@@ -58,8 +57,7 @@ final class OneConnectionChildren extends RefreshableChildFactory<DbInfo> {
             problems.invoke(new Callable<Void>() {
                 @Override
                 public Void call() throws Exception {
-                    final MongoClientURI uri = new MongoClientURI(connectionInfo.getMongoURI());
-                    final String connectionDBName = uri.getDatabase();
+                    final String connectionDBName = connectionInfo.getMongoURI().getDatabase();
                     if (connectionDBName != null) {
                         list.add(new DbInfo(lookup, connectionDBName));
                     } else {
