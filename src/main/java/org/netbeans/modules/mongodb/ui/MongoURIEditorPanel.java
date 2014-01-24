@@ -39,6 +39,7 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.PlainDocument;
+import org.netbeans.modules.mongodb.util.MongoUtil;
 import org.openide.NotificationLineSupport;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
@@ -76,7 +77,7 @@ public final class MongoURIEditorPanel extends javax.swing.JPanel {
         final DocumentListener hostValidationListener = new AbstractDocumentListener() {
 
             @Override
-            protected void onChange() {
+            protected void onChange(DocumentEvent e) {
                 addHostButton.setEnabled(hostField.getText().isEmpty() == false);
             }
         };
@@ -84,9 +85,18 @@ public final class MongoURIEditorPanel extends javax.swing.JPanel {
         final DocumentListener optionValidationListener = new AbstractDocumentListener() {
 
             @Override
-            protected void onChange() {
+            protected void onChange(DocumentEvent e) {
+                final String optionName = optionNameField.getText();
+                if (e.getDocument() == optionNameField.getDocument()) {
+                    if (optionName.isEmpty() == false
+                        && MongoUtil.isSupportedOption(optionName) == false) {
+                        warn("unsupported option");
+                    } else {
+                        updateURIField();
+                    }
+                }
                 addOptionButton.setEnabled(
-                    optionNameField.getText().isEmpty() == false
+                    optionName.isEmpty() == false
                     && optionValueField.getText().isEmpty() == false);
             }
         };
@@ -95,7 +105,7 @@ public final class MongoURIEditorPanel extends javax.swing.JPanel {
         final DocumentListener fireChangeDocumentListener = new AbstractDocumentListener() {
 
             @Override
-            protected void onChange() {
+            protected void onChange(DocumentEvent e) {
                 updateURIField();
             }
 
@@ -106,7 +116,7 @@ public final class MongoURIEditorPanel extends javax.swing.JPanel {
         uriField.getDocument().addDocumentListener(new AbstractDocumentListener() {
 
             @Override
-            protected void onChange() {
+            protected void onChange(DocumentEvent e) {
                 synchronized (lock) {
                     if (uriUserInput || uriFieldUpdate) {
                         return;
@@ -137,6 +147,7 @@ public final class MongoURIEditorPanel extends javax.swing.JPanel {
         final String uri = computeMongoURIString();
         try {
             uriField.setText(new MongoClientURI(uri).getURI());
+            clearNotificationLineSupport();
         } catch (IllegalArgumentException ex) {
             error(ex.getLocalizedMessage());
         }
@@ -311,14 +322,12 @@ public final class MongoURIEditorPanel extends javax.swing.JPanel {
 
     private Option readOptionFromUI() {
         final String optionName = optionNameField.getText();
-        // TODO: add option name validation (supported option)
         if (optionName.isEmpty()) {
             error("no option name specified");
             optionNameField.requestFocusInWindow();
             return null;
         }
         final String optionValue = optionValueField.getText();
-        // TODO: add option value validation
         if (optionValue.isEmpty()) {
             error("no option value specified");
             optionValueField.requestFocusInWindow();
@@ -911,21 +920,21 @@ public final class MongoURIEditorPanel extends javax.swing.JPanel {
 
     private static abstract class AbstractDocumentListener implements DocumentListener {
 
-        protected abstract void onChange();
+        protected abstract void onChange(DocumentEvent e);
 
         @Override
         public void insertUpdate(DocumentEvent e) {
-            onChange();
+            onChange(e);
         }
 
         @Override
         public void removeUpdate(DocumentEvent e) {
-            onChange();
+            onChange(e);
         }
 
         @Override
         public void changedUpdate(DocumentEvent e) {
-            onChange();
+            onChange(e);
         }
 
     }
