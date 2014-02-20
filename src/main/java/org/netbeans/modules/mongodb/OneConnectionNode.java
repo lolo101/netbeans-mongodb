@@ -38,6 +38,7 @@ import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.mongodb.beans.MongoClientURIPropertyEditor;
 import org.netbeans.modules.mongodb.shell.MongoShellAction;
@@ -264,8 +265,8 @@ final class OneConnectionNode extends AbstractNode implements PropertyChangeList
         } else {
             final ConnectionInfo connection = getLookup().lookup(ConnectionInfo.class);
             try {
-                final PropertySupport.Reflection<MongoClientURI> uriProperty = 
-                    new PropertySupport.Reflection<>(connection, MongoClientURI.class, "mongoURI");
+                final PropertySupport.Reflection<MongoClientURI> uriProperty
+                    = new PropertySupport.Reflection<>(connection, MongoClientURI.class, "mongoURI");
                 uriProperty.setPropertyEditorClass(MongoClientURIPropertyEditor.class);
                 uriProperty.setDisplayName(Bundle.ConnectionURI());
                 set.put(uriProperty);
@@ -318,7 +319,16 @@ final class OneConnectionNode extends AbstractNode implements PropertyChangeList
                     client.close();
                 }
             } finally {
-                ConnectionInfo info = getLookup().lookup(ConnectionInfo.class);
+                final ConnectionInfo info = getLookup().lookup(ConnectionInfo.class);
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        for (TopComponent topComponent : TopComponentUtils.findAll(info)) {
+                            topComponent.close();
+                        }
+                    }
+                });
                 content.remove(info, converter);
                 content.add(info, converter);
             }
