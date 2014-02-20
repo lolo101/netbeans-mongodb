@@ -31,8 +31,12 @@ import com.mongodb.util.JSONParseException;
 import org.netbeans.modules.mongodb.CollectionInfo;
 import org.netbeans.modules.mongodb.util.Json;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
 import java.util.HashMap;
 import java.util.Map;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import static javax.swing.Action.SHORT_DESCRIPTION;
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JEditorPane;
@@ -65,7 +69,17 @@ import org.openide.windows.TopComponent;
     "editProjectionTitle=Enter projection",
     "editSortTitle=Enter sort",
     "invalidJson=invalid json",
-    "confirmDocumentDeletionText=Edit document"})
+    "confirmDocumentDeletionText=Edit document",
+    "ACTION_refreshDocuments=Refresh",
+    "ACTION_refreshDocuments_tooltip=Refresh Documents",
+    "ACTION_navFirst=First Page",
+    "ACTION_navFirst_tooltip=First Page",
+    "ACTION_navLeft=Previous Page",
+    "ACTION_navLeft_tooltip=Previous Page",
+    "ACTION_navRight=Next Page",
+    "ACTION_navRight_tooltip=Next Page",
+    "ACTION_navLast=Last Page",
+    "ACTION_navLast_tooltip=Last Page"})
 public final class CollectionViewTopComponent extends TopComponent {
 
     private static final Integer[] ITEMS_PER_PAGE_VALUES = {10, 20, 50, 100};
@@ -80,6 +94,17 @@ public final class CollectionViewTopComponent extends TopComponent {
 
     private final QueryEditor queryEditor = new QueryEditor();
 
+    private final Action refreshDocumentsAction = new RefredhDocumentsAction();
+    
+    private final Action navFirstAction = new NavFirstAction();
+    
+    private final Action navLeftAction = new NavLeftAction();
+    
+    private final Action navRightAction = new NavRightAction();
+    
+    private final Action navLastAction = new NavLastAction();
+    
+        
     public CollectionViewTopComponent(CollectionInfo collectionInfo, Lookup lookup) {
         super(lookup);
         this.collectionInfo = collectionInfo;
@@ -109,6 +134,26 @@ public final class CollectionViewTopComponent extends TopComponent {
         reload();
     }
 
+    public Action getRefreshDocumentsAction() {
+        return refreshDocumentsAction;
+    }
+
+    public Action getNavFirstAction() {
+        return navFirstAction;
+    }
+
+    public Action getNavLeftAction() {
+        return navLeftAction;
+    }
+
+    public Action getNavRightAction() {
+        return navRightAction;
+    }
+
+    public Action getNavLastAction() {
+        return navLastAction;
+    }
+    
     private void reload() {
         new Thread(new Runnable() {
 
@@ -132,11 +177,11 @@ public final class CollectionViewTopComponent extends TopComponent {
                 pageLabel.setText(String.valueOf(page));
                 pageCountLabel.setText(String.valueOf(pageCount));
                 boolean leftButtonsEnabled = page > 1;
-                firstButton.setEnabled(leftButtonsEnabled);
-                previousButton.setEnabled(leftButtonsEnabled);
+                navFirstButton.setEnabled(leftButtonsEnabled);
+                navLeftButton.setEnabled(leftButtonsEnabled);
                 boolean rightButtonsEnabled = page < pageCount;
-                nextButton.setEnabled(rightButtonsEnabled);
-                lastButton.setEnabled(rightButtonsEnabled);
+                navRightButton.setEnabled(rightButtonsEnabled);
+                navLastButton.setEnabled(rightButtonsEnabled);
             }
         });
     }
@@ -202,12 +247,8 @@ public final class CollectionViewTopComponent extends TopComponent {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        itemsPerPageLabel = new javax.swing.JLabel();
-        itemsPerPageComboBox = new JComboBox<>(ITEMS_PER_PAGE_VALUES);
-        lastButton = new javax.swing.JButton();
-        nextButton = new javax.swing.JButton();
-        firstButton = new javax.swing.JButton();
-        previousButton = new javax.swing.JButton();
+        pageSizeLabel = new javax.swing.JLabel();
+        pageSizeComboBox = new JComboBox<>(ITEMS_PER_PAGE_VALUES);
         pageCountLabel = new javax.swing.JLabel();
         pageLabel = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
@@ -223,48 +264,21 @@ public final class CollectionViewTopComponent extends TopComponent {
         sortField = new javax.swing.JTextField();
         editQueryButton = new javax.swing.JButton();
         clearQueryButton = new javax.swing.JButton();
-        refreshButton = new javax.swing.JButton();
         exportButton = new javax.swing.JButton();
         tableScrollPane = new javax.swing.JScrollPane();
         documentsTable = new javax.swing.JTable();
+        jToolBar1 = new javax.swing.JToolBar();
+        refreshDocumentsButton = new javax.swing.JButton();
+        navFirstButton = new javax.swing.JButton();
+        navLeftButton = new javax.swing.JButton();
+        navRightButton = new javax.swing.JButton();
+        navLastButton = new javax.swing.JButton();
 
-        org.openide.awt.Mnemonics.setLocalizedText(itemsPerPageLabel, org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.itemsPerPageLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(pageSizeLabel, org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.pageSizeLabel.text_1")); // NOI18N
 
-        itemsPerPageComboBox.addActionListener(new java.awt.event.ActionListener() {
+        pageSizeComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                itemsPerPageComboBoxActionPerformed(evt);
-            }
-        });
-
-        org.openide.awt.Mnemonics.setLocalizedText(lastButton, org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.lastButton.text")); // NOI18N
-        lastButton.setEnabled(false);
-        lastButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                lastButtonActionPerformed(evt);
-            }
-        });
-
-        org.openide.awt.Mnemonics.setLocalizedText(nextButton, org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.nextButton.text")); // NOI18N
-        nextButton.setEnabled(false);
-        nextButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                nextButtonActionPerformed(evt);
-            }
-        });
-
-        org.openide.awt.Mnemonics.setLocalizedText(firstButton, org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.firstButton.text")); // NOI18N
-        firstButton.setEnabled(false);
-        firstButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                firstButtonActionPerformed(evt);
-            }
-        });
-
-        org.openide.awt.Mnemonics.setLocalizedText(previousButton, org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.previousButton.text")); // NOI18N
-        previousButton.setEnabled(false);
-        previousButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                previousButtonActionPerformed(evt);
+                pageSizeComboBoxActionPerformed(evt);
             }
         });
 
@@ -376,14 +390,6 @@ public final class CollectionViewTopComponent extends TopComponent {
                     .addComponent(clearQueryButton)))
         );
 
-        refreshButton.setIcon(new ImageIcon(Images.REFRESH_ICON));
-        org.openide.awt.Mnemonics.setLocalizedText(refreshButton, org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.refreshButton.text")); // NOI18N
-        refreshButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                refreshButtonActionPerformed(evt);
-            }
-        });
-
         org.openide.awt.Mnemonics.setLocalizedText(exportButton, org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.exportButton.text")); // NOI18N
         exportButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -404,6 +410,42 @@ public final class CollectionViewTopComponent extends TopComponent {
         ));
         tableScrollPane.setViewportView(documentsTable);
 
+        jToolBar1.setFloatable(false);
+        jToolBar1.setRollover(true);
+
+        refreshDocumentsButton.setAction(getRefreshDocumentsAction());
+        refreshDocumentsButton.setFocusable(false);
+        refreshDocumentsButton.setHideActionText(true);
+        refreshDocumentsButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        refreshDocumentsButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        jToolBar1.add(refreshDocumentsButton);
+
+        navFirstButton.setAction(getNavFirstAction());
+        navFirstButton.setEnabled(false);
+        navFirstButton.setHideActionText(true);
+        jToolBar1.add(navFirstButton);
+
+        navLeftButton.setAction(getNavLeftAction());
+        navLeftButton.setEnabled(false);
+        navLeftButton.setHideActionText(true);
+        jToolBar1.add(navLeftButton);
+
+        navRightButton.setAction(getNavRightAction());
+        navRightButton.setEnabled(false);
+        navRightButton.setFocusable(false);
+        navRightButton.setHideActionText(true);
+        navRightButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        navRightButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        jToolBar1.add(navRightButton);
+
+        navLastButton.setAction(getNavLastAction());
+        navLastButton.setEnabled(false);
+        navLastButton.setFocusable(false);
+        navLastButton.setHideActionText(true);
+        navLastButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        navLastButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        jToolBar1.add(navLastButton);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -416,26 +458,19 @@ public final class CollectionViewTopComponent extends TopComponent {
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGap(6, 6, 6)
                         .addComponent(exportButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(firstButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(previousButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 1125, Short.MAX_VALUE)
                         .addComponent(pageLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel3)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(pageCountLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(nextButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(lastButton))
+                        .addGap(106, 106, 106))
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(refreshButton)
-                        .addGap(18, 18, 18)
-                        .addComponent(itemsPerPageLabel)
+                        .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(itemsPerPageComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(pageSizeLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(pageSizeComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(addButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -450,21 +485,18 @@ public final class CollectionViewTopComponent extends TopComponent {
                 .addContainerGap()
                 .addComponent(queryPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(itemsPerPageLabel)
-                    .addComponent(itemsPerPageComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(addButton)
-                    .addComponent(deleteButton)
-                    .addComponent(editButton)
-                    .addComponent(refreshButton))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(pageSizeLabel)
+                        .addComponent(pageSizeComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(addButton)
+                        .addComponent(deleteButton)
+                        .addComponent(editButton))
+                    .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(tableScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 109, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lastButton)
-                    .addComponent(nextButton)
-                    .addComponent(firstButton)
-                    .addComponent(previousButton)
                     .addComponent(pageCountLabel)
                     .addComponent(pageLabel)
                     .addComponent(jLabel3)
@@ -473,56 +505,10 @@ public final class CollectionViewTopComponent extends TopComponent {
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void firstButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_firstButtonActionPerformed
+    private void pageSizeComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pageSizeComboBoxActionPerformed
+        tableModel.setItemsPerPage((Integer) pageSizeComboBox.getSelectedItem());
         reload();
-    }//GEN-LAST:event_firstButtonActionPerformed
-
-    private void previousButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_previousButtonActionPerformed
-        new Thread(new Runnable() {
-
-            @Override
-            public void run() {
-                int page = tableModel.getPage();
-                if (page > 1) {
-                    tableModel.setPage(page - 1);
-                    tableModel.update();
-                    updatePagination();
-                }
-            }
-        }).start();
-    }//GEN-LAST:event_previousButtonActionPerformed
-
-    private void nextButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nextButtonActionPerformed
-        new Thread(new Runnable() {
-
-            @Override
-            public void run() {
-                int page = tableModel.getPage();
-                if (page < tableModel.getPageCount()) {
-                    tableModel.setPage(page + 1);
-                    tableModel.update();
-                    updatePagination();
-                }
-            }
-        }).start();
-    }//GEN-LAST:event_nextButtonActionPerformed
-
-    private void lastButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_lastButtonActionPerformed
-        new Thread(new Runnable() {
-
-            @Override
-            public void run() {
-                tableModel.setPage(tableModel.getPageCount());
-                tableModel.update();
-                updatePagination();
-            }
-        }).start();
-    }//GEN-LAST:event_lastButtonActionPerformed
-
-    private void itemsPerPageComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_itemsPerPageComboBoxActionPerformed
-        tableModel.setItemsPerPage((Integer) itemsPerPageComboBox.getSelectedItem());
-        reload();
-    }//GEN-LAST:event_itemsPerPageComboBoxActionPerformed
+    }//GEN-LAST:event_pageSizeComboBoxActionPerformed
 
     private void addDocumentButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addDocumentButtonActionPerformed
         final DBObject document = showJsonEditor(
@@ -586,10 +572,6 @@ public final class CollectionViewTopComponent extends TopComponent {
         updateQueryFieldsFromEditor();
     }//GEN-LAST:event_clearQueryButtonActionPerformed
 
-    private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
-        reload();
-    }//GEN-LAST:event_refreshButtonActionPerformed
-
     private void exportButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportButtonActionPerformed
         final Map<String, Object> properties = new HashMap<>();
         properties.put(ExportWizardAction.PROP_COLLECTION, collectionInfo.getName());
@@ -609,19 +591,20 @@ public final class CollectionViewTopComponent extends TopComponent {
     private javax.swing.JButton editButton;
     private javax.swing.JButton editQueryButton;
     private javax.swing.JButton exportButton;
-    private javax.swing.JButton firstButton;
-    private javax.swing.JComboBox<Integer> itemsPerPageComboBox;
-    private javax.swing.JLabel itemsPerPageLabel;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JButton lastButton;
-    private javax.swing.JButton nextButton;
+    private javax.swing.JToolBar jToolBar1;
+    private javax.swing.JButton navFirstButton;
+    private javax.swing.JButton navLastButton;
+    private javax.swing.JButton navLeftButton;
+    private javax.swing.JButton navRightButton;
     private javax.swing.JLabel pageCountLabel;
     private javax.swing.JLabel pageLabel;
-    private javax.swing.JButton previousButton;
+    private javax.swing.JComboBox<Integer> pageSizeComboBox;
+    private javax.swing.JLabel pageSizeLabel;
     private javax.swing.JTextField projectionField;
     private javax.swing.JLabel projectionLabel;
     private javax.swing.JPanel queryPanel;
-    private javax.swing.JButton refreshButton;
+    private javax.swing.JButton refreshDocumentsButton;
     private javax.swing.JTextField sortField;
     private javax.swing.JLabel sortLabel;
     private javax.swing.JScrollPane tableScrollPane;
@@ -637,5 +620,100 @@ public final class CollectionViewTopComponent extends TopComponent {
     void readProperties(java.util.Properties p) {
         String version = p.getProperty("version");
         // TODO read your settings according to their version
+    }
+
+    private final class RefredhDocumentsAction extends AbstractAction {
+
+        public RefredhDocumentsAction() {
+            super(Bundle.ACTION_refreshDocuments(), new ImageIcon(Images.REFRESH_ICON));
+            putValue(SHORT_DESCRIPTION, Bundle.ACTION_refreshDocuments_tooltip());
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            reload();
+        }
+    }
+
+    private final class NavFirstAction extends AbstractAction {
+
+        public NavFirstAction() {
+            super(Bundle.ACTION_navFirst(), new ImageIcon(Images.NAV_FIRST_ICON));
+            putValue(SHORT_DESCRIPTION, Bundle.ACTION_navFirst_tooltip());
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            reload();
+        }
+    }
+
+    private final class NavLeftAction extends AbstractAction {
+
+        public NavLeftAction() {
+            super(Bundle.ACTION_navLeft(), new ImageIcon(Images.NAV_LEFT_ICON));
+            putValue(SHORT_DESCRIPTION, Bundle.ACTION_navLeft_tooltip());
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            new Thread(new Runnable() {
+
+                @Override
+                public void run() {
+                    int page = tableModel.getPage();
+                    if (page > 1) {
+                        tableModel.setPage(page - 1);
+                        tableModel.update();
+                        updatePagination();
+                    }
+                }
+            }).start();
+        }
+    }
+
+    private final class NavRightAction extends AbstractAction {
+
+        public NavRightAction() {
+            super(Bundle.ACTION_navRight(), new ImageIcon(Images.NAV_RIGHT_ICON));
+            putValue(SHORT_DESCRIPTION, Bundle.ACTION_navRight_tooltip());
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            new Thread(new Runnable() {
+
+                @Override
+                public void run() {
+                    int page = tableModel.getPage();
+                    if (page < tableModel.getPageCount()) {
+                        tableModel.setPage(page + 1);
+                        tableModel.update();
+                        updatePagination();
+                    }
+                }
+            }).start();
+        }
+    }
+
+    private final class NavLastAction extends AbstractAction {
+
+        public NavLastAction() {
+            super(Bundle.ACTION_navLast(), new ImageIcon(Images.NAV_LAST_ICON));
+            putValue(SHORT_DESCRIPTION, Bundle.ACTION_navLast_tooltip());
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            new Thread(new Runnable() {
+
+                @Override
+                public void run() {
+                    tableModel.setPage(tableModel.getPageCount());
+                    tableModel.update();
+                    updatePagination();
+                }
+            }).start();
+        }
     }
 }

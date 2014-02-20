@@ -23,7 +23,6 @@
  */
 package org.netbeans.modules.mongodb.ui;
 
-import com.mongodb.DBObject;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -35,15 +34,15 @@ import org.netbeans.modules.mongodb.util.JsonProperty;
  *
  * @author Yann D'Isanto
  */
-public final class JsonPropertyNode extends ImmutableTreeNode<JsonProperty> {
+public final class JsonValuePropertyNode extends ImmutableTreeNode<Object> {
 
-    public JsonPropertyNode(TreeNode parent, JsonProperty property) {
-        super(parent, property, new ChildrenFactory<JsonProperty>() {
+    public JsonValuePropertyNode(TreeNode parent, Object value) {
+        super(parent, value, new ChildrenFactory<Object>() {
 
             @Override
             @SuppressWarnings("unchecked")
-            public List<TreeNode> createChildren(TreeNode parent, JsonProperty property) {
-                final Object value = property.getValue();
+            public List<TreeNode> createChildren(TreeNode parent, Object value) {
+//                final Object value = property.getValue();
                 if (value instanceof Map) {
                     final Map<String, Object> map = (Map<String, Object>) value;
                     final List<TreeNode> children = new ArrayList<>(map.size());
@@ -57,11 +56,7 @@ public final class JsonPropertyNode extends ImmutableTreeNode<JsonProperty> {
                     final List<Object> objects = (List<Object>) value;
                     final List<TreeNode> children = new ArrayList<>(objects.size());
                     for (Object object : objects) {
-                        if(object instanceof DBObject) {
-                            children.add(new DBObjectTreeNode(parent, (DBObject) object));
-                        } else {
-                            children.add(new JsonValuePropertyNode(parent, object));
-                        }
+                        children.add(new JsonValuePropertyNode(parent, object));
                     }
                     return children;
                 }

@@ -56,6 +56,5 @@ public final class DBObjectTreeNode extends ImmutableTreeNode<DBObject> {
                 return children;
             }
         });
-
     }
 }

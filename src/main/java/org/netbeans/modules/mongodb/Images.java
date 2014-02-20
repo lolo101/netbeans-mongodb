@@ -56,14 +56,34 @@ public interface Images {
     @StaticResource
     String REFRESH_ICON_PATH = "org/netbeans/modules/mongodb/images/refresh.png"; //NOI18N
 
+    @StaticResource
+    String NAV_FIRST_ICON_PATH = "org/netbeans/modules/mongodb/images/navigate_beginning.png"; //NOI18N
+
+    @StaticResource
+    String NAV_LEFT_ICON_PATH = "org/netbeans/modules/mongodb/images/navigate_left.png"; //NOI18N
+
+    @StaticResource
+    String NAV_RIGHT_ICON_PATH = "org/netbeans/modules/mongodb/images/navigate_right.png"; //NOI18N
+
+    @StaticResource
+    String NAV_LAST_ICON_PATH = "org/netbeans/modules/mongodb/images/navigate_end.png"; //NOI18N
+
     Image COLLECTION_ICON = ImageUtilities.loadImage(COLLECTION_ICON_PATH);
 
     Image SYSTEM_COLLECTION_ICON = ImageUtilities.loadImage(SYSTEM_COLLECTION_ICON_PATH);
 
-    Image CONNECTION_ICON = ImageUtilities.loadImage(CONNECTION_ICON_PATH); //NOI18N
+    Image CONNECTION_ICON = ImageUtilities.loadImage(CONNECTION_ICON_PATH);
 
     Image CONNECTION_DISCONNECTED_ICON = ImageUtilities.loadImage(CONNECTION_DISCONNECTED_ICON_PATH);
 
     Image REFRESH_ICON = ImageUtilities.loadImage(REFRESH_ICON_PATH);
+
+    Image NAV_FIRST_ICON = ImageUtilities.loadImage(NAV_FIRST_ICON_PATH);
+
+    Image NAV_LEFT_ICON = ImageUtilities.loadImage(NAV_LEFT_ICON_PATH);
+
+    Image NAV_RIGHT_ICON = ImageUtilities.loadImage(NAV_RIGHT_ICON_PATH);
+
+    Image NAV_LAST_ICON = ImageUtilities.loadImage(NAV_LAST_ICON_PATH);
 
 }
