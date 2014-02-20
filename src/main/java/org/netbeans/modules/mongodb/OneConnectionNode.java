@@ -40,6 +40,8 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.mongodb.beans.MongoClientURIPropertyEditor;
+import org.netbeans.modules.mongodb.shell.MongoShellAction;
+import org.netbeans.modules.mongodb.options.MongoShellOptions;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
@@ -139,20 +141,24 @@ final class OneConnectionNode extends AbstractNode implements PropertyChangeList
     @Override
     public Action[] getActions(boolean ignored) {
         final Action[] orig = super.getActions(ignored);
-        final Action[] nue = new Action[orig.length + 6];
-        System.arraycopy(orig, 0, nue, 6, orig.length);
+        final Action[] nue = new Action[orig.length + 8];
+        System.arraycopy(orig, 0, nue, 8, orig.length);
         final Action refreshAction = new RefreshChildrenAction(childFactory);
         final Action connectAction = new ConnectAction();
         final Action disconnectAction = new DisconnectAction();
+        final Action mongoShellAction = new MongoShellAction(getLookup());
         refreshAction.setEnabled(isConnected());
         connectAction.setEnabled(isConnected() == false);
         disconnectAction.setEnabled(isConnected());
+        mongoShellAction.setEnabled(MongoShellOptions.INSTANCE.getMongoExecPath() != null);
         nue[0] = connectAction;
         nue[1] = disconnectAction;
         nue[2] = null;
         nue[3] = new DeleteAction();
         nue[4] = refreshAction;
         nue[5] = null;
+        nue[6] = mongoShellAction;
+        nue[7] = null;
         return nue;
     }
 

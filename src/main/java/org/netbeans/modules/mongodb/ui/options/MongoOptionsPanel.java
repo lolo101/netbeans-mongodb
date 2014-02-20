@@ -23,56 +23,101 @@
  */
 package org.netbeans.modules.mongodb.ui.options;
 
-import java.awt.Color;
+import org.netbeans.modules.mongodb.options.JsonTreeCellRendererOptions;
 import java.awt.Font;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import org.netbeans.modules.mongodb.ui.options.JsonTreeCellRendererOptions.LabelCategory;
-import org.netbeans.modules.mongodb.ui.options.JsonTreeCellRendererOptions.LabelFontConf;
+import org.netbeans.modules.mongodb.options.MongoShellOptions;
+import org.netbeans.modules.mongodb.options.LabelCategory;
+import org.netbeans.modules.mongodb.options.LabelFontConf;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.ColorComboBox;
+import org.openide.filesystems.FileChooserBuilder;
 
 /**
  * @author Yann D'Isanto
  */
 final class MongoOptionsPanel extends javax.swing.JPanel {
 
-    private final JsonTreeCellRendererOptions options = new JsonTreeCellRendererOptions();
+    private final JsonTreeCellRendererOptions jsonTreeRendererOptions = JsonTreeCellRendererOptions.INSTANCE;
+
+    private final MongoShellOptions mongoShellOptions = MongoShellOptions.INSTANCE;
 
     private final MongoOptionsPanelController controller;
 
     private final PropertyEditor fontEditor = PropertyEditorManager.findEditor(Font.class);
 
+    private final Map<LabelCategory, LabelFontConf.Builder> labelConfBuilders = new HashMap<>();
+
+    private boolean internalUpdate = false;
+
     MongoOptionsPanel(MongoOptionsPanelController controller) {
         this.controller = controller;
         initComponents();
+        internalUpdate = true;
         categoriesList.setListData(LabelCategory.values());
         categoriesList.setSelectedIndex(0);
-        loadLabelFontConf(getSelectedLabelFontConf());
+
+        for (LabelCategory labelCategory : LabelCategory.values()) {
+            final LabelFontConf conf = jsonTreeRendererOptions.getLabelFontConf(labelCategory);
+            labelConfBuilders.put(labelCategory, new LabelFontConf.Builder(conf));
+        }
+
+        loadLabelFontConfInUI(getSelectedLabelFontConfBuilder());
+        internalUpdate = false;
+        
         categoriesList.addListSelectionListener(new ListSelectionListener() {
 
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                loadLabelFontConf(getSelectedLabelFontConf());
+                loadLabelFontConfInUI(getSelectedLabelFontConfBuilder());
+            }
+        });
+        mongoExecPathField.getDocument().addDocumentListener(new DocumentListener() {
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                fireChangeEvent();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                fireChangeEvent();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                fireChangeEvent();
             }
         });
     }
 
-    private LabelFontConf getSelectedLabelFontConf() {
+    private LabelFontConf.Builder getSelectedLabelFontConfBuilder() {
         final LabelCategory category = categoriesList.getSelectedValue();
-        return options.getLabelFontConf(category);
+        return labelConfBuilders.get(category);
     }
 
-    private void loadLabelFontConf(LabelFontConf labelFontConf) {
-        final Font font = labelFontConf.getFont();
+    private void loadLabelFontConfInUI(LabelFontConf.Builder labelFontConfBuilder) {
+        final Font font = labelFontConfBuilder.getFont();
         fontEditor.setValue(font);
         fontField.setFont(font);
         fontField.setText(fontEditor.getAsText());
-        ((ColorComboBox) foregroundComboBox).setSelectedColor(labelFontConf.getForeground());
-        ((ColorComboBox) backgroundComboBox).setSelectedColor(labelFontConf.getBackground());
+        ((ColorComboBox) foregroundComboBox).setSelectedColor(labelFontConfBuilder.getForeground());
+        ((ColorComboBox) backgroundComboBox).setSelectedColor(labelFontConfBuilder.getBackground());
+    }
+
+    private void fireChangeEvent() {
+        if (internalUpdate == false) {
+            controller.changed();
+        }
     }
 
     /**
@@ -83,7 +128,8 @@ final class MongoOptionsPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jPanel2 = new javax.swing.JPanel();
+        jsonTreeRenderingOptionsPanel = new javax.swing.JPanel();
+        renderingOptionsPanel = new javax.swing.JPanel();
         fontLabel = new javax.swing.JLabel();
         backgroundComboBox = new ColorComboBox();
         foregroundLabel = new javax.swing.JLabel();
@@ -94,8 +140,14 @@ final class MongoOptionsPanel extends javax.swing.JPanel {
         categoriesScrollPane = new javax.swing.JScrollPane();
         categoriesList = new javax.swing.JList<LabelCategory>();
         categoriesLabel = new javax.swing.JLabel();
+        shellOptionsPanel = new javax.swing.JPanel();
+        mongoExecPathLabel = new javax.swing.JLabel();
+        mongoExecPathField = new javax.swing.JTextField();
+        jButton1 = new javax.swing.JButton();
 
-        jPanel2.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        jsonTreeRenderingOptionsPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(MongoOptionsPanel.class, "MongoOptionsPanel.jsonTreeRenderingOptionsPanel.border.title"))); // NOI18N
+
+        renderingOptionsPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
         org.openide.awt.Mnemonics.setLocalizedText(fontLabel, org.openide.util.NbBundle.getMessage(MongoOptionsPanel.class, "MongoOptionsPanel.fontLabel.text")); // NOI18N
 
@@ -125,46 +177,46 @@ final class MongoOptionsPanel extends javax.swing.JPanel {
             }
         });
 
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
+        javax.swing.GroupLayout renderingOptionsPanelLayout = new javax.swing.GroupLayout(renderingOptionsPanel);
+        renderingOptionsPanel.setLayout(renderingOptionsPanelLayout);
+        renderingOptionsPanelLayout.setHorizontalGroup(
+            renderingOptionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(renderingOptionsPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGroup(renderingOptionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(renderingOptionsPanelLayout.createSequentialGroup()
                         .addComponent(fontLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(fontField)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(browseFontButton))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
+                    .addGroup(renderingOptionsPanelLayout.createSequentialGroup()
                         .addComponent(backgroundLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(backgroundComboBox, 0, 158, Short.MAX_VALUE))
-                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(backgroundComboBox, 0, 214, Short.MAX_VALUE))
+                    .addGroup(renderingOptionsPanelLayout.createSequentialGroup()
                         .addComponent(foregroundLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(foregroundComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addContainerGap())
         );
 
-        jPanel2Layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {backgroundLabel, foregroundLabel});
+        renderingOptionsPanelLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {backgroundLabel, foregroundLabel});
 
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
+        renderingOptionsPanelLayout.setVerticalGroup(
+            renderingOptionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(renderingOptionsPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(renderingOptionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(fontLabel)
                     .addComponent(fontField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(browseFontButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(renderingOptionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(foregroundLabel)
                     .addComponent(foregroundComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(renderingOptionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(backgroundLabel)
                     .addComponent(backgroundComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -174,6 +226,74 @@ final class MongoOptionsPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(categoriesLabel, org.openide.util.NbBundle.getMessage(MongoOptionsPanel.class, "MongoOptionsPanel.categoriesLabel.text")); // NOI18N
 
+        javax.swing.GroupLayout jsonTreeRenderingOptionsPanelLayout = new javax.swing.GroupLayout(jsonTreeRenderingOptionsPanel);
+        jsonTreeRenderingOptionsPanel.setLayout(jsonTreeRenderingOptionsPanelLayout);
+        jsonTreeRenderingOptionsPanelLayout.setHorizontalGroup(
+            jsonTreeRenderingOptionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jsonTreeRenderingOptionsPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jsonTreeRenderingOptionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jsonTreeRenderingOptionsPanelLayout.createSequentialGroup()
+                        .addComponent(categoriesScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(renderingOptionsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(jsonTreeRenderingOptionsPanelLayout.createSequentialGroup()
+                        .addComponent(categoriesLabel)
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
+        );
+        jsonTreeRenderingOptionsPanelLayout.setVerticalGroup(
+            jsonTreeRenderingOptionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jsonTreeRenderingOptionsPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(categoriesLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jsonTreeRenderingOptionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(renderingOptionsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(categoriesScrollPane))
+                .addContainerGap())
+        );
+
+        shellOptionsPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(MongoOptionsPanel.class, "MongoOptionsPanel.shellOptionsPanel.border.title"))); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(mongoExecPathLabel, org.openide.util.NbBundle.getMessage(MongoOptionsPanel.class, "MongoOptionsPanel.mongoExecPathLabel.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(jButton1, org.openide.util.NbBundle.getMessage(MongoOptionsPanel.class, "MongoOptionsPanel.jButton1.text")); // NOI18N
+        jButton1.setActionCommand(org.openide.util.NbBundle.getMessage(MongoOptionsPanel.class, "MongoOptionsPanel.jButton1.actionCommand")); // NOI18N
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout shellOptionsPanelLayout = new javax.swing.GroupLayout(shellOptionsPanel);
+        shellOptionsPanel.setLayout(shellOptionsPanelLayout);
+        shellOptionsPanelLayout.setHorizontalGroup(
+            shellOptionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(shellOptionsPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(shellOptionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(shellOptionsPanelLayout.createSequentialGroup()
+                        .addComponent(mongoExecPathLabel)
+                        .addGap(0, 223, Short.MAX_VALUE))
+                    .addGroup(shellOptionsPanelLayout.createSequentialGroup()
+                        .addComponent(mongoExecPathField)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButton1)))
+                .addContainerGap())
+        );
+        shellOptionsPanelLayout.setVerticalGroup(
+            shellOptionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(shellOptionsPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(mongoExecPathLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(shellOptionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(mongoExecPathField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jButton1))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -181,22 +301,17 @@ final class MongoOptionsPanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(categoriesScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addComponent(categoriesLabel))
+                    .addComponent(jsonTreeRenderingOptionsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(shellOptionsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(categoriesLabel)
+                .addComponent(jsonTreeRenderingOptionsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(categoriesScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE))
+                .addComponent(shellOptionsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -204,8 +319,8 @@ final class MongoOptionsPanel extends javax.swing.JPanel {
     private void browseFontButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseFontButtonActionPerformed
         fontEditor.setValue(fontField.getFont());
         final DialogDescriptor dd = new DialogDescriptor(
-                fontEditor.getCustomEditor(),
-                "Select Font" // NOI18N
+            fontEditor.getCustomEditor(),
+            "Select Font" // NOI18N
         );
 
         DialogDisplayer.getDefault().createDialog(dd).setVisible(true);
@@ -213,31 +328,69 @@ final class MongoOptionsPanel extends javax.swing.JPanel {
             final Font font = (Font) fontEditor.getValue();
             fontField.setFont(font);
             fontField.setText(fontEditor.getAsText());
-            controller.changed();
-            getSelectedLabelFontConf().setFont(font);
+            fireChangeEvent();
+            getSelectedLabelFontConfBuilder().font(font);
         }
 
     }//GEN-LAST:event_browseFontButtonActionPerformed
 
     private void foregroundComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_foregroundComboBoxActionPerformed
-        getSelectedLabelFontConf().setForeground(((ColorComboBox) foregroundComboBox).getSelectedColor());
+        getSelectedLabelFontConfBuilder().foreground(((ColorComboBox) foregroundComboBox).getSelectedColor());
+        fireChangeEvent();
     }//GEN-LAST:event_foregroundComboBoxActionPerformed
 
     private void backgroundComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backgroundComboBoxActionPerformed
-        getSelectedLabelFontConf().setBackground(((ColorComboBox) backgroundComboBox).getSelectedColor());
+        getSelectedLabelFontConfBuilder().background(((ColorComboBox) backgroundComboBox).getSelectedColor());
+        fireChangeEvent();
     }//GEN-LAST:event_backgroundComboBoxActionPerformed
 
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        final String mongoHomePath = System.getenv("MONGO_HOME");
+        final FileChooserBuilder fcb = new FileChooserBuilder(MongoShellOptions.class);
+        final String mongoExecPath = mongoExecPathField.getText().trim();
+        if(mongoExecPath.isEmpty() == false) {
+            fcb.setDefaultWorkingDirectory(new File(mongoExecPath).getParentFile());
+        } else if(mongoHomePath != null) {
+            final File mongoBin = new File(mongoHomePath, "bin");
+            if(mongoBin.isDirectory()) {
+                fcb.setDefaultWorkingDirectory(mongoBin);
+            }
+        }
+        final File file = fcb.showOpenDialog();
+        if(file != null) {
+            mongoExecPathField.setText(file.getAbsolutePath());
+        }
+    }//GEN-LAST:event_jButton1ActionPerformed
+
     void load() {
-        options.load();
-        loadLabelFontConf(getSelectedLabelFontConf());
+        internalUpdate = true;
+        for (LabelCategory labelCategory : LabelCategory.values()) {
+            final LabelFontConf conf = jsonTreeRendererOptions.getLabelFontConf(labelCategory);
+            labelConfBuilders.put(labelCategory, new LabelFontConf.Builder(conf));
+        }
+        loadLabelFontConfInUI(getSelectedLabelFontConfBuilder());
+        final String mongoExecPath = mongoShellOptions.getMongoExecPath();
+        if (mongoExecPath != null) {
+            mongoExecPathField.setText(mongoExecPath);
+        }
+        internalUpdate = false;
     }
 
     void store() {
-        options.store();
-        JsonTreeCellRendererOptions.getDefault().load();
+        for (LabelCategory labelCategory : LabelCategory.values()) {
+            jsonTreeRendererOptions.setLabelFontConf(labelCategory, labelConfBuilders.get(labelCategory).build());
+        }
+        jsonTreeRendererOptions.store();
+        final String mongoExecPath = mongoExecPathField.getText().trim();
+        mongoShellOptions.setMongoExecPath(mongoExecPath.isEmpty() ? null : mongoExecPath);
+        mongoShellOptions.store();
     }
 
     boolean valid() {
+        final String mongoExecPath = mongoExecPathField.getText().trim();
+        if (mongoExecPath.isEmpty() == false) {
+            return new File(mongoExecPath).isFile();
+        }
         return true;
     }
 
@@ -252,6 +405,11 @@ final class MongoOptionsPanel extends javax.swing.JPanel {
     private javax.swing.JLabel fontLabel;
     private javax.swing.JComboBox foregroundComboBox;
     private javax.swing.JLabel foregroundLabel;
-    private javax.swing.JPanel jPanel2;
+    private javax.swing.JButton jButton1;
+    private javax.swing.JPanel jsonTreeRenderingOptionsPanel;
+    private javax.swing.JTextField mongoExecPathField;
+    private javax.swing.JLabel mongoExecPathLabel;
+    private javax.swing.JPanel renderingOptionsPanel;
+    private javax.swing.JPanel shellOptionsPanel;
     // End of variables declaration//GEN-END:variables
 }

@@ -43,7 +43,9 @@ import org.openide.util.NbBundle.Messages;
 public final class MongoOptionsPanelController extends OptionsPanelController {
 
     private MongoOptionsPanel panel;
+    
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    
     private boolean changed;
 
     @Override

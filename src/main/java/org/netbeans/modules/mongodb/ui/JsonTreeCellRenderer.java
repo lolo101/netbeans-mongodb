@@ -23,6 +23,7 @@
  */
 package org.netbeans.modules.mongodb.ui;
 
+import org.netbeans.modules.mongodb.options.JsonTreeCellRendererOptions;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
@@ -39,9 +40,8 @@ import javax.swing.border.Border;
 import javax.swing.plaf.UIResource;
 import javax.swing.tree.TreeCellRenderer;
 import org.bson.types.ObjectId;
-import org.netbeans.modules.mongodb.ui.options.JsonTreeCellRendererOptions;
-import org.netbeans.modules.mongodb.ui.options.JsonTreeCellRendererOptions.LabelCategory;
-import org.netbeans.modules.mongodb.ui.options.JsonTreeCellRendererOptions.LabelFontConf;
+import org.netbeans.modules.mongodb.options.LabelCategory;
+import org.netbeans.modules.mongodb.options.LabelFontConf;
 import org.netbeans.modules.mongodb.util.JsonProperty;
 
 /**
@@ -61,7 +61,7 @@ public final class JsonTreeCellRenderer extends JPanel implements TreeCellRender
 
     }
 
-    private final JsonTreeCellRendererOptions options = JsonTreeCellRendererOptions.getDefault();
+    private final JsonTreeCellRendererOptions options = JsonTreeCellRendererOptions.INSTANCE;
 
     private final JLabel keyLabel = new JLabel();
 
