@@ -74,16 +74,10 @@ public final class JsonTreeCellRendererOptions {
                 textBackground));
     }
     
-    private static final JsonTreeCellRendererOptions INSTANCE = new JsonTreeCellRendererOptions();
-
     private final Map<LabelCategory, LabelFontConf> labelConfs = new HashMap<>();
 
     public JsonTreeCellRendererOptions() {
         load();
-    }
-
-    public static JsonTreeCellRendererOptions getDefault() {
-        return INSTANCE;
     }
 
     private Preferences getPreferences() {
