@@ -68,6 +68,15 @@ public interface Images {
     @StaticResource
     String NAV_LAST_ICON_PATH = "org/netbeans/modules/mongodb/images/navigate_end.png"; //NOI18N
 
+    @StaticResource
+    String ADD_DOCUMENT_ICON_PATH = "org/netbeans/modules/mongodb/images/row_add.png"; //NOI18N
+
+    @StaticResource
+    String DELETE_DOCUMENT_ICON_PATH = "org/netbeans/modules/mongodb/images/row_delete.png"; //NOI18N
+
+    @StaticResource
+    String EDIT_DOCUMENT_ICON_PATH = "org/netbeans/modules/mongodb/images/row_edit.png"; //NOI18N
+
     Image COLLECTION_ICON = ImageUtilities.loadImage(COLLECTION_ICON_PATH);
 
     Image SYSTEM_COLLECTION_ICON = ImageUtilities.loadImage(SYSTEM_COLLECTION_ICON_PATH);
@@ -85,5 +94,11 @@ public interface Images {
     Image NAV_RIGHT_ICON = ImageUtilities.loadImage(NAV_RIGHT_ICON_PATH);
 
     Image NAV_LAST_ICON = ImageUtilities.loadImage(NAV_LAST_ICON_PATH);
+
+    Image ADD_DOCUMENT_ICON = ImageUtilities.loadImage(ADD_DOCUMENT_ICON_PATH);
+
+    Image DELETE_DOCUMENT_ICON = ImageUtilities.loadImage(DELETE_DOCUMENT_ICON_PATH);
+
+    Image EDIT_DOCUMENT_ICON = ImageUtilities.loadImage(EDIT_DOCUMENT_ICON_PATH);
 
 }

@@ -60,8 +60,8 @@ import org.openide.windows.TopComponent;
  * Top component which displays something.
  */
 @TopComponent.Description(
-    preferredID = "CollectionViewTopComponent",
-    persistenceType = TopComponent.PERSISTENCE_ALWAYS)
+        preferredID = "CollectionViewTopComponent",
+        persistenceType = TopComponent.PERSISTENCE_ALWAYS)
 @Messages({
     "addDocumentTitle=Add new document",
     "editDocumentTitle=Edit document",
@@ -69,7 +69,13 @@ import org.openide.windows.TopComponent;
     "editProjectionTitle=Enter projection",
     "editSortTitle=Enter sort",
     "invalidJson=invalid json",
-    "confirmDocumentDeletionText=Edit document",
+    "confirmDocumentDeletionText=Delete document?",
+    "ACTION_addDocument=Add Document",
+    "ACTION_addDocument_tooltip=Add Document",
+    "ACTION_deleteSelectedDocument=Delete Selected Document",
+    "ACTION_deleteSelectedDocument_tooltip=Delete Selected Document",
+    "ACTION_editSelectedDocument=Edit Selected Document",
+    "ACTION_editSelectedDocument_tooltip=Edit Selected Document",
     "ACTION_refreshDocuments=Refresh",
     "ACTION_refreshDocuments_tooltip=Refresh Documents",
     "ACTION_navFirst=First Page",
@@ -94,17 +100,22 @@ public final class CollectionViewTopComponent extends TopComponent {
 
     private final QueryEditor queryEditor = new QueryEditor();
 
+    private final Action addDocumentAction = new AddDocumentAction();
+
+    private final Action deleteSelectedDocumentAction = new DeleteSelectedDocumentAction();
+
+    private final Action editSelectedDocumentAction = new EditSelectedDocumentAction();
+
     private final Action refreshDocumentsAction = new RefredhDocumentsAction();
-    
+
     private final Action navFirstAction = new NavFirstAction();
-    
+
     private final Action navLeftAction = new NavLeftAction();
-    
+
     private final Action navRightAction = new NavRightAction();
-    
+
     private final Action navLastAction = new NavLastAction();
-    
-        
+
     public CollectionViewTopComponent(CollectionInfo collectionInfo, Lookup lookup) {
         super(lookup);
         this.collectionInfo = collectionInfo;
@@ -112,8 +123,8 @@ public final class CollectionViewTopComponent extends TopComponent {
         initComponents();
         setName(collectionInfo.getName());
         setIcon(isSystemCollection
-            ? Images.SYSTEM_COLLECTION_ICON
-            : Images.COLLECTION_ICON);
+                ? Images.SYSTEM_COLLECTION_ICON
+                : Images.COLLECTION_ICON);
 
         final DBCollection dbCollection = lookup.lookup(DBCollection.class);
         tableModel = new DocumentsTableModel(dbCollection);
@@ -132,6 +143,18 @@ public final class CollectionViewTopComponent extends TopComponent {
             }
         });
         reload();
+    }
+
+    public Action getAddDocumentAction() {
+        return addDocumentAction;
+    }
+
+    public Action getDeleteSelectedDocumentAction() {
+        return deleteSelectedDocumentAction;
+    }
+
+    public Action getEditSelectedDocumentAction() {
+        return editSelectedDocumentAction;
     }
 
     public Action getRefreshDocumentsAction() {
@@ -153,7 +176,7 @@ public final class CollectionViewTopComponent extends TopComponent {
     public Action getNavLastAction() {
         return navLastAction;
     }
-    
+
     private void reload() {
         new Thread(new Runnable() {
 
@@ -231,7 +254,7 @@ public final class CollectionViewTopComponent extends TopComponent {
                     return (DBObject) JSON.parse(json);
                 } catch (JSONParseException ex) {
                     DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(Bundle.invalidJson(), NotifyDescriptor.ERROR_MESSAGE));
+                            new NotifyDescriptor.Message(Bundle.invalidJson(), NotifyDescriptor.ERROR_MESSAGE));
                     doLoop = true;
                 }
             }
@@ -252,9 +275,6 @@ public final class CollectionViewTopComponent extends TopComponent {
         pageCountLabel = new javax.swing.JLabel();
         pageLabel = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
-        addButton = new javax.swing.JButton();
-        editButton = new javax.swing.JButton();
-        deleteButton = new javax.swing.JButton();
         queryPanel = new javax.swing.JPanel();
         criteriaLabel = new javax.swing.JLabel();
         criteriaField = new javax.swing.JTextField();
@@ -267,7 +287,11 @@ public final class CollectionViewTopComponent extends TopComponent {
         exportButton = new javax.swing.JButton();
         tableScrollPane = new javax.swing.JScrollPane();
         documentsTable = new javax.swing.JTable();
-        jToolBar1 = new javax.swing.JToolBar();
+        documentsToolBar = new javax.swing.JToolBar();
+        addButton = new javax.swing.JButton();
+        deleteButton = new javax.swing.JButton();
+        editButton = new javax.swing.JButton();
+        jSeparator1 = new javax.swing.JToolBar.Separator();
         refreshDocumentsButton = new javax.swing.JButton();
         navFirstButton = new javax.swing.JButton();
         navLeftButton = new javax.swing.JButton();
@@ -287,29 +311,6 @@ public final class CollectionViewTopComponent extends TopComponent {
         org.openide.awt.Mnemonics.setLocalizedText(pageLabel, org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.pageLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.jLabel3.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.addButton.text")); // NOI18N
-        addButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addDocumentButtonActionPerformed(evt);
-            }
-        });
-
-        org.openide.awt.Mnemonics.setLocalizedText(editButton, org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.editButton.text")); // NOI18N
-        editButton.setEnabled(false);
-        editButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                editDocumentButtonActionPerformed(evt);
-            }
-        });
-
-        org.openide.awt.Mnemonics.setLocalizedText(deleteButton, org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.deleteButton.text")); // NOI18N
-        deleteButton.setEnabled(false);
-        deleteButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                deleteDocumentButtonActionPerformed(evt);
-            }
-        });
 
         queryPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.queryPanel.border.title"))); // NOI18N
 
@@ -410,25 +411,51 @@ public final class CollectionViewTopComponent extends TopComponent {
         ));
         tableScrollPane.setViewportView(documentsTable);
 
-        jToolBar1.setFloatable(false);
-        jToolBar1.setRollover(true);
+        documentsToolBar.setFloatable(false);
+        documentsToolBar.setRollover(true);
+
+        addButton.setAction(getAddDocumentAction());
+        addButton.setFocusable(false);
+        addButton.setHideActionText(true);
+        addButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        addButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        documentsToolBar.add(addButton);
+
+        deleteButton.setAction(getDeleteSelectedDocumentAction());
+        deleteButton.setEnabled(false);
+        deleteButton.setFocusable(false);
+        deleteButton.setHideActionText(true);
+        deleteButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        deleteButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        documentsToolBar.add(deleteButton);
+
+        editButton.setAction(getEditSelectedDocumentAction());
+        editButton.setEnabled(false);
+        editButton.setFocusable(false);
+        editButton.setHideActionText(true);
+        editButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        editButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        documentsToolBar.add(editButton);
+
+        jSeparator1.setToolTipText(org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.jSeparator1.toolTipText")); // NOI18N
+        documentsToolBar.add(jSeparator1);
 
         refreshDocumentsButton.setAction(getRefreshDocumentsAction());
         refreshDocumentsButton.setFocusable(false);
         refreshDocumentsButton.setHideActionText(true);
         refreshDocumentsButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         refreshDocumentsButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        jToolBar1.add(refreshDocumentsButton);
+        documentsToolBar.add(refreshDocumentsButton);
 
         navFirstButton.setAction(getNavFirstAction());
         navFirstButton.setEnabled(false);
         navFirstButton.setHideActionText(true);
-        jToolBar1.add(navFirstButton);
+        documentsToolBar.add(navFirstButton);
 
         navLeftButton.setAction(getNavLeftAction());
         navLeftButton.setEnabled(false);
         navLeftButton.setHideActionText(true);
-        jToolBar1.add(navLeftButton);
+        documentsToolBar.add(navLeftButton);
 
         navRightButton.setAction(getNavRightAction());
         navRightButton.setEnabled(false);
@@ -436,7 +463,7 @@ public final class CollectionViewTopComponent extends TopComponent {
         navRightButton.setHideActionText(true);
         navRightButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         navRightButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        jToolBar1.add(navRightButton);
+        documentsToolBar.add(navRightButton);
 
         navLastButton.setAction(getNavLastAction());
         navLastButton.setEnabled(false);
@@ -444,7 +471,7 @@ public final class CollectionViewTopComponent extends TopComponent {
         navLastButton.setHideActionText(true);
         navLastButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         navLastButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        jToolBar1.add(navLastButton);
+        documentsToolBar.add(navLastButton);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -466,17 +493,12 @@ public final class CollectionViewTopComponent extends TopComponent {
                         .addComponent(pageCountLabel)
                         .addGap(106, 106, 106))
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(documentsToolBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(pageSizeLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(pageSizeComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(addButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(editButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(deleteButton)))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -488,11 +510,8 @@ public final class CollectionViewTopComponent extends TopComponent {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(pageSizeLabel)
-                        .addComponent(pageSizeComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(addButton)
-                        .addComponent(deleteButton)
-                        .addComponent(editButton))
-                    .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(pageSizeComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(documentsToolBar, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(tableScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 109, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -509,55 +528,6 @@ public final class CollectionViewTopComponent extends TopComponent {
         tableModel.setItemsPerPage((Integer) pageSizeComboBox.getSelectedItem());
         reload();
     }//GEN-LAST:event_pageSizeComboBoxActionPerformed
-
-    private void addDocumentButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addDocumentButtonActionPerformed
-        final DBObject document = showJsonEditor(
-            Bundle.addDocumentTitle(),
-            "{}");
-        if (document != null) {
-            try {
-                final DBCollection dbCollection = getLookup().lookup(DBCollection.class);
-                dbCollection.insert(document);
-                reload();
-            } catch (MongoException ex) {
-                DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE));
-            }
-        }
-    }//GEN-LAST:event_addDocumentButtonActionPerformed
-
-    private void deleteDocumentButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteDocumentButtonActionPerformed
-        final DBObject document = tableModel.getRowValue(documentsTable.getSelectedRow());
-        final Object dlgResult = DialogDisplayer.getDefault().notify(
-            new NotifyDescriptor.Confirmation(Bundle.confirmDocumentDeletionText(), NotifyDescriptor.YES_NO_OPTION));
-        if (dlgResult.equals(NotifyDescriptor.OK_OPTION)) {
-            try {
-                final DBCollection dbCollection = getLookup().lookup(DBCollection.class);
-                dbCollection.remove(document);
-                reload();
-            } catch (MongoException ex) {
-                DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE));
-            }
-        }
-    }//GEN-LAST:event_deleteDocumentButtonActionPerformed
-
-    private void editDocumentButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editDocumentButtonActionPerformed
-        final DBObject document = tableModel.getRowValue(documentsTable.getSelectedRow());
-        final DBObject modifiedDocument = showJsonEditor(
-            Bundle.editDocumentTitle(),
-            JSON.serialize(document));
-        if (modifiedDocument != null) {
-            try {
-                final DBCollection dbCollection = getLookup().lookup(DBCollection.class);
-                dbCollection.save(modifiedDocument);
-                reload();
-            } catch (MongoException ex) {
-                DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE));
-            }
-        }
-    }//GEN-LAST:event_editDocumentButtonActionPerformed
 
     private void editQueryButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editQueryButtonActionPerformed
         if (queryEditor.showDialog()) {
@@ -588,11 +558,12 @@ public final class CollectionViewTopComponent extends TopComponent {
     private javax.swing.JLabel criteriaLabel;
     private javax.swing.JButton deleteButton;
     private javax.swing.JTable documentsTable;
+    private javax.swing.JToolBar documentsToolBar;
     private javax.swing.JButton editButton;
     private javax.swing.JButton editQueryButton;
     private javax.swing.JButton exportButton;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JToolBar jToolBar1;
+    private javax.swing.JToolBar.Separator jSeparator1;
     private javax.swing.JButton navFirstButton;
     private javax.swing.JButton navLastButton;
     private javax.swing.JButton navLeftButton;
@@ -620,6 +591,82 @@ public final class CollectionViewTopComponent extends TopComponent {
     void readProperties(java.util.Properties p) {
         String version = p.getProperty("version");
         // TODO read your settings according to their version
+    }
+
+    private final class AddDocumentAction extends AbstractAction {
+
+        public AddDocumentAction() {
+            super(Bundle.ACTION_addDocument(), new ImageIcon(Images.ADD_DOCUMENT_ICON));
+            putValue(SHORT_DESCRIPTION, Bundle.ACTION_addDocument_tooltip());
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            final DBObject document = showJsonEditor(
+                    Bundle.addDocumentTitle(),
+                    "{}");
+            if (document != null) {
+                try {
+                    final DBCollection dbCollection = getLookup().lookup(DBCollection.class);
+                    dbCollection.insert(document);
+                    reload();
+                } catch (MongoException ex) {
+                    DialogDisplayer.getDefault().notify(
+                            new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE));
+                }
+            }
+        }
+    }
+
+    private final class DeleteSelectedDocumentAction extends AbstractAction {
+
+        public DeleteSelectedDocumentAction() {
+            super(Bundle.ACTION_deleteSelectedDocument(), new ImageIcon(Images.DELETE_DOCUMENT_ICON));
+            putValue(SHORT_DESCRIPTION, Bundle.ACTION_deleteSelectedDocument_tooltip());
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            final DBObject document = tableModel.getRowValue(documentsTable.getSelectedRow());
+            final Object dlgResult = DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Confirmation(Bundle.confirmDocumentDeletionText(), NotifyDescriptor.YES_NO_OPTION));
+            if (dlgResult.equals(NotifyDescriptor.OK_OPTION)) {
+                try {
+                    final DBCollection dbCollection = getLookup().lookup(DBCollection.class);
+                    dbCollection.remove(document);
+                    reload();
+                } catch (MongoException ex) {
+                    DialogDisplayer.getDefault().notify(
+                            new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE));
+                }
+            }
+        }
+    }
+
+    private final class EditSelectedDocumentAction extends AbstractAction {
+
+        public EditSelectedDocumentAction() {
+            super(Bundle.ACTION_editSelectedDocument(), new ImageIcon(Images.EDIT_DOCUMENT_ICON));
+            putValue(SHORT_DESCRIPTION, Bundle.ACTION_editSelectedDocument_tooltip());
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            final DBObject document = tableModel.getRowValue(documentsTable.getSelectedRow());
+            final DBObject modifiedDocument = showJsonEditor(
+                    Bundle.editDocumentTitle(),
+                    JSON.serialize(document));
+            if (modifiedDocument != null) {
+                try {
+                    final DBCollection dbCollection = getLookup().lookup(DBCollection.class);
+                    dbCollection.save(modifiedDocument);
+                    reload();
+                } catch (MongoException ex) {
+                    DialogDisplayer.getDefault().notify(
+                            new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE));
+                }
+            }
+        }
     }
 
     private final class RefredhDocumentsAction extends AbstractAction {
