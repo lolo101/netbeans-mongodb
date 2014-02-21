@@ -68,7 +68,7 @@ public abstract class CopyObjectToClipboardAction<T> extends AbstractCopyToClipb
 
     /**
      * Converts the specified object into a string to be copied in the
-     * clipboard. The default implementation rely on @{code String.valueOf()}
+     * clipboard. The default implementation rely on {@code String.valueOf()}
      * method. Overides this method to provide a different implementation.
      *
      * @param object the object to convert in String selection.
