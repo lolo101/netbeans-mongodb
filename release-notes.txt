@@ -19,6 +19,7 @@ Features
 * updating collection query result ui
 * free page size
 * page size saved in preferences
+* update collection topcomponent title and tooltip
 * updating mongo driver version (2.11.1 -> 2.11.4)
 
 

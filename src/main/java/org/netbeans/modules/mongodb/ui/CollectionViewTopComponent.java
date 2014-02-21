@@ -47,6 +47,8 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.text.EditorKit;
 import javax.swing.text.PlainDocument;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.modules.mongodb.ConnectionInfo;
+import org.netbeans.modules.mongodb.DbInfo;
 import org.netbeans.modules.mongodb.Images;
 import org.netbeans.modules.mongodb.ui.util.IntegerDocumentFilter;
 import org.netbeans.modules.mongodb.ui.wizards.ExportWizardAction;
@@ -130,7 +132,11 @@ public final class CollectionViewTopComponent extends TopComponent {
         this.collectionInfo = collectionInfo;
         isSystemCollection = SystemCollectionPredicate.get().eval(collectionInfo.getName());
         initComponents();
-        setName(collectionInfo.getName());
+        final ConnectionInfo ci = lookup.lookup(ConnectionInfo.class);
+        final DbInfo di = lookup.lookup(DbInfo.class);
+        final String name = di.getDbName() + "." + collectionInfo.getName();
+        setName(name);
+        setToolTipText(ci.getDisplayName() + ": " + name);
         setIcon(isSystemCollection
                 ? Images.SYSTEM_COLLECTION_ICON
                 : Images.COLLECTION_ICON);

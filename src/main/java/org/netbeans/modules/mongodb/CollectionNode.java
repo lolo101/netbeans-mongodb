@@ -81,7 +81,7 @@ final class CollectionNode extends AbstractNode {
         this(connection, content, new ProxyLookup(new AbstractLookup(content), Lookups.fixed(connection), connection.getLookup()));
     }
 
-    CollectionNode(final CollectionInfo collection, final InstanceContent content, final ProxyLookup lookup) {
+    CollectionNode(final CollectionInfo collection, final InstanceContent content, final Lookup lookup) {
         super(Children.LEAF, lookup);
         this.lookup = lookup;
         this.collection = collection;

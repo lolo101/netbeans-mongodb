@@ -31,7 +31,7 @@ import org.openide.util.Parameters;
  *
  * @author Tim Boudreau
  */
-final class DbInfo implements Comparable<DbInfo> {
+public final class DbInfo implements Comparable<DbInfo> {
 
     final Lookup lookup;
     final String dbName;
@@ -40,6 +40,10 @@ final class DbInfo implements Comparable<DbInfo> {
         Parameters.notNull("dbName", dbName);
         this.lookup = lookup;
         this.dbName = dbName;
+    }
+
+    public String getDbName() {
+        return dbName;
     }
 
     @Override
