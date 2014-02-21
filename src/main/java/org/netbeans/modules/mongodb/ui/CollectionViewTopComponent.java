@@ -34,11 +34,11 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import static javax.swing.Action.SHORT_DESCRIPTION;
 import javax.swing.ImageIcon;
-import javax.swing.JComboBox;
 import javax.swing.JEditorPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
@@ -151,12 +151,19 @@ public final class CollectionViewTopComponent extends TopComponent {
                 }
             }
         });
+        
+        final int pageSize = prefs().getInt("table-page-size", DocumentsTableModel.DEFAULT_PAGE_SIZE);
+        tableModel.setPageSize(pageSize);
         final PlainDocument document = (PlainDocument) pageSizeField.getDocument();
         document.setDocumentFilter(new IntegerDocumentFilter());
-        pageSizeField.setText(String.valueOf(tableModel.getPageSize()));
+        pageSizeField.setText(String.valueOf(pageSize));
         reload();
     }
 
+    private Preferences prefs() {
+        return Preferences.userNodeForPackage(CollectionViewTopComponent.class);
+    }
+    
     public Action getAddDocumentAction() {
         return addDocumentAction;
     }
@@ -531,6 +538,7 @@ public final class CollectionViewTopComponent extends TopComponent {
         final int pageSize = Integer.parseInt(pageSizeField.getText());
         tableModel.setPageSize(pageSize);
         reload();
+        prefs().putInt("table-page-size", pageSize);
     }//GEN-LAST:event_pageSizeFieldActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

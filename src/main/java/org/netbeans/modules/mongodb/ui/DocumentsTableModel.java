@@ -36,7 +36,7 @@ import javax.swing.table.AbstractTableModel;
  */
 public class DocumentsTableModel extends AbstractTableModel {
 
-    private static final int DEFAULT_PAGE_SIZE = 10;
+    public static final int DEFAULT_PAGE_SIZE = 10;
     
     private final DBCollection dbCollection;
 
