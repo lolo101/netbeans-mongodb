@@ -44,7 +44,7 @@ public class DocumentsTableModel extends AbstractTableModel {
 
     private int page = 1;
 
-    private int cursorItemCount = 0;
+    private int totalDocumentsCount = 0;
 
     private DBObject criteria;
 
@@ -66,7 +66,7 @@ public class DocumentsTableModel extends AbstractTableModel {
             if(sort != null) {
                 cursor.sort(sort);
             }
-            cursorItemCount = cursor.count();
+            totalDocumentsCount = cursor.count();
             DBCursor pageCursor = cursor;
             if (itemsPerPage > 0) {
                 final int toSkip = (page - 1) * itemsPerPage;
@@ -111,9 +111,13 @@ public class DocumentsTableModel extends AbstractTableModel {
 
     public int getPageCount() {
         if (itemsPerPage > 0) {
-            return (cursorItemCount / itemsPerPage) + 1;
+            return (totalDocumentsCount / itemsPerPage) + 1;
         }
         return 1;
+    }
+
+    public int getTotalDocumentsCount() {
+        return totalDocumentsCount;
     }
 
     @Override

@@ -130,8 +130,8 @@ final class OneConnectionNode extends AbstractNode implements PropertyChangeList
     @Override
     public Image getIcon(int ignored) {
         return isConnected()
-            ? Images.CONNECTION_ICON
-            : Images.CONNECTION_DISCONNECTED_ICON;
+                ? Images.CONNECTION_ICON
+                : Images.CONNECTION_DISCONNECTED_ICON;
     }
 
     @Override
@@ -169,12 +169,12 @@ final class OneConnectionNode extends AbstractNode implements PropertyChangeList
     }
 
     private MongoClient connect(final boolean create) {
-        ProgressUtils.showProgressDialogAndRun(new Runnable() {
+        synchronized (lock) {
+            if (create && isConnected() == false) {
+                ProgressUtils.showProgressDialogAndRun(new Runnable() {
 
-            @Override
-            public void run() {
-                synchronized (lock) {
-                    if (create && isConnected() == false) {
+                    @Override
+                    public void run() {
                         final ConnectionInfo connection = getLookup().lookup(ConnectionInfo.class);
                         try {
                             mongo = new MongoClient(connection.getMongoURI());
@@ -187,21 +187,21 @@ final class OneConnectionNode extends AbstractNode implements PropertyChangeList
                         } catch (MongoException ex) {
                             setProblem(true);
                             DialogDisplayer.getDefault().notify(
-                                new NotifyDescriptor.Message(
-                                    "error connectiong to mongo database: " + ex.getLocalizedMessage(),
-                                    NotifyDescriptor.ERROR_MESSAGE));
+                                    new NotifyDescriptor.Message(
+                                            "error connectiong to mongo database: " + ex.getLocalizedMessage(),
+                                            NotifyDescriptor.ERROR_MESSAGE));
                         } catch (UnknownHostException ex) {
                             setProblem(true);
                             DialogDisplayer.getDefault().notify(
-                                new NotifyDescriptor.Message(
-                                    "unknown server: " + ex.getLocalizedMessage(),
-                                    NotifyDescriptor.ERROR_MESSAGE));
+                                    new NotifyDescriptor.Message(
+                                            "unknown server: " + ex.getLocalizedMessage(),
+                                            NotifyDescriptor.ERROR_MESSAGE));
                         }
 
                     }
-                }
+                }, Bundle.waitWhileConnecting());
             }
-        }, Bundle.waitWhileConnecting());
+        }
         return mongo;
     }
 
@@ -266,7 +266,7 @@ final class OneConnectionNode extends AbstractNode implements PropertyChangeList
             final ConnectionInfo connection = getLookup().lookup(ConnectionInfo.class);
             try {
                 final PropertySupport.Reflection<MongoClientURI> uriProperty
-                    = new PropertySupport.Reflection<>(connection, MongoClientURI.class, "mongoURI");
+                        = new PropertySupport.Reflection<>(connection, MongoClientURI.class, "mongoURI");
                 uriProperty.setPropertyEditorClass(MongoClientURIPropertyEditor.class);
                 uriProperty.setDisplayName(Bundle.ConnectionURI());
                 set.put(uriProperty);
