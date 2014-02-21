@@ -4,7 +4,6 @@ NBMongo 1.3.0
 
 Bugfixes
 --------
-* fixing major issue for documents with array values 
 * fixing disconnection/connection issue
 * close opened related collections when closing a connection
 
