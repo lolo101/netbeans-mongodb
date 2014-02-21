@@ -1,0 +1,40 @@
+
+NBMongo 1.3.0
+=============
+
+Bugfixes
+--------
+* fixing major issue for documents with array values 
+* fixing disconnection/connection issue
+* close opened related collections when closing a connection
+
+Features
+--------
+* mongo uri advanced editor
+* progress dialog for connection
+* quoted string value in document tree
+* document tree context menu with copy to clipboard actions (document, selected key, selected value)
+* coloration in document tree
+* options to customize document tree coloration
+* mongo shell
+* free page size
+* page size saved in preferences
+* updating documents actions ui
+* updating mongo driver version (2.11.1 -> 2.11.4)
+
+
+
+NBMongo 1.2.0
+=============
+
+Bugfixes
+--------
+
+Features
+--------
+* Connect to MongoDB using mongo standard uri
+* Browse collections
+* Create/Rename/Delete collections
+* Browse documents (json criteria/projection/sort can be specified)
+* Add/Edit/Delete documents as json
+* Import/Export json
