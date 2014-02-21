@@ -11,23 +11,20 @@ Features
 --------
 * mongo uri advanced editor
 * progress dialog for connection
-* quoted string value in document tree
 * document tree context menu with copy to clipboard actions (document, selected key, selected value)
+* quoted string value in document tree
 * coloration in document tree
 * options to customize document tree coloration
 * mongo shell
+* updating collection query result ui
 * free page size
 * page size saved in preferences
-* updating documents actions ui
 * updating mongo driver version (2.11.1 -> 2.11.4)
 
 
 
 NBMongo 1.2.0
 =============
-
-Bugfixes
---------
 
 Features
 --------
