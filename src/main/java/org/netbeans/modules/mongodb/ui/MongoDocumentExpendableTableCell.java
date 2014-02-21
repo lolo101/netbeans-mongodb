@@ -30,16 +30,12 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
-import java.awt.event.ActionEvent;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Map;
-import javax.swing.AbstractAction;
 import javax.swing.AbstractCellEditor;
 import javax.swing.BorderFactory;
 import javax.swing.JMenuItem;
@@ -55,6 +51,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
+import org.netbeans.modules.mongodb.ui.util.CopyObjectToClipboardAction;
 import org.netbeans.modules.mongodb.util.JsonProperty;
 import org.openide.util.NbBundle.Messages;
 
@@ -101,8 +98,8 @@ public final class MongoDocumentExpendableTableCell extends AbstractCellEditor i
                     if (path != null) {
                         tree.setSelectionPath(path);
                     }
-                    final JsonPropertyNode node = path != null
-                        ? (JsonPropertyNode) path.getLastPathComponent()
+                    final ImmutableTreeNode node = path != null
+                        ? (ImmutableTreeNode) path.getLastPathComponent()
                         : null;
                     final JPopupMenu menu = createContextMenu(node);
                     menu.addPopupMenuListener(new PopupMenuListener() {
@@ -151,73 +148,61 @@ public final class MongoDocumentExpendableTableCell extends AbstractCellEditor i
         return panel;
     }
 
-    public JPopupMenu createContextMenu(JsonPropertyNode node) {
+    public JPopupMenu createContextMenu(ImmutableTreeNode node) {
         final JPopupMenu menu = new JPopupMenu();
-        menu.add(new JMenuItem(new CopyDocumentToClipboardAction()));
-        if (node != null) {
+        
+        final DBObjectTreeNode rootNode = (DBObjectTreeNode) tree.getModel().getRoot();
+        menu.add(new JMenuItem(new CopyDocumentToClipboardAction(rootNode.getUserObject())));
+        if(node instanceof JsonPropertyNode) {
+            final JsonProperty property = ((JsonPropertyNode) node).getUserObject();
             menu.addSeparator();
-            menu.add(new JMenuItem(new CopyKeyToClipboardAction(node.getUserObject())));
+            menu.add(new JMenuItem(new CopyKeyToClipboardAction(property)));
+            menu.add(new JMenuItem(new CopyValueToClipboardAction(property.getValue())));
+        } else {
+            menu.addSeparator();
             menu.add(new JMenuItem(new CopyValueToClipboardAction(node.getUserObject())));
         }
         return menu;
     }
 
-    private final class CopyDocumentToClipboardAction extends AbstractAction {
+    
+    private final class CopyDocumentToClipboardAction extends CopyObjectToClipboardAction<DBObject> {
 
-        public CopyDocumentToClipboardAction() {
-            super(Bundle.ACTION_copyDocumentToClipboard());
+        public CopyDocumentToClipboardAction(DBObject dBObject) {
+            super(Bundle.ACTION_copyDocumentToClipboard(), dBObject);
         }
 
         @Override
-        public void actionPerformed(ActionEvent e) {
-            final DBObjectTreeNode rootNode = (DBObjectTreeNode) tree.getModel().getRoot();
-            final StringSelection stringSelection = new StringSelection(
-                JSON.serialize(rootNode.getUserObject()));
-            final Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-            clipboard.setContents(stringSelection, null);
+        public StringSelection convertToStringSelection(DBObject dbObject) {
+            return new StringSelection(JSON.serialize(dbObject));
         }
 
     }
 
-    private static final class CopyKeyToClipboardAction extends AbstractAction {
-
-        private final JsonProperty property;
+    private static final class CopyKeyToClipboardAction extends CopyObjectToClipboardAction<String> {
 
         public CopyKeyToClipboardAction(JsonProperty property) {
-            super(Bundle.ACTION_copyKeyToClipboard());
-            this.property = property;
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            final StringSelection stringSelection = new StringSelection(property.getName());
-            final Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-            clipboard.setContents(stringSelection, null);
+            super(Bundle.ACTION_copyKeyToClipboard(), property.getName());
         }
 
     }
 
-    private static final class CopyValueToClipboardAction extends AbstractAction {
+    private static final class CopyValueToClipboardAction extends CopyObjectToClipboardAction<Object> {
 
-        private final JsonProperty property;
-
-        public CopyValueToClipboardAction(JsonProperty property) {
-            super(Bundle.ACTION_copyValueToClipboard());
-            this.property = property;
+        public CopyValueToClipboardAction(Object value) {
+            super(Bundle.ACTION_copyValueToClipboard(), value);
         }
 
         @Override
-        public void actionPerformed(ActionEvent e) {
-            final StringSelection stringSelection = new StringSelection(getValueAsString());
-            final Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-            clipboard.setContents(stringSelection, null);
+        public StringSelection convertToStringSelection(Object object) {
+            return new StringSelection(convertToString(object));
         }
 
-        private String getValueAsString() {
-            if (property.getValue() instanceof Map) {
-                return JSON.serialize(new BasicDBObject((Map) property.getValue()));
+        private String convertToString(Object value) {
+            if (value instanceof Map) {
+                return JSON.serialize(new BasicDBObject((Map) value));
             }
-            return property.getValue().toString();
+            return value.toString();
         }
     }
 }
