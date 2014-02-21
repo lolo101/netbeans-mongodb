@@ -45,8 +45,10 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.EditorKit;
+import javax.swing.text.PlainDocument;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.modules.mongodb.Images;
+import org.netbeans.modules.mongodb.ui.util.IntegerDocumentFilter;
 import org.netbeans.modules.mongodb.ui.wizards.ExportWizardAction;
 import org.netbeans.modules.mongodb.util.SystemCollectionPredicate;
 import org.openide.DialogDescriptor;
@@ -94,8 +96,6 @@ import org.openide.windows.TopComponent;
     "ACTION_exportQueryResult=Export Query Result",
     "ACTION_exportQueryResult_tooltip=Export Query Result"})
 public final class CollectionViewTopComponent extends TopComponent {
-
-    private static final Integer[] ITEMS_PER_PAGE_VALUES = {10, 20, 50, 100};
 
     private final CollectionInfo collectionInfo;
 
@@ -151,6 +151,9 @@ public final class CollectionViewTopComponent extends TopComponent {
                 }
             }
         });
+        final PlainDocument document = (PlainDocument) pageSizeField.getDocument();
+        document.setDocumentFilter(new IntegerDocumentFilter());
+        pageSizeField.setText(String.valueOf(tableModel.getPageSize()));
         reload();
     }
 
@@ -293,8 +296,6 @@ public final class CollectionViewTopComponent extends TopComponent {
         sortField = new javax.swing.JTextField();
         editQueryButton = new javax.swing.JButton();
         clearQueryButton = new javax.swing.JButton();
-        tableScrollPane = new javax.swing.JScrollPane();
-        documentsTable = new javax.swing.JTable();
         documentsToolBar = new javax.swing.JToolBar();
         addButton = new javax.swing.JButton();
         deleteButton = new javax.swing.JButton();
@@ -308,10 +309,12 @@ public final class CollectionViewTopComponent extends TopComponent {
         navLastButton = new javax.swing.JButton();
         jSeparator2 = new javax.swing.JToolBar.Separator();
         pageSizeLabel = new javax.swing.JLabel();
-        pageSizeComboBox = new JComboBox<>(ITEMS_PER_PAGE_VALUES);
+        pageSizeField = new javax.swing.JTextField();
         jSeparator3 = new javax.swing.JToolBar.Separator();
         totalDocumentsLabel = new javax.swing.JLabel();
         pageCountLabel = new javax.swing.JLabel();
+        tableScrollPane = new javax.swing.JScrollPane();
+        documentsTable = new javax.swing.JTable();
 
         queryPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.queryPanel.border.title"))); // NOI18N
 
@@ -392,19 +395,6 @@ public final class CollectionViewTopComponent extends TopComponent {
                     .addComponent(clearQueryButton)))
         );
 
-        documentsTable.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
-            },
-            new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
-            }
-        ));
-        tableScrollPane.setViewportView(documentsTable);
-
         documentsToolBar.setFloatable(false);
         documentsToolBar.setRollover(true);
 
@@ -472,15 +462,30 @@ public final class CollectionViewTopComponent extends TopComponent {
         org.openide.awt.Mnemonics.setLocalizedText(pageSizeLabel, org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.pageSizeLabel.text_1")); // NOI18N
         documentsToolBar.add(pageSizeLabel);
 
-        pageSizeComboBox.addActionListener(new java.awt.event.ActionListener() {
+        pageSizeField.setMinimumSize(new java.awt.Dimension(40, 20));
+        pageSizeField.setPreferredSize(new java.awt.Dimension(40, 20));
+        pageSizeField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                pageSizeComboBoxActionPerformed(evt);
+                pageSizeFieldActionPerformed(evt);
             }
         });
-        documentsToolBar.add(pageSizeComboBox);
+        documentsToolBar.add(pageSizeField);
         documentsToolBar.add(jSeparator3);
         documentsToolBar.add(totalDocumentsLabel);
         documentsToolBar.add(pageCountLabel);
+
+        documentsTable.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        tableScrollPane.setViewportView(documentsTable);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -509,11 +514,6 @@ public final class CollectionViewTopComponent extends TopComponent {
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void pageSizeComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pageSizeComboBoxActionPerformed
-        tableModel.setItemsPerPage((Integer) pageSizeComboBox.getSelectedItem());
-        reload();
-    }//GEN-LAST:event_pageSizeComboBoxActionPerformed
-
     private void editQueryButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editQueryButtonActionPerformed
         if (queryEditor.showDialog()) {
             updateQueryFieldsFromEditor();
@@ -526,6 +526,12 @@ public final class CollectionViewTopComponent extends TopComponent {
         queryEditor.setSort(null);
         updateQueryFieldsFromEditor();
     }//GEN-LAST:event_clearQueryButtonActionPerformed
+
+    private void pageSizeFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pageSizeFieldActionPerformed
+        final int pageSize = Integer.parseInt(pageSizeField.getText());
+        tableModel.setPageSize(pageSize);
+        reload();
+    }//GEN-LAST:event_pageSizeFieldActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
@@ -546,7 +552,7 @@ public final class CollectionViewTopComponent extends TopComponent {
     private javax.swing.JButton navLeftButton;
     private javax.swing.JButton navRightButton;
     private javax.swing.JLabel pageCountLabel;
-    private javax.swing.JComboBox<Integer> pageSizeComboBox;
+    private javax.swing.JTextField pageSizeField;
     private javax.swing.JLabel pageSizeLabel;
     private javax.swing.JTextField projectionField;
     private javax.swing.JLabel projectionLabel;

@@ -36,11 +36,13 @@ import javax.swing.table.AbstractTableModel;
  */
 public class DocumentsTableModel extends AbstractTableModel {
 
+    private static final int DEFAULT_PAGE_SIZE = 10;
+    
     private final DBCollection dbCollection;
 
     private final List<DBObject> data = new ArrayList<>();
 
-    private int itemsPerPage = 10;
+    private int pageSize = DEFAULT_PAGE_SIZE;
 
     private int page = 1;
 
@@ -68,9 +70,9 @@ public class DocumentsTableModel extends AbstractTableModel {
             }
             totalDocumentsCount = cursor.count();
             DBCursor pageCursor = cursor;
-            if (itemsPerPage > 0) {
-                final int toSkip = (page - 1) * itemsPerPage;
-                pageCursor = cursor.skip(toSkip).limit(itemsPerPage);
+            if (pageSize > 0) {
+                final int toSkip = (page - 1) * pageSize;
+                pageCursor = cursor.skip(toSkip).limit(pageSize);
             }
             for (DBObject document : pageCursor) {
                 data.add(document);
@@ -93,12 +95,12 @@ public class DocumentsTableModel extends AbstractTableModel {
         return new ArrayList<>(data);
     }
 
-    public int getItemsPerPage() {
-        return itemsPerPage;
+    public int getPageSize() {
+        return pageSize;
     }
 
-    public void setItemsPerPage(int itemsPerPage) {
-        this.itemsPerPage = itemsPerPage;
+    public void setPageSize(int pageSize) {
+        this.pageSize = pageSize;
     }
 
     public int getPage() {
@@ -110,8 +112,8 @@ public class DocumentsTableModel extends AbstractTableModel {
     }
 
     public int getPageCount() {
-        if (itemsPerPage > 0) {
-            return (totalDocumentsCount / itemsPerPage) + 1;
+        if (pageSize > 0) {
+            return (totalDocumentsCount / pageSize) + 1;
         }
         return 1;
     }
