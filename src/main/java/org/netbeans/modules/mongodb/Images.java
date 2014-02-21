@@ -39,7 +39,7 @@ public interface Images {
     String MONGO_ICON_PATH = "org/netbeans/modules/mongodb/images/mongo-small.png"; //NOI18N
     
     @StaticResource
-    String COLLECTION_ICON_PATH = "org/netbeans/modules/mongodb/images/table.gif"; //NOI18N
+    String COLLECTION_ICON_PATH = "org/netbeans/modules/mongodb/images/collection.png"; //NOI18N
 
     @StaticResource
     String SYSTEM_COLLECTION_ICON_PATH = "org/netbeans/modules/mongodb/images/tableSystem.gif"; //NOI18N
@@ -77,6 +77,9 @@ public interface Images {
     @StaticResource
     String EDIT_DOCUMENT_ICON_PATH = "org/netbeans/modules/mongodb/images/row_edit.png"; //NOI18N
 
+    @StaticResource
+    String EXPORT_COLLECTION_ICON_PATH = "org/netbeans/modules/mongodb/images/export_collection.png"; //NOI18N
+
     Image COLLECTION_ICON = ImageUtilities.loadImage(COLLECTION_ICON_PATH);
 
     Image SYSTEM_COLLECTION_ICON = ImageUtilities.loadImage(SYSTEM_COLLECTION_ICON_PATH);
@@ -100,5 +103,7 @@ public interface Images {
     Image DELETE_DOCUMENT_ICON = ImageUtilities.loadImage(DELETE_DOCUMENT_ICON_PATH);
 
     Image EDIT_DOCUMENT_ICON = ImageUtilities.loadImage(EDIT_DOCUMENT_ICON_PATH);
+
+    Image EXPORT_COLLECTION_ICON = ImageUtilities.loadImage(EXPORT_COLLECTION_ICON_PATH);
 
 }

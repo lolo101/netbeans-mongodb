@@ -90,7 +90,9 @@ import org.openide.windows.TopComponent;
     "ACTION_navRight=Next Page",
     "ACTION_navRight_tooltip=Next Page",
     "ACTION_navLast=Last Page",
-    "ACTION_navLast_tooltip=Last Page"})
+    "ACTION_navLast_tooltip=Last Page",
+    "ACTION_exportQueryResult=Export Query Result",
+    "ACTION_exportQueryResult_tooltip=Export Query Result"})
 public final class CollectionViewTopComponent extends TopComponent {
 
     private static final Integer[] ITEMS_PER_PAGE_VALUES = {10, 20, 50, 100};
@@ -120,6 +122,8 @@ public final class CollectionViewTopComponent extends TopComponent {
     private final Action navRightAction = new NavRightAction();
 
     private final Action navLastAction = new NavLastAction();
+
+    private final Action exportQueryResultAction = new ExportQueryResultAction();
 
     public CollectionViewTopComponent(CollectionInfo collectionInfo, Lookup lookup) {
         super(lookup);
@@ -182,6 +186,10 @@ public final class CollectionViewTopComponent extends TopComponent {
         return navLastAction;
     }
 
+    public Action getExportQueryResultAction() {
+        return exportQueryResultAction;
+    }
+
     private void reload() {
         new Thread(new Runnable() {
 
@@ -204,7 +212,7 @@ public final class CollectionViewTopComponent extends TopComponent {
                 int page = tableModel.getPage();
                 int pageCount = tableModel.getPageCount();
                 pageCountLabel.setText(Bundle.pageCountLabel(page, pageCount));
-                
+
                 boolean leftNavEnabled = page > 1;
                 navFirstAction.setEnabled(leftNavEnabled);
                 navLeftAction.setEnabled(leftNavEnabled);
@@ -285,13 +293,13 @@ public final class CollectionViewTopComponent extends TopComponent {
         sortField = new javax.swing.JTextField();
         editQueryButton = new javax.swing.JButton();
         clearQueryButton = new javax.swing.JButton();
-        exportButton = new javax.swing.JButton();
         tableScrollPane = new javax.swing.JScrollPane();
         documentsTable = new javax.swing.JTable();
         documentsToolBar = new javax.swing.JToolBar();
         addButton = new javax.swing.JButton();
         deleteButton = new javax.swing.JButton();
         editButton = new javax.swing.JButton();
+        exportButton = new javax.swing.JButton();
         jSeparator1 = new javax.swing.JToolBar.Separator();
         refreshDocumentsButton = new javax.swing.JButton();
         navFirstButton = new javax.swing.JButton();
@@ -384,13 +392,6 @@ public final class CollectionViewTopComponent extends TopComponent {
                     .addComponent(clearQueryButton)))
         );
 
-        org.openide.awt.Mnemonics.setLocalizedText(exportButton, org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.exportButton.text")); // NOI18N
-        exportButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                exportButtonActionPerformed(evt);
-            }
-        });
-
         documentsTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null},
@@ -429,6 +430,13 @@ public final class CollectionViewTopComponent extends TopComponent {
         editButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         editButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         documentsToolBar.add(editButton);
+
+        exportButton.setAction(getExportQueryResultAction());
+        exportButton.setFocusable(false);
+        exportButton.setHideActionText(true);
+        exportButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        exportButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        documentsToolBar.add(exportButton);
         documentsToolBar.add(jSeparator1);
 
         refreshDocumentsButton.setAction(getRefreshDocumentsAction());
@@ -483,10 +491,6 @@ public final class CollectionViewTopComponent extends TopComponent {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(queryPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(tableScrollPane)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(6, 6, 6)
-                        .addComponent(exportButton)
-                        .addGap(375, 431, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(documentsToolBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, Short.MAX_VALUE)))
@@ -500,9 +504,7 @@ public final class CollectionViewTopComponent extends TopComponent {
                 .addGap(18, 18, 18)
                 .addComponent(documentsToolBar, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(tableScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 109, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(exportButton)
+                .addComponent(tableScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 138, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -524,15 +526,6 @@ public final class CollectionViewTopComponent extends TopComponent {
         queryEditor.setSort(null);
         updateQueryFieldsFromEditor();
     }//GEN-LAST:event_clearQueryButtonActionPerformed
-
-    private void exportButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportButtonActionPerformed
-        final Map<String, Object> properties = new HashMap<>();
-        properties.put(ExportWizardAction.PROP_COLLECTION, collectionInfo.getName());
-        properties.put("criteria", queryEditor.getCriteria());
-        properties.put("projection", queryEditor.getProjection());
-        properties.put("sort", queryEditor.getSort());
-        new ExportWizardAction(getLookup(), properties).actionPerformed(evt);
-    }//GEN-LAST:event_exportButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
@@ -745,6 +738,24 @@ public final class CollectionViewTopComponent extends TopComponent {
                     updatePagination();
                 }
             }).start();
+        }
+    }
+
+    private final class ExportQueryResultAction extends AbstractAction {
+
+        public ExportQueryResultAction() {
+            super(Bundle.ACTION_exportQueryResult(), new ImageIcon(Images.EXPORT_COLLECTION_ICON));
+            putValue(SHORT_DESCRIPTION, Bundle.ACTION_exportQueryResult_tooltip());
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            final Map<String, Object> properties = new HashMap<>();
+            properties.put(ExportWizardAction.PROP_COLLECTION, collectionInfo.getName());
+            properties.put("criteria", queryEditor.getCriteria());
+            properties.put("projection", queryEditor.getProjection());
+            properties.put("sort", queryEditor.getSort());
+            new ExportWizardAction(getLookup(), properties).actionPerformed(e);
         }
     }
 }
