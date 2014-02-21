@@ -21,12 +21,8 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="queryPanel" max="32767" attributes="0"/>
                   <Component id="tableScrollPane" max="32767" attributes="0"/>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="documentsToolBar" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                  </Group>
+                  <Component id="documentsToolBar" alignment="0" max="32767" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -298,6 +294,9 @@
         </Component>
         <Component class="javax.swing.JTextField" name="pageSizeField">
           <Properties>
+            <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+              <Dimension value="[40, 2147483647]"/>
+            </Property>
             <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[40, 20]"/>
             </Property>

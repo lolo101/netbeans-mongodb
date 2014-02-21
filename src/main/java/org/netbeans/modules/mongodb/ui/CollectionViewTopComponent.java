@@ -469,6 +469,7 @@ public final class CollectionViewTopComponent extends TopComponent {
         org.openide.awt.Mnemonics.setLocalizedText(pageSizeLabel, org.openide.util.NbBundle.getMessage(CollectionViewTopComponent.class, "CollectionViewTopComponent.pageSizeLabel.text_1")); // NOI18N
         documentsToolBar.add(pageSizeLabel);
 
+        pageSizeField.setMaximumSize(new java.awt.Dimension(40, 2147483647));
         pageSizeField.setMinimumSize(new java.awt.Dimension(40, 20));
         pageSizeField.setPreferredSize(new java.awt.Dimension(40, 20));
         pageSizeField.addActionListener(new java.awt.event.ActionListener() {
@@ -503,10 +504,7 @@ public final class CollectionViewTopComponent extends TopComponent {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(queryPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(tableScrollPane)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(documentsToolBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
+                    .addComponent(documentsToolBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
