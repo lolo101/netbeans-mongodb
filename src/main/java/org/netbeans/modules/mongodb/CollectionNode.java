@@ -28,14 +28,14 @@ import com.mongodb.DBCollection;
 import com.mongodb.MongoException;
 import java.awt.Image;
 import org.netbeans.modules.mongodb.util.TopComponentUtils;
-import org.netbeans.modules.mongodb.ui.CollectionViewTopComponent;
 import java.awt.event.ActionEvent;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.netbeans.modules.mongodb.ui.CollectionNameValidator;
-import org.netbeans.modules.mongodb.ui.ValidatingInputLine;
+import org.netbeans.modules.mongodb.ui.util.CollectionNameValidator;
+import org.netbeans.modules.mongodb.ui.util.ValidatingInputLine;
+import org.netbeans.modules.mongodb.ui.windows.CollectionView;
 import org.netbeans.modules.mongodb.ui.wizards.ExportWizardAction;
 import org.netbeans.modules.mongodb.ui.wizards.ImportWizardAction;
 import org.netbeans.modules.mongodb.util.SystemCollectionPredicate;
@@ -90,9 +90,9 @@ final class CollectionNode extends AbstractNode {
         content.add(new OpenCookie() {
             @Override
             public void open() {
-                TopComponent tc = TopComponentUtils.find(collection);
+                TopComponent tc = TopComponentUtils.find(CollectionView.class, collection);
                 if (tc == null) {
-                    tc = new CollectionViewTopComponent(collection, lookup);
+                    tc = new CollectionView(collection, lookup);
                     tc.open();
                 }
                 tc.requestActive();
@@ -195,7 +195,7 @@ final class CollectionNode extends AbstractNode {
                 try {
                     lookup.lookup(DBCollection.class).drop();
                     ((OneDbNode) getParentNode()).refreshChildren();
-                    final TopComponent tc = TopComponentUtils.find(ci);
+                    final TopComponent tc = TopComponentUtils.find(CollectionView.class, ci);
                     if (tc != null) {
                         tc.close();
                     }

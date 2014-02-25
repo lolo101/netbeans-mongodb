@@ -1,4 +1,20 @@
 
+NBMongo 1.4.0
+=============
+
+Bugfixes
+--------
+* fixing page count calculation issue
+* fixing some rendering issue on some collection result tree node selection 
+* adding missing context menu on some collection result tree node
+
+Features
+--------
+* rewrite the collection query result tree table view using a "real" tree table.
+* adding a flat table view for collection query result
+
+
+
 NBMongo 1.3.0
 =============
 
