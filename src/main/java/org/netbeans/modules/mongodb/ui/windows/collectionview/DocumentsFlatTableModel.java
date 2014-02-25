@@ -53,7 +53,7 @@ public final class DocumentsFlatTableModel extends AbstractTableModel implements
     private DBObject sort;
     
     private final List<String> columns = new ArrayList<>();
-
+    
     public DocumentsFlatTableModel(DBCollection dbCollection) {
         this.dbCollection = dbCollection;
     }
@@ -150,14 +150,13 @@ public final class DocumentsFlatTableModel extends AbstractTableModel implements
 
     @Override
     public String getColumnName(int column) {
-//        return columns != null ? columns.get(column) : null;
         return columns.get(column);
     }
 
-//    @Override
-//    public Class<?> getColumnClass(int columnIndex) {
-//        return DBObject.class;
-//    }
+    @Override
+    public Class<?> getColumnClass(int columnIndex) {
+        return DBObject.class;
+    }
 
     @Override
     public int getRowCount() {

@@ -59,6 +59,7 @@ import org.netbeans.modules.mongodb.ui.windows.collectionview.JsonTreeTableCellR
 import org.netbeans.modules.mongodb.ui.util.IntegerDocumentFilter;
 import org.netbeans.modules.mongodb.ui.windows.collectionview.CollectionViewTreeTableNode;
 import org.netbeans.modules.mongodb.ui.windows.collectionview.DocumentNode;
+import org.netbeans.modules.mongodb.ui.windows.collectionview.JsonFlatTableCellRenderer;
 import org.netbeans.modules.mongodb.ui.windows.collectionview.JsonPropertyNode;
 import org.netbeans.modules.mongodb.ui.windows.collectionview.actions.ChangeResultViewAction;
 import org.netbeans.modules.mongodb.ui.windows.collectionview.actions.ClearQueryAction;
@@ -135,6 +136,7 @@ public final class CollectionView extends TopComponent {
         };
 
         documentsFlatTable.setModel(flatTableModel);
+        documentsFlatTable.setDefaultRenderer(DBObject.class, new JsonFlatTableCellRenderer());
         documentsFlatTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         documentsFlatTable.getSelectionModel().addListSelectionListener(tableSelectionListener);
 
