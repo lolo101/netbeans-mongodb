@@ -21,41 +21,41 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.netbeans.modules.mongodb.ui.util;
+package org.netbeans.modules.mongodb.ui.windows.collectionview.actions;
 
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DocumentFilter;
+import java.awt.event.ActionEvent;
+import javax.swing.ImageIcon;
+import org.netbeans.modules.mongodb.Images;
+import org.netbeans.modules.mongodb.ui.windows.CollectionView;
+import org.netbeans.modules.mongodb.ui.windows.CollectionViewAction;
+import org.netbeans.modules.mongodb.ui.windows.collectionview.CollectionQueryResultTableModel;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
  * @author Yann D'Isanto
  */
-public final class IntegerDocumentFilter extends DocumentFilter {
+@Messages({
+    "ACTION_navRight=Next Page",
+    "ACTION_navRight_tooltip=Next Page"
+})
+public final class NavRightAction extends CollectionViewAction {
 
-    @Override
-    public void insertString(FilterBypass fb, int offset, String string,
-            AttributeSet attr) throws BadLocationException {
-        if(isInt(string)) {
-            super.insertString(fb, offset, string, attr);
-        }
-    }
-
-    private boolean isInt(String text) {
-        try {
-            Integer.parseInt(text);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
-        }
+    public NavRightAction(CollectionView view) {
+        super(view,
+            Bundle.ACTION_navRight(),
+            new ImageIcon(Images.NAV_RIGHT_ICON),
+            Bundle.ACTION_navRight_tooltip());
     }
 
     @Override
-    public void replace(FilterBypass fb, int offset, int length, String text,
-            AttributeSet attrs) throws BadLocationException {
-        if(isInt(text)) {
-            super.replace(fb, offset, length, text, attrs);
+    public void actionPerformed(ActionEvent e) {
+        final CollectionQueryResultTableModel resultModel = getView().getResultTableModel();
+        int page = resultModel.getPage();
+        if (page < resultModel.getPageCount()) {
+            resultModel.setPage(page + 1);
+            resultModel.update();
+            getView().updatePagination();
         }
     }
-
 }

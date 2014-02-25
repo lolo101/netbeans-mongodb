@@ -21,41 +21,34 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.netbeans.modules.mongodb.ui.util;
+package org.netbeans.modules.mongodb.ui.windows.collectionview.actions;
 
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DocumentFilter;
+import java.awt.event.ActionEvent;
+import org.netbeans.modules.mongodb.ui.components.QueryEditor;
+import org.netbeans.modules.mongodb.ui.windows.CollectionView;
+import org.netbeans.modules.mongodb.ui.windows.CollectionViewAction;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
  * @author Yann D'Isanto
  */
-public final class IntegerDocumentFilter extends DocumentFilter {
+@Messages({
+    "ACTION_clearQuery=clear"
+})
+public final class ClearQueryAction extends CollectionViewAction {
 
-    @Override
-    public void insertString(FilterBypass fb, int offset, String string,
-            AttributeSet attr) throws BadLocationException {
-        if(isInt(string)) {
-            super.insertString(fb, offset, string, attr);
-        }
-    }
-
-    private boolean isInt(String text) {
-        try {
-            Integer.parseInt(text);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
-        }
+    public ClearQueryAction(CollectionView view) {
+        super(view,
+            Bundle.ACTION_clearQuery());
     }
 
     @Override
-    public void replace(FilterBypass fb, int offset, int length, String text,
-            AttributeSet attrs) throws BadLocationException {
-        if(isInt(text)) {
-            super.replace(fb, offset, length, text, attrs);
-        }
+    public void actionPerformed(ActionEvent e) {
+        final QueryEditor queryEditor = getView().getQueryEditor();
+        queryEditor.setCriteria(null);
+        queryEditor.setProjection(null);
+        queryEditor.setSort(null);
+        getView().updateQueryFieldsFromEditor();
     }
-
 }

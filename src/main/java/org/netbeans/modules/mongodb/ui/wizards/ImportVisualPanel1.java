@@ -35,7 +35,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.mongodb.ui.JsonFileFilter;
+import org.netbeans.modules.mongodb.ui.util.JsonFileFilter;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle.Messages;

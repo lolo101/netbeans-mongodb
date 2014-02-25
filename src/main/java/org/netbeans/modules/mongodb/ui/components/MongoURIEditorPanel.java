@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.netbeans.modules.mongodb.ui;
+package org.netbeans.modules.mongodb.ui.components;
 
 import com.mongodb.MongoClientURI;
 import java.awt.event.KeyEvent;

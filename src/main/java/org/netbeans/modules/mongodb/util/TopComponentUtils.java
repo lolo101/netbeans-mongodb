@@ -23,7 +23,6 @@
  */
 package org.netbeans.modules.mongodb.util;
 
-import org.netbeans.modules.mongodb.ui.CollectionViewTopComponent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -37,25 +36,27 @@ import org.openide.windows.WindowManager;
  */
 public class TopComponentUtils {
 
-    public static TopComponent find(Object data) {
+    @SuppressWarnings("unchecked")
+    public static <T extends TopComponent> T find(Class<T> topComponentType, Object data) {
         final Set<TopComponent> openTopComponents = WindowManager.getDefault().getRegistry().getOpened();
         for (TopComponent tc : openTopComponents) {
-            if (tc instanceof CollectionViewTopComponent) {
+            if(topComponentType.isAssignableFrom(tc.getClass())) {
                 if (tc.getLookup().lookup(data.getClass()) == data) {
-                    return tc;
+                    return (T) tc;
                 }
             }
         }
         return null;
     }
 
-    public static Collection<TopComponent> findAll(Object data) {
-        final List<TopComponent> result = new ArrayList<>();
+    @SuppressWarnings("unchecked")
+    public static <T extends TopComponent> Collection<T> findAll(Class<T> topComponentType, Object data) {
+        final List<T> result = new ArrayList<>();
         final Set<TopComponent> openTopComponents = WindowManager.getDefault().getRegistry().getOpened();
         for (TopComponent tc : openTopComponents) {
-            if (tc instanceof CollectionViewTopComponent) {
+            if(topComponentType.isAssignableFrom(tc.getClass())) {
                 if (tc.getLookup().lookup(data.getClass()) == data) {
-                    result.add(tc);
+                    result.add((T) tc);
                 }
             }
         }

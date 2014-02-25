@@ -28,7 +28,7 @@ import java.awt.Component;
 import java.beans.PropertyEditorSupport;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.mongodb.ui.MongoURIEditorPanel;
+import org.netbeans.modules.mongodb.ui.components.MongoURIEditorPanel;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 

@@ -22,51 +22,34 @@
  * THE SOFTWARE.
  */
 
-package org.netbeans.modules.mongodb.ui.util;
+package org.netbeans.modules.mongodb.ui.windows.collectionview.actions;
 
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import org.netbeans.modules.mongodb.Images;
+import org.netbeans.modules.mongodb.ui.windows.CollectionView;
+import org.netbeans.modules.mongodb.ui.windows.CollectionViewAction;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
- * An abstract copy to cliboard action.
- * 
  * @author Yann D'Isanto
  */
-public abstract class AbstractCopyToClipboardAction extends AbstractAction {
-
-    /**
-     * Constructor.
-     *
-     * @param name the action name.
-     */
-    public AbstractCopyToClipboardAction(String name) {
-        super(name);
-    }
-
-    /**
-     * Constructor.
-     *
-     * @param name the action name.
-     * @param icon the action icon
-     */
-    public AbstractCopyToClipboardAction(String name, Icon icon) {
-        super(name, icon);
-    }
-
-    /**
-     * @return the String selection to be copied in the clipboard.
-     */
-    public abstract StringSelection getStringSelection();
+@Messages({
+    "ACTION_navFirst=First Page",
+    "ACTION_navFirst_tooltip=First Page"
+})
+public final class NavFirstAction extends CollectionViewAction {
     
-    @Override
-    public final void actionPerformed(ActionEvent e) {
-        final Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-            clipboard.setContents(getStringSelection(), null);
+    public NavFirstAction(CollectionView view) {
+        super(view, 
+            Bundle.ACTION_navFirst(), 
+            new ImageIcon(Images.NAV_FIRST_ICON), 
+            Bundle.ACTION_navFirst_tooltip());
     }
-    
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            getView().refreshResults();
+        }
 }

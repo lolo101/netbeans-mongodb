@@ -43,6 +43,7 @@ import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.mongodb.beans.MongoClientURIPropertyEditor;
 import org.netbeans.modules.mongodb.shell.MongoShellAction;
 import org.netbeans.modules.mongodb.options.MongoShellOptions;
+import org.netbeans.modules.mongodb.ui.windows.CollectionView;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
@@ -324,7 +325,7 @@ final class OneConnectionNode extends AbstractNode implements PropertyChangeList
 
                     @Override
                     public void run() {
-                        for (TopComponent topComponent : TopComponentUtils.findAll(info)) {
+                        for (TopComponent topComponent : TopComponentUtils.findAll(CollectionView.class, info)) {
                             topComponent.close();
                         }
                     }
@@ -372,7 +373,7 @@ final class OneConnectionNode extends AbstractNode implements PropertyChangeList
             try {
                 disconnecter.close();
                 info.getPreferences().removeNode();
-                for (TopComponent topComponent : TopComponentUtils.findAll(info)) {
+                for (TopComponent topComponent : TopComponentUtils.findAll(CollectionView.class, info)) {
                     topComponent.close();
                 }
                 ((MongoServicesNode) getParentNode()).getChildrenFactory().refresh();

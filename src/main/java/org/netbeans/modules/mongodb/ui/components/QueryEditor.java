@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.netbeans.modules.mongodb.ui;
+package org.netbeans.modules.mongodb.ui.components;
 
 import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
@@ -305,7 +305,7 @@ public final class QueryEditor extends javax.swing.JPanel {
             .addGroup(projectionPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(projectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(projectionScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 187, Short.MAX_VALUE)
+                    .addComponent(projectionScrollPane)
                     .addGroup(projectionPanelLayout.createSequentialGroup()
                         .addComponent(projectionLabel)
                         .addGap(0, 0, Short.MAX_VALUE)))

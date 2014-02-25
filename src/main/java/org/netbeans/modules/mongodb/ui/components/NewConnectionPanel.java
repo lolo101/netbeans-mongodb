@@ -21,14 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.netbeans.modules.mongodb.ui;
+package org.netbeans.modules.mongodb.ui.components;
 
 import com.mongodb.MongoClientURI;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -48,8 +45,6 @@ import org.openide.util.NbBundle.Messages;
  */
 @Messages("ConnectionNameNotSet=Specify the connection name")
 public class NewConnectionPanel extends javax.swing.JPanel implements DocumentListener, FocusListener {
-
-    private static final String MONGO_URI_PREFIX = "mongodb://";
 
     private final ChangeSupport supp = new ChangeSupport(this);
 

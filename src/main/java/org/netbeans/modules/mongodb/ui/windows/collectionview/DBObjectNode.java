@@ -21,41 +21,36 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.netbeans.modules.mongodb.ui.util;
+package org.netbeans.modules.mongodb.ui.windows.collectionview;
 
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DocumentFilter;
+import com.mongodb.DBObject;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import org.jdesktop.swingx.treetable.TreeTableNode;
+import org.netbeans.modules.mongodb.util.JsonProperty;
 
 /**
  *
  * @author Yann D'Isanto
  */
-public final class IntegerDocumentFilter extends DocumentFilter {
+public class DBObjectNode extends CollectionViewTreeTableNode<DBObject> {
 
-    @Override
-    public void insertString(FilterBypass fb, int offset, String string,
-            AttributeSet attr) throws BadLocationException {
-        if(isInt(string)) {
-            super.insertString(fb, offset, string, attr);
-        }
+    public DBObjectNode(TreeTableNode parent, DBObject userObject) {
+        super(parent, userObject, new ChildrenFactory<DBObject>() {
+
+            @Override
+            @SuppressWarnings("unchecked")
+            public List<TreeTableNode> createChildren(TreeTableNode parent, DBObject userObject) {
+                final Map<String, Object> map = userObject.toMap();
+                final List<TreeTableNode> children = new ArrayList<>(map.size());
+                for (Map.Entry<String, Object> entry : map.entrySet()) {
+                    children.add(new JsonPropertyNode(
+                        parent,
+                        new JsonProperty(entry.getKey(), entry.getValue())));
+                }
+                return children;
+            }
+        });
     }
-
-    private boolean isInt(String text) {
-        try {
-            Integer.parseInt(text);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
-        }
-    }
-
-    @Override
-    public void replace(FilterBypass fb, int offset, int length, String text,
-            AttributeSet attrs) throws BadLocationException {
-        if(isInt(text)) {
-            super.replace(fb, offset, length, text, attrs);
-        }
-    }
-
 }

@@ -21,23 +21,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.netbeans.modules.mongodb.ui;
+package org.netbeans.modules.mongodb.ui.windows.collectionview;
 
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.table.AbstractTableModel;
+import javax.swing.SwingUtilities;
+import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
+import org.jdesktop.swingx.treetable.TreeTableNode;
 
 /**
  *
  * @author Yann D'Isanto
  */
-public class DocumentsTableModel extends AbstractTableModel {
+public final class DocumentsTreeTableModel extends DefaultTreeTableModel implements CollectionQueryResultTableModel {
 
-    public static final int DEFAULT_PAGE_SIZE = 10;
-    
     private final DBCollection dbCollection;
 
     private final List<DBObject> data = new ArrayList<>();
@@ -54,18 +54,18 @@ public class DocumentsTableModel extends AbstractTableModel {
 
     private DBObject sort;
 
-    public DocumentsTableModel(DBCollection dbCollection) {
+    public DocumentsTreeTableModel(DBCollection dbCollection) {
         this.dbCollection = dbCollection;
     }
 
+    @Override
     public void update() {
-        clear();
         if (dbCollection == null) {
             // TODO: error message
             return;
         }
         try (DBCursor cursor = dbCollection.find(criteria, projection)) {
-            if(sort != null) {
+            if (sort != null) {
                 cursor.sort(sort);
             }
             totalDocumentsCount = cursor.count();
@@ -74,50 +74,66 @@ public class DocumentsTableModel extends AbstractTableModel {
                 final int toSkip = (page - 1) * pageSize;
                 pageCursor = cursor.skip(toSkip).limit(pageSize);
             }
-            for (DBObject document : pageCursor) {
-                data.add(document);
-            }
-            if (data.size() > 0) {
-                fireTableRowsInserted(0, data.size() - 1);
-            }
-        }
-    }
-
-    private void clear() {
-        final int size = data.size();
-        if (size > 0) {
             data.clear();
-            fireTableRowsDeleted(0, size - 1);
+            final TreeTableNode rootNode = new CollectionViewTreeTableNode<>(null, pageCursor,
+                new CollectionViewTreeTableNode.ChildrenFactory<DBCursor>() {
+
+                    @Override
+                    public List<TreeTableNode> createChildren(TreeTableNode parent, DBCursor cursor) {
+                        final List<TreeTableNode> children = new ArrayList<>(cursor.size());
+                        for (DBObject document : cursor) {
+                            children.add(new DocumentNode(parent, document));
+                            data.add(document);
+                        }
+                        return children;
+                    }
+                }
+            );
+            SwingUtilities.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    setRoot(rootNode);
+                }
+            });
         }
     }
 
+    @Override
     public List<DBObject> getDocuments() {
         return new ArrayList<>(data);
     }
 
+    @Override
     public int getPageSize() {
         return pageSize;
     }
 
+    @Override
     public void setPageSize(int pageSize) {
         this.pageSize = pageSize;
     }
 
+    @Override
     public int getPage() {
         return page;
     }
 
+    @Override
     public void setPage(int page) {
         this.page = page;
     }
 
+    @Override
     public int getPageCount() {
         if (pageSize > 0) {
-            return (totalDocumentsCount / pageSize) + 1;
+            final double pageCount = (double) totalDocumentsCount / (double) pageSize;
+            return (int) Math.ceil(pageCount);
         }
         return 1;
     }
 
+    @Override
     public int getTotalDocumentsCount() {
         return totalDocumentsCount;
     }
@@ -138,49 +154,32 @@ public class DocumentsTableModel extends AbstractTableModel {
     }
 
     @Override
-    public int getRowCount() {
-        return data != null ? data.size() : 0;
-    }
-
-    @Override
-    public Object getValueAt(int rowIndex, int columnIndex) {
-        return getRowValue(rowIndex);
-    }
-
-    @Override
-    public boolean isCellEditable(int rowIndex, int columnIndex) {
-        return true;
-    }
-
-    public DBObject getRowValue(int rowIndex) {
-        if (rowIndex == -1) {
-            return null;
-        }
-        return data != null ? data.get(rowIndex) : null;
-    }
-
     public DBObject getCriteria() {
         return criteria;
     }
 
+    @Override
     public void setCriteria(DBObject criteria) {
         this.criteria = criteria;
     }
 
+    @Override
     public DBObject getProjection() {
         return projection;
     }
 
+    @Override
     public void setProjection(DBObject projection) {
         this.projection = projection;
     }
 
+    @Override
     public DBObject getSort() {
         return sort;
     }
 
+    @Override
     public void setSort(DBObject sort) {
         this.sort = sort;
     }
-    
 }

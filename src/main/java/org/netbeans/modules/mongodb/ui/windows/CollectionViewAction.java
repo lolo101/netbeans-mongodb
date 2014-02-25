@@ -21,40 +21,35 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.netbeans.modules.mongodb.ui;
+package org.netbeans.modules.mongodb.ui.windows;
 
-import com.mongodb.DBObject;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import javax.swing.tree.TreeNode;
-import org.netbeans.modules.mongodb.util.JsonProperty;
+import javax.swing.AbstractAction;
+import static javax.swing.Action.SHORT_DESCRIPTION;
+import javax.swing.Icon;
 
 /**
  *
  * @author Yann D'Isanto
  */
-public final class DBObjectTreeNode extends ImmutableTreeNode<DBObject> {
+public abstract class CollectionViewAction extends AbstractAction {
 
-    public DBObjectTreeNode(DBObject value) {
-        this(null, value);
+    private final CollectionView view;
+
+    public CollectionViewAction(CollectionView view, String name) {
+        this(view, name, null, null);
+    }
+    
+    public CollectionViewAction(CollectionView view, String name, Icon icon) {
+        this(view, name, icon, null);
     }
 
-    public DBObjectTreeNode(TreeNode parent, DBObject value) {
-        super(parent, value, new ChildrenFactory<DBObject>() {
+    public CollectionViewAction(CollectionView view, String name, Icon icon, String shortDescription) {
+        super(name, icon);
+        putValue(SHORT_DESCRIPTION, shortDescription);
+        this.view = view;
+    }
 
-            @Override
-            @SuppressWarnings("unchecked")
-            public List<TreeNode> createChildren(TreeNode parent, DBObject userObject) {
-                final Map<String, Object> map = userObject.toMap();
-                final List<TreeNode> children = new ArrayList<>(map.size());
-                for (Map.Entry<String, Object> entry : map.entrySet()) {
-                    children.add(new JsonPropertyNode(
-                        parent,
-                        new JsonProperty(entry.getKey(), entry.getValue())));
-                }
-                return children;
-            }
-        });
+    public final CollectionView getView() {
+        return view;
     }
 }

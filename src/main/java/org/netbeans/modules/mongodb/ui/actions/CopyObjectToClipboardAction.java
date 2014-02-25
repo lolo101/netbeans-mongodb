@@ -21,9 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.netbeans.modules.mongodb.ui.util;
+package org.netbeans.modules.mongodb.ui.actions;
 
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
 import javax.swing.Icon;
 
 /**
@@ -31,7 +35,7 @@ import javax.swing.Icon;
  *
  * @author Yann D'Isanto
  */
-public abstract class CopyObjectToClipboardAction<T> extends AbstractCopyToClipboardAction {
+public abstract class CopyObjectToClipboardAction<T> extends AbstractAction {
 
     /**
      * The object to copy to the clipboard.
@@ -45,8 +49,7 @@ public abstract class CopyObjectToClipboardAction<T> extends AbstractCopyToClipb
      * @param object the object to copy to the clipboard.
      */
     public CopyObjectToClipboardAction(String name, T object) {
-        super(name);
-        this.object = object;
+        this(name, null, object);
     }
 
     /**
@@ -62,10 +65,11 @@ public abstract class CopyObjectToClipboardAction<T> extends AbstractCopyToClipb
     }
 
     @Override
-    public final StringSelection getStringSelection() {
-        return convertToStringSelection(object);
+    public final void actionPerformed(ActionEvent e) {
+        final Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+            clipboard.setContents(convertToStringSelection(object), null);
     }
-
+    
     /**
      * Converts the specified object into a string to be copied in the
      * clipboard. The default implementation rely on {@code String.valueOf()}

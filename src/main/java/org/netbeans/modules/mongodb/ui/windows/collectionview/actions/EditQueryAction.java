@@ -21,28 +21,31 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+package org.netbeans.modules.mongodb.ui.windows.collectionview.actions;
 
-package org.netbeans.modules.mongodb.ui;
-
-import java.io.File;
-import javax.swing.filechooser.FileFilter;
+import java.awt.event.ActionEvent;
+import org.netbeans.modules.mongodb.ui.windows.CollectionView;
+import org.netbeans.modules.mongodb.ui.windows.CollectionViewAction;
 import org.openide.util.NbBundle.Messages;
 
 /**
  *
  * @author Yann D'Isanto
  */
-@Messages({"jsonFileFilter=JSON files (*.json)"})
-public final class JsonFileFilter extends FileFilter {
+@Messages({
+    "ACTION_editQuery=edit"
+})
+public final class EditQueryAction extends CollectionViewAction {
 
-    @Override
-    public boolean accept(File f) {
-        return f.isDirectory() || f.getName().endsWith(".json");
+    public EditQueryAction(CollectionView view) {
+        super(view,
+            Bundle.ACTION_editQuery());
     }
 
     @Override
-    public String getDescription() {
-        return Bundle.jsonFileFilter();
+    public void actionPerformed(ActionEvent e) {
+        if (getView().getQueryEditor().showDialog()) {
+            getView().updateQueryFieldsFromEditor();
+        }
     }
-    
 }

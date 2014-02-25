@@ -21,41 +21,35 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.netbeans.modules.mongodb.ui.util;
 
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DocumentFilter;
+package org.netbeans.modules.mongodb.ui.windows.collectionview.actions;
+
+import java.awt.event.ActionEvent;
+import javax.swing.ImageIcon;
+import org.netbeans.modules.mongodb.Images;
+import org.netbeans.modules.mongodb.ui.windows.CollectionView;
+import org.netbeans.modules.mongodb.ui.windows.CollectionViewAction;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
  * @author Yann D'Isanto
  */
-public final class IntegerDocumentFilter extends DocumentFilter {
-
-    @Override
-    public void insertString(FilterBypass fb, int offset, String string,
-            AttributeSet attr) throws BadLocationException {
-        if(isInt(string)) {
-            super.insertString(fb, offset, string, attr);
-        }
+//@Messages({
+//    "ACTION_displayResultsAsTreeTable=Refresh",
+//    "ACTION_displayResultsAsTreeTable_tooltip=Refresh Documents"
+//})
+public final class DisplayResultAsTreeTableAction extends CollectionViewAction {
+    
+    public DisplayResultAsTreeTableAction(CollectionView view) {
+        super(view, 
+            Bundle.ACTION_displayResultsAsTreeTable(), 
+            new ImageIcon(Images.FLAT_TABLE_VIEW_ICON), 
+            Bundle.ACTION_displayResultsAsTreeTable_tooltip());
     }
 
-    private boolean isInt(String text) {
-        try {
-            Integer.parseInt(text);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            getView().changeResultView(CollectionView.ResultView.TREE_TABLE);
         }
-    }
-
-    @Override
-    public void replace(FilterBypass fb, int offset, int length, String text,
-            AttributeSet attrs) throws BadLocationException {
-        if(isInt(text)) {
-            super.replace(fb, offset, length, text, attrs);
-        }
-    }
-
 }

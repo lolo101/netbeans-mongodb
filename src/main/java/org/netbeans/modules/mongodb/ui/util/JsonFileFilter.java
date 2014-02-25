@@ -21,41 +21,28 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package org.netbeans.modules.mongodb.ui.util;
 
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DocumentFilter;
+import java.io.File;
+import javax.swing.filechooser.FileFilter;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
  * @author Yann D'Isanto
  */
-public final class IntegerDocumentFilter extends DocumentFilter {
+@Messages({"jsonFileFilter=JSON files (*.json)"})
+public final class JsonFileFilter extends FileFilter {
 
     @Override
-    public void insertString(FilterBypass fb, int offset, String string,
-            AttributeSet attr) throws BadLocationException {
-        if(isInt(string)) {
-            super.insertString(fb, offset, string, attr);
-        }
-    }
-
-    private boolean isInt(String text) {
-        try {
-            Integer.parseInt(text);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
-        }
+    public boolean accept(File f) {
+        return f.isDirectory() || f.getName().endsWith(".json");
     }
 
     @Override
-    public void replace(FilterBypass fb, int offset, int length, String text,
-            AttributeSet attrs) throws BadLocationException {
-        if(isInt(text)) {
-            super.replace(fb, offset, length, text, attrs);
-        }
+    public String getDescription() {
+        return Bundle.jsonFileFilter();
     }
-
+    
 }

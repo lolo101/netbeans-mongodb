@@ -28,7 +28,7 @@ import com.mongodb.DBObject;
 import javax.swing.JComboBox;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.mongodb.ui.QueryEditor;
+import org.netbeans.modules.mongodb.ui.components.QueryEditor;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.ChangeSupport;

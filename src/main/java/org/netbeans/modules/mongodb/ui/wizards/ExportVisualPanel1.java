@@ -31,7 +31,7 @@ import java.awt.event.ActionListener;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.mongodb.ui.QueryEditor;
+import org.netbeans.modules.mongodb.ui.components.QueryEditor;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle.Messages;
 

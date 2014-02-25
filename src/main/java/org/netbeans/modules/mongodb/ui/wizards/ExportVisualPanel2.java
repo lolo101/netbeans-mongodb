@@ -31,7 +31,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.mongodb.ui.JsonFileFilter;
+import org.netbeans.modules.mongodb.ui.util.JsonFileFilter;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.ChangeSupport;

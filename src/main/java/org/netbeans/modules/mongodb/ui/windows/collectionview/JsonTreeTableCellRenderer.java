@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.netbeans.modules.mongodb.ui;
+package org.netbeans.modules.mongodb.ui.windows.collectionview;
 
 import org.netbeans.modules.mongodb.options.JsonTreeCellRendererOptions;
 import java.awt.Color;
@@ -49,7 +49,7 @@ import org.netbeans.modules.mongodb.util.JsonProperty;
  *
  * @author Yann D'Isanto
  */
-public final class JsonTreeCellRenderer extends JPanel implements TreeCellRenderer {
+public final class JsonTreeTableCellRenderer extends JPanel implements TreeCellRenderer {
 
     private static final Map<Class<?>, LabelCategory> LABEL_CATEGORIES = new HashMap<>();
 
@@ -92,7 +92,7 @@ public final class JsonTreeCellRenderer extends JPanel implements TreeCellRender
      */
     private boolean inited;
 
-    public JsonTreeCellRenderer() {
+    public JsonTreeTableCellRenderer() {
         super(new GridBagLayout());
         add(keyLabel, new GridBagConstraints(0, 0, 1, 1, 1.0, 1.0,
             GridBagConstraints.WEST,
@@ -113,13 +113,29 @@ public final class JsonTreeCellRenderer extends JPanel implements TreeCellRender
     public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
         setBackground(selected ? getBackgroundSelectionColor() : getBackgroundNonSelectionColor());
         setBorder(selected ? selectionBorder : nonSelectionBorder);
-        if (value instanceof DBObjectTreeNode) {
-            keyLabel.setText("-");
+        if (value instanceof DBObjectNode) {
+            final LabelFontConf keyFontConf = options.getLabelFontConf(LabelCategory.KEY);
+            keyLabel.setFont(keyFontConf.getFont());
+            if (value instanceof DocumentNode) {
+                final DocumentNode node = (DocumentNode) value;
+                final Object id = node.getUserObject().get("_id");
+                keyLabel.setText(String.valueOf(id));
+            } else {
+                keyLabel.setText("-");
+            }
             valueLabel.setText("");
+            if (selected) {
+                keyLabel.setForeground(getTextSelectionColor());
+                keyLabel.setBackground(getBackgroundSelectionColor());
+            } else {
+                keyLabel.setForeground(keyFontConf.getForeground());
+                keyLabel.setBackground(keyFontConf.getBackground());
+            }
+        } else if (value instanceof DBObjectNode) {
         } else if (value instanceof JsonPropertyNode) {
             computRendererForJsonPropertyNode((JsonPropertyNode) value, selected);
-        } else if (value instanceof JsonValuePropertyNode) {
-            computRendererForJsonValuePropertyNode((JsonValuePropertyNode) value, selected);
+        } else if (value instanceof JsonValueNode) {
+            computRendererForJsonValuePropertyNode((JsonValueNode) value, selected);
         }
         return this;
     }
@@ -162,7 +178,7 @@ public final class JsonTreeCellRenderer extends JPanel implements TreeCellRender
         }
     }
 
-    private void computRendererForJsonValuePropertyNode(JsonValuePropertyNode node, boolean selected) {
+    private void computRendererForJsonValuePropertyNode(JsonValueNode node, boolean selected) {
         final Object value = node.getUserObject();
         final LabelCategory valueLabelCategory = LABEL_CATEGORIES.get(value.getClass());
         final LabelFontConf keyFontConf = options.getLabelFontConf((value instanceof ObjectId) ? LabelCategory.ID : LabelCategory.KEY);

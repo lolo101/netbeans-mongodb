@@ -21,41 +21,28 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.netbeans.modules.mongodb.ui.util;
+package org.netbeans.modules.mongodb.ui.windows.collectionview.actions;
 
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DocumentFilter;
+import com.mongodb.DBObject;
+import com.mongodb.util.JSON;
+import java.awt.datatransfer.StringSelection;
+import org.netbeans.modules.mongodb.ui.actions.CopyObjectToClipboardAction;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
  * @author Yann D'Isanto
  */
-public final class IntegerDocumentFilter extends DocumentFilter {
+@Messages({
+    "ACTION_copyDocumentToClipboard=Copy document"})
+public final class CopyDocumentToClipboardAction extends CopyObjectToClipboardAction<DBObject> {
 
-    @Override
-    public void insertString(FilterBypass fb, int offset, String string,
-            AttributeSet attr) throws BadLocationException {
-        if(isInt(string)) {
-            super.insertString(fb, offset, string, attr);
-        }
-    }
-
-    private boolean isInt(String text) {
-        try {
-            Integer.parseInt(text);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
-        }
+    public CopyDocumentToClipboardAction(DBObject dBObject) {
+        super(Bundle.ACTION_copyDocumentToClipboard(), dBObject);
     }
 
     @Override
-    public void replace(FilterBypass fb, int offset, int length, String text,
-            AttributeSet attrs) throws BadLocationException {
-        if(isInt(text)) {
-            super.replace(fb, offset, length, text, attrs);
-        }
+    public StringSelection convertToStringSelection(DBObject dbObject) {
+        return new StringSelection(JSON.serialize(dbObject));
     }
-
 }

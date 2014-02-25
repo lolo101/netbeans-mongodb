@@ -21,41 +21,35 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.netbeans.modules.mongodb.ui.util;
+package org.netbeans.modules.mongodb.ui.windows.collectionview.actions;
 
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DocumentFilter;
+import com.mongodb.BasicDBObject;
+import com.mongodb.util.JSON;
+import java.awt.datatransfer.StringSelection;
+import java.util.Map;
+import org.netbeans.modules.mongodb.ui.actions.CopyObjectToClipboardAction;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
  * @author Yann D'Isanto
  */
-public final class IntegerDocumentFilter extends DocumentFilter {
+@Messages({"ACTION_copyValueToClipboard=Copy value"})
+public final class CopyValueToClipboardAction extends CopyObjectToClipboardAction<Object> {
 
-    @Override
-    public void insertString(FilterBypass fb, int offset, String string,
-            AttributeSet attr) throws BadLocationException {
-        if(isInt(string)) {
-            super.insertString(fb, offset, string, attr);
-        }
-    }
-
-    private boolean isInt(String text) {
-        try {
-            Integer.parseInt(text);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
-        }
+    public CopyValueToClipboardAction(Object value) {
+        super(Bundle.ACTION_copyValueToClipboard(), value);
     }
 
     @Override
-    public void replace(FilterBypass fb, int offset, int length, String text,
-            AttributeSet attrs) throws BadLocationException {
-        if(isInt(text)) {
-            super.replace(fb, offset, length, text, attrs);
-        }
+    public StringSelection convertToStringSelection(Object object) {
+        return new StringSelection(convertToString(object));
     }
 
+    private String convertToString(Object value) {
+        if (value instanceof Map) {
+            return JSON.serialize(new BasicDBObject((Map) value));
+        }
+        return value.toString();
+    }
 }

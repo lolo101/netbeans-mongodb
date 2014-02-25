@@ -1,0 +1,767 @@
+/*
+ * The MIT License
+ *
+ * Copyright 2013 Yann.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+package org.netbeans.modules.mongodb.ui.windows;
+
+import org.netbeans.modules.mongodb.ui.windows.collectionview.actions.AddDocumentAction;
+import org.netbeans.modules.mongodb.ui.windows.collectionview.CollectionQueryResultTableModel;
+import com.mongodb.DBCollection;
+import com.mongodb.DBObject;
+import com.mongodb.util.JSON;
+import com.mongodb.util.JSONParseException;
+import java.awt.CardLayout;
+import org.netbeans.modules.mongodb.CollectionInfo;
+import org.netbeans.modules.mongodb.util.Json;
+import java.awt.Dimension;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.prefs.Preferences;
+import javax.swing.Action;
+import javax.swing.JEditorPane;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.text.EditorKit;
+import javax.swing.text.PlainDocument;
+import javax.swing.tree.TreePath;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.modules.mongodb.ConnectionInfo;
+import org.netbeans.modules.mongodb.DbInfo;
+import org.netbeans.modules.mongodb.Images;
+import org.netbeans.modules.mongodb.ui.components.QueryEditor;
+import org.netbeans.modules.mongodb.ui.windows.collectionview.DocumentsFlatTableModel;
+import org.netbeans.modules.mongodb.ui.windows.collectionview.DocumentsTreeTableModel;
+import org.netbeans.modules.mongodb.ui.windows.collectionview.JsonTreeTableCellRenderer;
+import org.netbeans.modules.mongodb.ui.util.IntegerDocumentFilter;
+import org.netbeans.modules.mongodb.ui.windows.collectionview.CollectionViewTreeTableNode;
+import org.netbeans.modules.mongodb.ui.windows.collectionview.DocumentNode;
+import org.netbeans.modules.mongodb.ui.windows.collectionview.JsonPropertyNode;
+import org.netbeans.modules.mongodb.ui.windows.collectionview.actions.ChangeResultViewAction;
+import org.netbeans.modules.mongodb.ui.windows.collectionview.actions.ClearQueryAction;
+import org.netbeans.modules.mongodb.ui.windows.collectionview.actions.CopyDocumentToClipboardAction;
+import org.netbeans.modules.mongodb.ui.windows.collectionview.actions.CopyKeyToClipboardAction;
+import org.netbeans.modules.mongodb.ui.windows.collectionview.actions.CopyValueToClipboardAction;
+import org.netbeans.modules.mongodb.ui.windows.collectionview.actions.DeleteSelectedDocumentAction;
+import org.netbeans.modules.mongodb.ui.windows.collectionview.actions.EditQueryAction;
+import org.netbeans.modules.mongodb.ui.windows.collectionview.actions.EditSelectedDocumentAction;
+import org.netbeans.modules.mongodb.ui.windows.collectionview.actions.ExportQueryResultAction;
+import org.netbeans.modules.mongodb.ui.windows.collectionview.actions.NavFirstAction;
+import org.netbeans.modules.mongodb.ui.windows.collectionview.actions.NavLastAction;
+import org.netbeans.modules.mongodb.ui.windows.collectionview.actions.NavLeftAction;
+import org.netbeans.modules.mongodb.ui.windows.collectionview.actions.NavRightAction;
+import org.netbeans.modules.mongodb.ui.windows.collectionview.actions.RefreshDocumentsAction;
+import org.netbeans.modules.mongodb.util.JsonProperty;
+import org.netbeans.modules.mongodb.util.SystemCollectionPredicate;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle.Messages;
+import org.openide.windows.TopComponent;
+
+/**
+ * Top component which displays something.
+ */
+@TopComponent.Description(
+    preferredID = "CollectionView",
+    persistenceType = TopComponent.PERSISTENCE_ALWAYS)
+@Messages({
+    "invalidJson=invalid json",
+    "# {0} - total documents count",
+    "totalDocuments=Total Documents: {0}      ",
+    "# {0} - current page",
+    "# {1} - total page count",
+    "pageCountLabel=Page {0} of {1}"})
+public final class CollectionView extends TopComponent {
+
+    private final boolean isSystemCollection;
+
+    private final EditorKit jsonEditorKit = MimeLookup.getLookup("text/x-json").lookup(EditorKit.class);
+
+    private final QueryEditor queryEditor = new QueryEditor();
+
+    private ResultView resultView = ResultView.TREE_TABLE;
+
+    public CollectionView(CollectionInfo collectionInfo, Lookup lookup) {
+        super(lookup);
+        isSystemCollection = SystemCollectionPredicate.get().eval(collectionInfo.getName());
+        initComponents();
+        final ConnectionInfo ci = lookup.lookup(ConnectionInfo.class);
+        final DbInfo di = lookup.lookup(DbInfo.class);
+        final String name = di.getDbName() + "." + collectionInfo.getName();
+        setName(name);
+        setToolTipText(ci.getDisplayName() + ": " + name);
+        setIcon(isSystemCollection
+            ? Images.SYSTEM_COLLECTION_ICON
+            : Images.COLLECTION_ICON);
+
+        final DBCollection dbCollection = lookup.lookup(DBCollection.class);
+
+        final DocumentsTreeTableModel treeTableModel = new DocumentsTreeTableModel(dbCollection);
+        final DocumentsFlatTableModel flatTableModel = new DocumentsFlatTableModel(dbCollection);
+
+        final ListSelectionListener tableSelectionListener = new ListSelectionListener() {
+
+            @Override
+            public void valueChanged(ListSelectionEvent evt) {
+                if (!evt.getValueIsAdjusting()) {
+                    updateDocumentButtonsState();
+                }
+            }
+        };
+
+        documentsFlatTable.setModel(flatTableModel);
+        documentsFlatTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        documentsFlatTable.getSelectionModel().addListSelectionListener(tableSelectionListener);
+
+        documentsTreeTable.setTreeTableModel(treeTableModel);
+        documentsTreeTable.setTreeCellRenderer(new JsonTreeTableCellRenderer());
+        documentsTreeTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        documentsTreeTable.getSelectionModel().addListSelectionListener(tableSelectionListener);
+
+        final int pageSize = prefs().getInt("table-page-size", CollectionQueryResultTableModel.DEFAULT_PAGE_SIZE);
+        treeTableModel.setPageSize(pageSize);
+        flatTableModel.setPageSize(pageSize);
+        final PlainDocument document = (PlainDocument) pageSizeField.getDocument();
+        document.setDocumentFilter(new IntegerDocumentFilter());
+        pageSizeField.setText(String.valueOf(pageSize));
+
+        changeResultView(ResultView.TREE_TABLE);
+        treeTableViewButton.setSelected(true);
+        documentsTreeTable.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if (e.isPopupTrigger()) {
+                    final TreePath path = documentsTreeTable.getPathForLocation(e.getX(), e.getY());
+                    if (path != null) {
+                        final int row = documentsTreeTable.getRowForPath(path);
+                        documentsTreeTable.setRowSelectionInterval(row, row);
+                        final JPopupMenu menu = createTreeTableContextMenu(path);
+                        menu.show(e.getComponent(), e.getX(), e.getY());
+                    }
+                }
+            }
+
+        });
+        documentsFlatTable.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if (e.isPopupTrigger()) {
+                    final int row = documentsFlatTable.rowAtPoint(e.getPoint());
+                    if(row > -1) {
+                        final int column = documentsFlatTable.columnAtPoint(e.getPoint());
+                        documentsFlatTable.setRowSelectionInterval(row, row);
+                        final JPopupMenu menu = createFlatTableContextMenu(row, column);
+                        menu.show(e.getComponent(), e.getX(), e.getY());                        
+                    }
+                }
+            }
+
+        });
+    }
+
+    public QueryEditor getQueryEditor() {
+        return queryEditor;
+    }
+
+    private JTable getResultTable() {
+        switch (resultView) {
+            case FLAT_TABLE:
+                return documentsFlatTable;
+            case TREE_TABLE:
+                return documentsTreeTable;
+            default:
+                throw new AssertionError();
+        }
+    }
+
+    public CollectionQueryResultTableModel getResultTableModel() {
+        switch (resultView) {
+            case FLAT_TABLE:
+                return (CollectionQueryResultTableModel) documentsFlatTable.getModel();
+            case TREE_TABLE:
+                return (CollectionQueryResultTableModel) documentsTreeTable.getTreeTableModel();
+            default:
+                throw new AssertionError();
+        }
+    }
+
+    public DBObject getResultTableSelectedDocument() {
+        final JTable table = getResultTable();
+        int row = table.getSelectedRow();
+        if (row == -1) {
+            return null;
+        }
+        switch (resultView) {
+            case FLAT_TABLE:
+                return ((CollectionQueryResultTableModel) documentsFlatTable.getModel())
+                    .getDocuments().get(row);
+            case TREE_TABLE:
+                final TreePath selectionPath = documentsTreeTable.getPathForRow(row);
+                final DocumentNode documentNode = (DocumentNode) selectionPath.getPathComponent(1);
+                return (DBObject) documentsTreeTable.getTreeTableModel().getValueAt(documentNode, 0);
+            default:
+                throw new AssertionError();
+        }
+    }
+
+    public void changeResultView(ResultView resultView) {
+        this.resultView = resultView;
+        updateResultPanel();
+    }
+
+    private void updateResultPanel() {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                final CardLayout layout = (CardLayout) resultPanel.getLayout();
+                layout.show(resultPanel, resultView.name());
+                refreshResults();
+            }
+        });
+    }
+
+    public Preferences prefs() {
+        return Preferences.userNodeForPackage(CollectionView.class);
+    }
+
+    public void refreshResults() {
+        new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                final CollectionQueryResultTableModel model = getResultTableModel();
+                model.setPage(1);
+                model.update();
+                updatePagination();
+                updateDocumentButtonsState();
+            }
+        }).start();
+    }
+
+    public void updatePagination() {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                final CollectionQueryResultTableModel model = getResultTableModel();
+                totalDocumentsLabel.setText(Bundle.totalDocuments(model.getTotalDocumentsCount()));
+                int page = model.getPage();
+                int pageCount = model.getPageCount();
+                pageCountLabel.setText(Bundle.pageCountLabel(page, pageCount));
+
+                boolean leftNavEnabled = page > 1;
+                navFirstAction.setEnabled(leftNavEnabled);
+                navLeftAction.setEnabled(leftNavEnabled);
+                boolean rightNavEnabled = page < pageCount;
+                navRightAction.setEnabled(rightNavEnabled);
+                navLastAction.setEnabled(rightNavEnabled);
+            }
+        });
+    }
+
+    private void updateDocumentButtonsState() {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                boolean itemSelected = getResultTable().getSelectedRow() > -1;
+                addButton.setEnabled(isSystemCollection == false);
+                deleteButton.setEnabled(itemSelected && isSystemCollection == false);
+                editButton.setEnabled(itemSelected && isSystemCollection == false);
+            }
+        });
+    }
+
+    public void updateQueryFieldsFromEditor() {
+        final DBObject criteria = queryEditor.getCriteria();
+        final DBObject projection = queryEditor.getProjection();
+        final DBObject sort = queryEditor.getSort();
+        criteriaField.setText(criteria != null ? JSON.serialize(criteria) : "");
+        projectionField.setText(projection != null ? JSON.serialize(projection) : "");
+        sortField.setText(sort != null ? JSON.serialize(sort) : "");
+        final CollectionQueryResultTableModel resultModel = getResultTableModel();
+        resultModel.setCriteria(criteria);
+        resultModel.setProjection(projection);
+        resultModel.setSort(sort);
+        refreshResults();
+    }
+
+    public DBObject showJsonEditor(String title, String defaultJson) {
+        final JEditorPane editor = new JEditorPane();
+        if (jsonEditorKit != null) {
+            editor.setEditorKit(jsonEditorKit);
+        }
+        editor.setPreferredSize(new Dimension(450, 300));
+        String json = defaultJson.trim().isEmpty() ? "{}" : Json.prettify(defaultJson);
+        boolean doLoop = true;
+        while (doLoop) {
+            doLoop = false;
+            editor.setText(json);
+            final DialogDescriptor desc = new DialogDescriptor(editor, title);
+            final Object dlgResult = DialogDisplayer.getDefault().notify(desc);
+            if (dlgResult.equals(NotifyDescriptor.OK_OPTION)) {
+                try {
+                    json = editor.getText().trim();
+                    return (DBObject) JSON.parse(json);
+                } catch (JSONParseException ex) {
+                    DialogDisplayer.getDefault().notify(
+                        new NotifyDescriptor.Message(Bundle.invalidJson(), NotifyDescriptor.ERROR_MESSAGE));
+                    doLoop = true;
+                }
+            }
+        }
+        return null;
+    }
+
+    private void changePageSize(int pageSize) {
+        ((CollectionQueryResultTableModel) documentsFlatTable.getModel()).setPageSize(pageSize);
+        ((CollectionQueryResultTableModel) documentsTreeTable.getTreeTableModel()).setPageSize(pageSize);
+        refreshResults();
+        prefs().putInt("table-page-size", pageSize);
+    }
+
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        resultsViewButtonGroup = new javax.swing.ButtonGroup();
+        queryPanel = new javax.swing.JPanel();
+        criteriaLabel = new javax.swing.JLabel();
+        criteriaField = new javax.swing.JTextField();
+        projectionLabel = new javax.swing.JLabel();
+        projectionField = new javax.swing.JTextField();
+        sortLabel = new javax.swing.JLabel();
+        sortField = new javax.swing.JTextField();
+        editQueryButton = new javax.swing.JButton();
+        clearQueryButton = new javax.swing.JButton();
+        documentsToolBar = new javax.swing.JToolBar();
+        addButton = new javax.swing.JButton();
+        deleteButton = new javax.swing.JButton();
+        editButton = new javax.swing.JButton();
+        exportButton = new javax.swing.JButton();
+        jSeparator1 = new javax.swing.JToolBar.Separator();
+        treeTableViewButton = new javax.swing.JToggleButton();
+        flatTableViewButton = new javax.swing.JToggleButton();
+        jSeparator4 = new javax.swing.JToolBar.Separator();
+        refreshDocumentsButton = new javax.swing.JButton();
+        navFirstButton = new javax.swing.JButton();
+        navLeftButton = new javax.swing.JButton();
+        navRightButton = new javax.swing.JButton();
+        navLastButton = new javax.swing.JButton();
+        jSeparator2 = new javax.swing.JToolBar.Separator();
+        pageSizeLabel = new javax.swing.JLabel();
+        pageSizeField = new javax.swing.JTextField();
+        jSeparator3 = new javax.swing.JToolBar.Separator();
+        totalDocumentsLabel = new javax.swing.JLabel();
+        pageCountLabel = new javax.swing.JLabel();
+        resultPanel = new javax.swing.JPanel();
+        treeTableScrollPane = new javax.swing.JScrollPane();
+        documentsTreeTable = new org.jdesktop.swingx.JXTreeTable();
+        flatTableScrollPane = new javax.swing.JScrollPane();
+        documentsFlatTable = new javax.swing.JTable();
+
+        queryPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(CollectionView.class, "CollectionView.queryPanel.border.title"))); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(criteriaLabel, org.openide.util.NbBundle.getMessage(CollectionView.class, "CollectionView.criteriaLabel.text")); // NOI18N
+
+        criteriaField.setEditable(false);
+        criteriaField.setText(org.openide.util.NbBundle.getMessage(CollectionView.class, "CollectionView.criteriaField.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(projectionLabel, org.openide.util.NbBundle.getMessage(CollectionView.class, "CollectionView.projectionLabel.text")); // NOI18N
+
+        projectionField.setEditable(false);
+        projectionField.setText(org.openide.util.NbBundle.getMessage(CollectionView.class, "CollectionView.projectionField.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(sortLabel, org.openide.util.NbBundle.getMessage(CollectionView.class, "CollectionView.sortLabel.text")); // NOI18N
+
+        sortField.setEditable(false);
+        sortField.setText(org.openide.util.NbBundle.getMessage(CollectionView.class, "CollectionView.sortField.text")); // NOI18N
+
+        editQueryButton.setAction(getEditQueryAction());
+
+        clearQueryButton.setAction(getClearQueryAction());
+
+        javax.swing.GroupLayout queryPanelLayout = new javax.swing.GroupLayout(queryPanel);
+        queryPanel.setLayout(queryPanelLayout);
+        queryPanelLayout.setHorizontalGroup(
+            queryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(queryPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(queryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(queryPanelLayout.createSequentialGroup()
+                        .addComponent(editQueryButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(clearQueryButton)
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, queryPanelLayout.createSequentialGroup()
+                        .addComponent(criteriaLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(criteriaField))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, queryPanelLayout.createSequentialGroup()
+                        .addGroup(queryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(projectionLabel)
+                            .addComponent(sortLabel))
+                        .addGap(6, 6, 6)
+                        .addGroup(queryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(projectionField)
+                            .addComponent(sortField)))))
+        );
+
+        queryPanelLayout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {criteriaLabel, projectionLabel, sortLabel});
+
+        queryPanelLayout.setVerticalGroup(
+            queryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(queryPanelLayout.createSequentialGroup()
+                .addGroup(queryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(criteriaField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(criteriaLabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(queryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(projectionField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(projectionLabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(queryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(sortField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(sortLabel))
+                .addGap(12, 12, 12)
+                .addGroup(queryPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(editQueryButton)
+                    .addComponent(clearQueryButton)))
+        );
+
+        documentsToolBar.setFloatable(false);
+        documentsToolBar.setRollover(true);
+
+        addButton.setAction(getAddDocumentAction());
+        addButton.setFocusable(false);
+        addButton.setHideActionText(true);
+        addButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        addButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        documentsToolBar.add(addButton);
+
+        deleteButton.setAction(getDeleteSelectedDocumentAction());
+        deleteButton.setEnabled(false);
+        deleteButton.setFocusable(false);
+        deleteButton.setHideActionText(true);
+        deleteButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        deleteButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        documentsToolBar.add(deleteButton);
+
+        editButton.setAction(getEditSelectedDocumentAction());
+        editButton.setEnabled(false);
+        editButton.setFocusable(false);
+        editButton.setHideActionText(true);
+        editButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        editButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        documentsToolBar.add(editButton);
+
+        exportButton.setAction(getExportQueryResultAction());
+        exportButton.setFocusable(false);
+        exportButton.setHideActionText(true);
+        exportButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        exportButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        documentsToolBar.add(exportButton);
+        documentsToolBar.add(jSeparator1);
+
+        treeTableViewButton.setAction(getTreeTableViewAction());
+        resultsViewButtonGroup.add(treeTableViewButton);
+        treeTableViewButton.setFocusable(false);
+        treeTableViewButton.setHideActionText(true);
+        treeTableViewButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        treeTableViewButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        documentsToolBar.add(treeTableViewButton);
+
+        flatTableViewButton.setAction(getFlatTableViewAction());
+        resultsViewButtonGroup.add(flatTableViewButton);
+        flatTableViewButton.setFocusable(false);
+        flatTableViewButton.setHideActionText(true);
+        flatTableViewButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        flatTableViewButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        documentsToolBar.add(flatTableViewButton);
+        documentsToolBar.add(jSeparator4);
+
+        refreshDocumentsButton.setAction(getRefreshDocumentsAction());
+        refreshDocumentsButton.setFocusable(false);
+        refreshDocumentsButton.setHideActionText(true);
+        refreshDocumentsButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        refreshDocumentsButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        documentsToolBar.add(refreshDocumentsButton);
+
+        navFirstButton.setAction(getNavFirstAction());
+        navFirstButton.setHideActionText(true);
+        documentsToolBar.add(navFirstButton);
+
+        navLeftButton.setAction(getNavLeftAction());
+        navLeftButton.setHideActionText(true);
+        documentsToolBar.add(navLeftButton);
+
+        navRightButton.setAction(getNavRightAction());
+        navRightButton.setFocusable(false);
+        navRightButton.setHideActionText(true);
+        navRightButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        navRightButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        documentsToolBar.add(navRightButton);
+
+        navLastButton.setAction(getNavLastAction());
+        navLastButton.setFocusable(false);
+        navLastButton.setHideActionText(true);
+        navLastButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        navLastButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        documentsToolBar.add(navLastButton);
+        documentsToolBar.add(jSeparator2);
+
+        org.openide.awt.Mnemonics.setLocalizedText(pageSizeLabel, org.openide.util.NbBundle.getMessage(CollectionView.class, "CollectionView.pageSizeLabel.text_1")); // NOI18N
+        documentsToolBar.add(pageSizeLabel);
+
+        pageSizeField.setMaximumSize(new java.awt.Dimension(40, 2147483647));
+        pageSizeField.setMinimumSize(new java.awt.Dimension(40, 20));
+        pageSizeField.setPreferredSize(new java.awt.Dimension(40, 20));
+        pageSizeField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                pageSizeFieldActionPerformed(evt);
+            }
+        });
+        documentsToolBar.add(pageSizeField);
+        documentsToolBar.add(jSeparator3);
+        documentsToolBar.add(totalDocumentsLabel);
+        documentsToolBar.add(pageCountLabel);
+
+        resultPanel.setLayout(new java.awt.CardLayout());
+
+        treeTableScrollPane.setViewportView(documentsTreeTable);
+
+        resultPanel.add(treeTableScrollPane, "TREE_TABLE");
+
+        flatTableScrollPane.setViewportView(documentsFlatTable);
+
+        resultPanel.add(flatTableScrollPane, "FLAT_TABLE");
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(resultPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addContainerGap())
+                    .addComponent(queryPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(documentsToolBar, javax.swing.GroupLayout.DEFAULT_SIZE, 468, Short.MAX_VALUE)))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(queryPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(documentsToolBar, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(resultPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 209, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void pageSizeFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pageSizeFieldActionPerformed
+        final int pageSize = Integer.parseInt(pageSizeField.getText());
+        changePageSize(pageSize);
+    }//GEN-LAST:event_pageSizeFieldActionPerformed
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton addButton;
+    private javax.swing.JButton clearQueryButton;
+    private javax.swing.JTextField criteriaField;
+    private javax.swing.JLabel criteriaLabel;
+    private javax.swing.JButton deleteButton;
+    private javax.swing.JTable documentsFlatTable;
+    private javax.swing.JToolBar documentsToolBar;
+    private org.jdesktop.swingx.JXTreeTable documentsTreeTable;
+    private javax.swing.JButton editButton;
+    private javax.swing.JButton editQueryButton;
+    private javax.swing.JButton exportButton;
+    private javax.swing.JScrollPane flatTableScrollPane;
+    private javax.swing.JToggleButton flatTableViewButton;
+    private javax.swing.JToolBar.Separator jSeparator1;
+    private javax.swing.JToolBar.Separator jSeparator2;
+    private javax.swing.JToolBar.Separator jSeparator3;
+    private javax.swing.JToolBar.Separator jSeparator4;
+    private javax.swing.JButton navFirstButton;
+    private javax.swing.JButton navLastButton;
+    private javax.swing.JButton navLeftButton;
+    private javax.swing.JButton navRightButton;
+    private javax.swing.JLabel pageCountLabel;
+    private javax.swing.JTextField pageSizeField;
+    private javax.swing.JLabel pageSizeLabel;
+    private javax.swing.JTextField projectionField;
+    private javax.swing.JLabel projectionLabel;
+    private javax.swing.JPanel queryPanel;
+    private javax.swing.JButton refreshDocumentsButton;
+    private javax.swing.JPanel resultPanel;
+    private javax.swing.ButtonGroup resultsViewButtonGroup;
+    private javax.swing.JTextField sortField;
+    private javax.swing.JLabel sortLabel;
+    private javax.swing.JLabel totalDocumentsLabel;
+    private javax.swing.JScrollPane treeTableScrollPane;
+    private javax.swing.JToggleButton treeTableViewButton;
+    // End of variables declaration//GEN-END:variables
+
+    void writeProperties(java.util.Properties p) {
+        // better to version settings since initial version as advocated at
+        // http://wiki.apidesign.org/wiki/PropertyFiles
+        p.setProperty("version", "1.0");
+        // TODO store your settings
+    }
+
+    void readProperties(java.util.Properties p) {
+        String version = p.getProperty("version");
+        // TODO read your settings according to their version
+    }
+
+    private final Action editQueryAction = new EditQueryAction(this);
+
+    private final Action clearQueryAction = new ClearQueryAction(this);
+
+    private final Action addDocumentAction = new AddDocumentAction(this);
+
+    private final Action deleteSelectedDocumentAction = new DeleteSelectedDocumentAction(this);
+
+    private final Action editSelectedDocumentAction = new EditSelectedDocumentAction(this);
+
+    private final Action refreshDocumentsAction = new RefreshDocumentsAction(this);
+
+    private final Action navFirstAction = new NavFirstAction(this);
+
+    private final Action navLeftAction = new NavLeftAction(this);
+
+    private final Action navRightAction = new NavRightAction(this);
+
+    private final Action navLastAction = new NavLastAction(this);
+
+    private final Action exportQueryResultAction = new ExportQueryResultAction(this);
+
+    private final Action treeTableViewAction = ChangeResultViewAction.create(this, ResultView.TREE_TABLE);
+
+    private final Action flatTableViewAction = ChangeResultViewAction.create(this, ResultView.FLAT_TABLE);
+
+    public Action getEditQueryAction() {
+        return editQueryAction;
+    }
+
+    public Action getClearQueryAction() {
+        return clearQueryAction;
+    }
+
+    public Action getAddDocumentAction() {
+        return addDocumentAction;
+    }
+
+    public Action getDeleteSelectedDocumentAction() {
+        return deleteSelectedDocumentAction;
+    }
+
+    public Action getEditSelectedDocumentAction() {
+        return editSelectedDocumentAction;
+    }
+
+    public Action getRefreshDocumentsAction() {
+        return refreshDocumentsAction;
+    }
+
+    public Action getNavFirstAction() {
+        return navFirstAction;
+    }
+
+    public Action getNavLeftAction() {
+        return navLeftAction;
+    }
+
+    public Action getNavRightAction() {
+        return navRightAction;
+    }
+
+    public Action getNavLastAction() {
+        return navLastAction;
+    }
+
+    public Action getExportQueryResultAction() {
+        return exportQueryResultAction;
+    }
+
+    public Action getFlatTableViewAction() {
+        return flatTableViewAction;
+    }
+
+    public Action getTreeTableViewAction() {
+        return treeTableViewAction;
+    }
+
+    public enum ResultView {
+
+        FLAT_TABLE, TREE_TABLE
+
+    }
+
+    private JPopupMenu createTreeTableContextMenu(TreePath treePath) {
+        final JPopupMenu menu = new JPopupMenu();
+        final CollectionViewTreeTableNode node = (CollectionViewTreeTableNode) treePath.getLastPathComponent();
+        final DocumentNode documentNode = (DocumentNode) treePath.getPathComponent(1);
+        menu.add(new JMenuItem(new CopyDocumentToClipboardAction(documentNode.getUserObject())));
+        if (node != documentNode) {
+            if (node instanceof JsonPropertyNode) {
+                final JsonProperty property = ((JsonPropertyNode) node).getUserObject();
+                menu.addSeparator();
+                menu.add(new JMenuItem(new CopyKeyToClipboardAction(property)));
+                menu.add(new JMenuItem(new CopyValueToClipboardAction(property.getValue())));
+            } else {
+                menu.addSeparator();
+                menu.add(new JMenuItem(new CopyValueToClipboardAction(node.getUserObject())));
+            }
+        }
+        return menu;
+    }
+
+    private JPopupMenu createFlatTableContextMenu(int row, int column) {
+        final JPopupMenu menu = new JPopupMenu();
+        final DBObject document = getResultTableModel().getDocuments().get(row);
+        menu.add(new JMenuItem(new CopyDocumentToClipboardAction(document)));
+        final DocumentsFlatTableModel model = (DocumentsFlatTableModel) documentsFlatTable.getModel();
+        final JsonProperty property = new JsonProperty(
+            model.getColumnName(column),
+            model.getValueAt(row, column));
+        menu.addSeparator();
+        menu.add(new JMenuItem(new CopyKeyToClipboardAction(property)));
+        menu.add(new JMenuItem(new CopyValueToClipboardAction(property.getValue())));
+        return menu;
+    }
+
+}

@@ -80,6 +80,12 @@ public interface Images {
     @StaticResource
     String EXPORT_COLLECTION_ICON_PATH = "org/netbeans/modules/mongodb/images/export_collection.png"; //NOI18N
 
+    @StaticResource
+    String TREE_TABLE_VIEW_ICON_PATH = "org/netbeans/modules/mongodb/images/chart_organisation.png"; //NOI18N
+
+    @StaticResource
+    String FLAT_TABLE_VIEW_ICON_PATH = "org/netbeans/modules/mongodb/images/table.png"; //NOI18N
+
     Image COLLECTION_ICON = ImageUtilities.loadImage(COLLECTION_ICON_PATH);
 
     Image SYSTEM_COLLECTION_ICON = ImageUtilities.loadImage(SYSTEM_COLLECTION_ICON_PATH);
@@ -105,5 +111,9 @@ public interface Images {
     Image EDIT_DOCUMENT_ICON = ImageUtilities.loadImage(EDIT_DOCUMENT_ICON_PATH);
 
     Image EXPORT_COLLECTION_ICON = ImageUtilities.loadImage(EXPORT_COLLECTION_ICON_PATH);
+
+    Image TREE_TABLE_VIEW_ICON = ImageUtilities.loadImage(TREE_TABLE_VIEW_ICON_PATH);
+
+    Image FLAT_TABLE_VIEW_ICON = ImageUtilities.loadImage(FLAT_TABLE_VIEW_ICON_PATH);
 
 }

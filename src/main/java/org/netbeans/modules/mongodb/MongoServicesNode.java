@@ -23,7 +23,7 @@
  */
 package org.netbeans.modules.mongodb;
 
-import org.netbeans.modules.mongodb.ui.NewConnectionPanel;
+import org.netbeans.modules.mongodb.ui.components.NewConnectionPanel;
 import com.mongodb.DBTCPConnector;
 import com.mongodb.MongoClientURI;
 import java.awt.event.ActionEvent;

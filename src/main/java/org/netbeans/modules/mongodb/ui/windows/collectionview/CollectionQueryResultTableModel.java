@@ -21,41 +21,44 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.netbeans.modules.mongodb.ui.util;
+package org.netbeans.modules.mongodb.ui.windows.collectionview;
 
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DocumentFilter;
+import com.mongodb.DBObject;
+import java.util.List;
 
 /**
  *
  * @author Yann D'Isanto
  */
-public final class IntegerDocumentFilter extends DocumentFilter {
+public interface CollectionQueryResultTableModel {
 
-    @Override
-    public void insertString(FilterBypass fb, int offset, String string,
-            AttributeSet attr) throws BadLocationException {
-        if(isInt(string)) {
-            super.insertString(fb, offset, string, attr);
-        }
-    }
+    int DEFAULT_PAGE_SIZE = 20;
 
-    private boolean isInt(String text) {
-        try {
-            Integer.parseInt(text);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
-        }
-    }
+    void update();
 
-    @Override
-    public void replace(FilterBypass fb, int offset, int length, String text,
-            AttributeSet attrs) throws BadLocationException {
-        if(isInt(text)) {
-            super.replace(fb, offset, length, text, attrs);
-        }
-    }
+    List<DBObject> getDocuments();
 
+    int getPageSize();
+
+    void setPageSize(int pageSize);
+
+    int getPage();
+
+    void setPage(int page);
+
+    int getPageCount();
+
+    int getTotalDocumentsCount();
+
+    DBObject getCriteria();
+
+    void setCriteria(DBObject criteria);
+
+    DBObject getProjection();
+
+    void setProjection(DBObject projection);
+
+    DBObject getSort();
+
+    void setSort(DBObject sort);
 }
