@@ -12,13 +12,15 @@ Available features:
  * Add/Edit/Delete documents as json
  * Import/Export json
 
+See [release notes](https://github.com/le-yams/netbeans-mongodb/wiki/ReleaseNotes) for more informations.
+
 ![NetBeans MongoDB Plugin Screen Shot](screenshot.png "NetBeans MongoDB Plugin Screen Shot")
 
 
 Get and Install
 ---------------
 
-The latest release is available on the netbeans plugin portal, you can download it [here](http://plugins.netbeans.org/plugin/52638/nbmongo)
+The latest release is available at the netbeans plugin portal, you can download it [here](http://plugins.netbeans.org/plugin/52638/nbmongo)
 
 If you want to try the development version, as it's a Maven project built using the NBM Maven Plugin, just check out and build.
 In NetBeans, install using Tools | Plugins on the Downloaded tab.
