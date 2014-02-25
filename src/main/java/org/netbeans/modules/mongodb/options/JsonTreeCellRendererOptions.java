@@ -116,8 +116,8 @@ public enum JsonTreeCellRendererOptions {
             final Font font = new JLabel().getFont();
             final Color textForeground = UIManager.getColor("Tree.textForeground");
             final Color textBackground = UIManager.getColor("Tree.textBackground");
-            final Color caramel = new Color(0xC68E17);
-            final Color purple = new Color(0x4B088A);
+            final Color brown = new Color(0xCC3300);
+            final Color purple = new Color(0x990099);
             final Map<LabelCategory, LabelFontConf> map = new HashMap<>();
             map.put(LabelCategory.KEY, new LabelFontConf(
                 font.deriveFont(Font.BOLD),
@@ -129,19 +129,19 @@ public enum JsonTreeCellRendererOptions {
                 textBackground));
             map.put(LabelCategory.STRING_VALUE, new LabelFontConf(
                 font,
-                purple,
+                Color.BLUE,
                 textBackground));
             map.put(LabelCategory.INT_VALUE, new LabelFontConf(
                 font,
-                caramel,
+                Color.RED,
                 textBackground));
             map.put(LabelCategory.DECIMAL_VALUE, new LabelFontConf(
                 font,
-                caramel,
+                brown,
                 textBackground));
             map.put(LabelCategory.BOOLEAN_VALUE, new LabelFontConf(
                 font,
-                Color.BLUE,
+                purple,
                 textBackground));
             LABEL_CONFS = Collections.unmodifiableMap(map);
         }

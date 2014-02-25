@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.netbeans.modules.mongodb.util;
+package org.netbeans.modules.mongodb.ui.util;
 
 import java.util.ArrayList;
 import java.util.Collection;

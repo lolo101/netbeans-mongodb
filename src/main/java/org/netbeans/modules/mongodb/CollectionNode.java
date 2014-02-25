@@ -27,7 +27,7 @@ import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.MongoException;
 import java.awt.Image;
-import org.netbeans.modules.mongodb.util.TopComponentUtils;
+import org.netbeans.modules.mongodb.ui.util.TopComponentUtils;
 import java.awt.event.ActionEvent;
 import java.util.HashMap;
 import java.util.Map;

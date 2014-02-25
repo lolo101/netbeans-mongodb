@@ -26,7 +26,7 @@ package org.netbeans.modules.mongodb;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.MongoException;
-import org.netbeans.modules.mongodb.util.TopComponentUtils;
+import org.netbeans.modules.mongodb.ui.util.TopComponentUtils;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
