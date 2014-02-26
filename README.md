@@ -11,7 +11,7 @@ Available main features:
  * Browse documents (json criteria/projection/sort can be specified)
  * Add/Edit/Delete documents as json
  * Import/Export json
- * Open a mongo shell for configured connection (mongo executable path must be configured in options)
+ * Open a [mongo shell](https://github.com/le-yams/netbeans-mongodb/wiki/MongoShell) for configured connection (mongo executable path must be configured in options)
 
 See [release notes](https://github.com/le-yams/netbeans-mongodb/wiki/ReleaseNotes) for more informations.
 
