@@ -24,124 +24,57 @@
 package org.netbeans.modules.mongodb.ui.windows.collectionview.flattable;
 
 import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.table.AbstractTableModel;
-import org.netbeans.modules.mongodb.ui.windows.collectionview.CollectionQueryResultTableModel;
+import org.netbeans.modules.mongodb.ui.windows.collectionview.CollectionQueryResult;
+import org.netbeans.modules.mongodb.ui.windows.collectionview.CollectionQueryResultProvider;
+import org.netbeans.modules.mongodb.ui.windows.collectionview.CollectionQueryResultModelUpdateListener;
 
 /**
  *
  * @author Yann D'Isanto
  */
-public final class DocumentsFlatTableModel extends AbstractTableModel implements CollectionQueryResultTableModel {
-    
-    private final DBCollection dbCollection;
-
-    private final List<DBObject> data = new ArrayList<>();
-
-    private int pageSize = DEFAULT_PAGE_SIZE;
-
-    private int page = 1;
-
-    private int totalDocumentsCount = 0;
-
-    private DBObject criteria;
-
-    private DBObject projection;
-
-    private DBObject sort;
+public final class DocumentsFlatTableModel extends AbstractTableModel implements CollectionQueryResultProvider, CollectionQueryResultModelUpdateListener {
     
     private final List<String> columns = new ArrayList<>();
+    
+    private final CollectionQueryResult collectionQueryResultModel;
 
     public DocumentsFlatTableModel(DBCollection dbCollection) {
-        this.dbCollection = dbCollection;
+        collectionQueryResultModel = new CollectionQueryResult(dbCollection);
+        collectionQueryResultModel.addCollectionQueryResultModelUpdateListener(this);
     }
 
     @Override
-    public void update() {
-        clear();
-        if (dbCollection == null) {
-            // TODO: error message
-            return;
-        }
-        try (DBCursor cursor = dbCollection.find(criteria, projection)) {
-            if(sort != null) {
-                cursor.sort(sort);
-            }
-            totalDocumentsCount = cursor.count();
-            DBCursor pageCursor = cursor;
-            if (pageSize > 0) {
-                final int toSkip = (page - 1) * pageSize;
-                pageCursor = cursor.skip(toSkip).limit(pageSize);
-            }
+    public CollectionQueryResult getCollectionQueryResult() {
+        return collectionQueryResultModel;
+    }
+
+    @Override
+    public void updateStarting() {
             columns.clear();
             columns.add("_id");
-            for (DBObject document : pageCursor) {
-                data.add(document);
-                updateColumns(document);
-            }
-            fireTableStructureChanged();
-            if (data.size() > 0) {
-                fireTableRowsInserted(0, data.size() - 1);
-            }
-        }
     }
-    
+
+    @Override
+    public void documentAdded(DBObject document) {
+                updateColumns(document);
+    }
+
+    @Override
+    public void updateFinished() {
+            fireTableStructureChanged();
+//            fireTableDataChanged();
+    }
+
     private void updateColumns(DBObject document) {
         for (String field : document.keySet()) {
             if(columns.contains(field) == false) {
                 columns.add(field);
             }
         }
-    }
-
-    private void clear() {
-        final int size = data.size();
-        if (size > 0) {
-            data.clear();
-            fireTableRowsDeleted(0, size - 1);
-        }
-    }
-
-    @Override
-    public List<DBObject> getDocuments() {
-        return new ArrayList<>(data);
-    }
-
-    @Override
-    public int getPageSize() {
-        return pageSize;
-    }
-
-    @Override
-    public void setPageSize(int pageSize) {
-        this.pageSize = pageSize;
-    }
-
-    @Override
-    public int getPage() {
-        return page;
-    }
-
-    @Override
-    public void setPage(int page) {
-        this.page = page;
-    }
-
-    @Override
-    public int getPageCount() {
-        if (pageSize > 0) {
-            final double pageCount = (double) totalDocumentsCount / (double) pageSize;
-            return (int) Math.ceil(pageCount);
-        }
-        return 1;
-    }
-
-    @Override
-    public int getTotalDocumentsCount() {
-        return totalDocumentsCount;
     }
 
     @Override
@@ -161,7 +94,7 @@ public final class DocumentsFlatTableModel extends AbstractTableModel implements
 
     @Override
     public int getRowCount() {
-        return data != null ? data.size() : 0;
+        return collectionQueryResultModel.getDocuments().size();
     }
 
     @Override
@@ -183,37 +116,6 @@ public final class DocumentsFlatTableModel extends AbstractTableModel implements
         if (rowIndex == -1) {
             return null;
         }
-        return data != null ? data.get(rowIndex) : null;
-    }
-
-    @Override
-    public DBObject getCriteria() {
-        return criteria;
-    }
-
-    @Override
-    public void setCriteria(DBObject criteria) {
-        this.criteria = criteria;
-    }
-
-    @Override
-    public DBObject getProjection() {
-        return projection;
-    }
-
-    @Override
-    public void setProjection(DBObject projection) {
-        this.projection = projection;
-    }
-
-    @Override
-    public DBObject getSort() {
-        return sort;
-    }
-
-    @Override
-    public void setSort(DBObject sort) {
-        this.sort = sort;
-    }
-    
+        return collectionQueryResultModel.getDocuments().get(rowIndex);
+    }    
 }

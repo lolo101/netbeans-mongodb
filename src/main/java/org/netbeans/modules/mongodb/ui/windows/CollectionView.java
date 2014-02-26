@@ -24,7 +24,6 @@
 package org.netbeans.modules.mongodb.ui.windows;
 
 import org.netbeans.modules.mongodb.ui.windows.collectionview.actions.AddDocumentAction;
-import org.netbeans.modules.mongodb.ui.windows.collectionview.CollectionQueryResultTableModel;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
@@ -53,8 +52,9 @@ import org.netbeans.modules.mongodb.ConnectionInfo;
 import org.netbeans.modules.mongodb.DbInfo;
 import org.netbeans.modules.mongodb.Images;
 import org.netbeans.modules.mongodb.ui.components.QueryEditor;
-import org.netbeans.modules.mongodb.ui.windows.collectionview.flattable.DocumentsFlatTableModel;
 import org.netbeans.modules.mongodb.ui.util.IntegerDocumentFilter;
+import org.netbeans.modules.mongodb.ui.windows.collectionview.CollectionQueryResult;
+import org.netbeans.modules.mongodb.ui.windows.collectionview.CollectionQueryResultProvider;
 import org.netbeans.modules.mongodb.ui.windows.collectionview.flattable.JsonFlatTableCellRenderer;
 import org.netbeans.modules.mongodb.ui.windows.collectionview.actions.ChangeResultViewAction;
 import org.netbeans.modules.mongodb.ui.windows.collectionview.actions.ClearQueryAction;
@@ -70,11 +70,12 @@ import org.netbeans.modules.mongodb.ui.windows.collectionview.actions.NavLastAct
 import org.netbeans.modules.mongodb.ui.windows.collectionview.actions.NavLeftAction;
 import org.netbeans.modules.mongodb.ui.windows.collectionview.actions.NavRightAction;
 import org.netbeans.modules.mongodb.ui.windows.collectionview.actions.RefreshDocumentsAction;
+import org.netbeans.modules.mongodb.ui.windows.collectionview.flattable.DocumentsFlatTableModel;
 import org.netbeans.modules.mongodb.ui.windows.collectionview.treetable.CollectionViewTreeTableNode;
 import org.netbeans.modules.mongodb.ui.windows.collectionview.treetable.DocumentNode;
-import org.netbeans.modules.mongodb.ui.windows.collectionview.treetable.DocumentsTreeTableModel;
 import org.netbeans.modules.mongodb.ui.windows.collectionview.treetable.JsonPropertyNode;
 import org.netbeans.modules.mongodb.ui.windows.collectionview.treetable.JsonTreeTableCellRenderer;
+import org.netbeans.modules.mongodb.ui.windows.collectionview.treetable.DocumentsTreeTableModel;
 import org.netbeans.modules.mongodb.util.JsonProperty;
 import org.netbeans.modules.mongodb.util.SystemCollectionPredicate;
 import org.openide.DialogDescriptor;
@@ -145,9 +146,9 @@ public final class CollectionView extends TopComponent {
         documentsTreeTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         documentsTreeTable.getSelectionModel().addListSelectionListener(tableSelectionListener);
 
-        final int pageSize = prefs().getInt("table-page-size", CollectionQueryResultTableModel.DEFAULT_PAGE_SIZE);
-        treeTableModel.setPageSize(pageSize);
-        flatTableModel.setPageSize(pageSize);
+        final int pageSize = prefs().getInt("table-page-size", CollectionQueryResult.DEFAULT_PAGE_SIZE);
+        treeTableModel.getCollectionQueryResult().setPageSize(pageSize);
+        flatTableModel.getCollectionQueryResult().setPageSize(pageSize);
         final PlainDocument document = (PlainDocument) pageSizeField.getDocument();
         document.setDocumentFilter(new IntegerDocumentFilter());
         pageSizeField.setText(String.valueOf(pageSize));
@@ -201,15 +202,19 @@ public final class CollectionView extends TopComponent {
         }
     }
 
-    public CollectionQueryResultTableModel getResultTableModel() {
+    public CollectionQueryResultProvider getResultModelProvider() {
         switch (resultView) {
             case FLAT_TABLE:
-                return (CollectionQueryResultTableModel) documentsFlatTable.getModel();
+                return (CollectionQueryResultProvider) documentsFlatTable.getModel();
             case TREE_TABLE:
-                return (CollectionQueryResultTableModel) documentsTreeTable.getTreeTableModel();
+                return (CollectionQueryResultProvider) documentsTreeTable.getTreeTableModel();
             default:
                 throw new AssertionError();
         }
+    }
+    
+    public CollectionQueryResult getCollectionQueryResult() {
+        return getResultModelProvider().getCollectionQueryResult();
     }
 
     public DBObject getResultTableSelectedDocument() {
@@ -220,8 +225,7 @@ public final class CollectionView extends TopComponent {
         }
         switch (resultView) {
             case FLAT_TABLE:
-                return ((CollectionQueryResultTableModel) documentsFlatTable.getModel())
-                    .getDocuments().get(row);
+                return ((DocumentsFlatTableModel) documentsFlatTable.getModel()).getRowValue(row);
             case TREE_TABLE:
                 final TreePath selectionPath = documentsTreeTable.getPathForRow(row);
                 final DocumentNode documentNode = (DocumentNode) selectionPath.getPathComponent(1);
@@ -257,9 +261,9 @@ public final class CollectionView extends TopComponent {
 
             @Override
             public void run() {
-                final CollectionQueryResultTableModel model = getResultTableModel();
-                model.setPage(1);
-                model.update();
+                final CollectionQueryResult result = getCollectionQueryResult();
+                result.setPage(1);
+                result.update();
                 updatePagination();
                 updateDocumentButtonsState();
             }
@@ -271,10 +275,10 @@ public final class CollectionView extends TopComponent {
 
             @Override
             public void run() {
-                final CollectionQueryResultTableModel model = getResultTableModel();
-                totalDocumentsLabel.setText(Bundle.totalDocuments(model.getTotalDocumentsCount()));
-                int page = model.getPage();
-                int pageCount = model.getPageCount();
+                final CollectionQueryResult result = getCollectionQueryResult();
+                totalDocumentsLabel.setText(Bundle.totalDocuments(result.getTotalDocumentsCount()));
+                int page = result.getPage();
+                int pageCount = result.getPageCount();
                 pageCountLabel.setText(Bundle.pageCountLabel(page, pageCount));
 
                 boolean leftNavEnabled = page > 1;
@@ -307,10 +311,10 @@ public final class CollectionView extends TopComponent {
         criteriaField.setText(criteria != null ? JSON.serialize(criteria) : "");
         projectionField.setText(projection != null ? JSON.serialize(projection) : "");
         sortField.setText(sort != null ? JSON.serialize(sort) : "");
-        final CollectionQueryResultTableModel resultModel = getResultTableModel();
-        resultModel.setCriteria(criteria);
-        resultModel.setProjection(projection);
-        resultModel.setSort(sort);
+        final CollectionQueryResult result = getCollectionQueryResult();
+        result.setCriteria(criteria);
+        result.setProjection(projection);
+        result.setSort(sort);
         refreshResults();
     }
 
@@ -342,8 +346,10 @@ public final class CollectionView extends TopComponent {
     }
 
     private void changePageSize(int pageSize) {
-        ((CollectionQueryResultTableModel) documentsFlatTable.getModel()).setPageSize(pageSize);
-        ((CollectionQueryResultTableModel) documentsTreeTable.getTreeTableModel()).setPageSize(pageSize);
+        ((CollectionQueryResultProvider) documentsFlatTable.getModel())
+            .getCollectionQueryResult().setPageSize(pageSize);
+        ((CollectionQueryResultProvider) documentsTreeTable.getTreeTableModel())
+            .getCollectionQueryResult().setPageSize(pageSize);
         refreshResults();
         prefs().putInt("table-page-size", pageSize);
     }
@@ -754,7 +760,7 @@ public final class CollectionView extends TopComponent {
 
     private JPopupMenu createFlatTableContextMenu(int row, int column) {
         final JPopupMenu menu = new JPopupMenu();
-        final DBObject document = getResultTableModel().getDocuments().get(row);
+        final DBObject document = getCollectionQueryResult().getDocuments().get(row);
         menu.add(new JMenuItem(new CopyDocumentToClipboardAction(document)));
         final DocumentsFlatTableModel model = (DocumentsFlatTableModel) documentsFlatTable.getModel();
         final JsonProperty property = new JsonProperty(

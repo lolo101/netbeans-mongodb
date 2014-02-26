@@ -24,119 +24,64 @@
 package org.netbeans.modules.mongodb.ui.windows.collectionview.treetable;
 
 import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.SwingUtilities;
 import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
 import org.jdesktop.swingx.treetable.TreeTableNode;
-import org.netbeans.modules.mongodb.ui.windows.collectionview.CollectionQueryResultTableModel;
+import org.netbeans.modules.mongodb.ui.windows.collectionview.CollectionQueryResult;
+import org.netbeans.modules.mongodb.ui.windows.collectionview.CollectionQueryResultProvider;
+import org.netbeans.modules.mongodb.ui.windows.collectionview.CollectionQueryResultModelUpdateListener;
 
 /**
  *
  * @author Yann D'Isanto
  */
-public final class DocumentsTreeTableModel extends DefaultTreeTableModel implements CollectionQueryResultTableModel {
+public final class DocumentsTreeTableModel extends DefaultTreeTableModel implements CollectionQueryResultProvider, CollectionQueryResultModelUpdateListener {
 
-    private final DBCollection dbCollection;
-
-    private final List<DBObject> data = new ArrayList<>();
-
-    private int pageSize = DEFAULT_PAGE_SIZE;
-
-    private int page = 1;
-
-    private int totalDocumentsCount = 0;
-
-    private DBObject criteria;
-
-    private DBObject projection;
-
-    private DBObject sort;
+    private final CollectionQueryResult collectionQueryResultModel;
 
     public DocumentsTreeTableModel(DBCollection dbCollection) {
-        this.dbCollection = dbCollection;
+        collectionQueryResultModel = new CollectionQueryResult(dbCollection);
+        collectionQueryResultModel.addCollectionQueryResultModelUpdateListener(this);
     }
 
     @Override
-    public void update() {
-        if (dbCollection == null) {
-            // TODO: error message
-            return;
-        }
-        try (DBCursor cursor = dbCollection.find(criteria, projection)) {
-            if (sort != null) {
-                cursor.sort(sort);
-            }
-            totalDocumentsCount = cursor.count();
-            DBCursor pageCursor = cursor;
-            if (pageSize > 0) {
-                final int toSkip = (page - 1) * pageSize;
-                pageCursor = cursor.skip(toSkip).limit(pageSize);
-            }
-            data.clear();
-            final TreeTableNode rootNode = new CollectionViewTreeTableNode<>(null, pageCursor,
-                new CollectionViewTreeTableNode.ChildrenFactory<DBCursor>() {
+    public CollectionQueryResult getCollectionQueryResult() {
+        return collectionQueryResultModel;
+    }
 
-                    @Override
-                    public List<TreeTableNode> createChildren(TreeTableNode parent, DBCursor cursor) {
-                        final List<TreeTableNode> children = new ArrayList<>(cursor.size());
-                        for (DBObject document : cursor) {
-                            children.add(new DocumentNode(parent, document));
-                            data.add(document);
-                        }
-                        return children;
-                    }
-                }
-            );
-            SwingUtilities.invokeLater(new Runnable() {
+    @Override
+    public void updateStarting() {
+    }
+
+    @Override
+    public void documentAdded(DBObject document) {
+    }
+
+    @Override
+    public void updateFinished() {
+        final TreeTableNode rootNode = new CollectionViewTreeTableNode<>(null, collectionQueryResultModel.getDocuments(),
+            new CollectionViewTreeTableNode.ChildrenFactory<List<DBObject>>() {
 
                 @Override
-                public void run() {
-                    setRoot(rootNode);
+                public List<TreeTableNode> createChildren(TreeTableNode parent, List<DBObject> documents) {
+                    final List<TreeTableNode> children = new ArrayList<>(documents.size());
+                    for (DBObject document : documents) {
+                        children.add(new DocumentNode(parent, document));
+                    }
+                    return children;
                 }
-            });
-        }
-    }
+            }
+        );
+        SwingUtilities.invokeLater(new Runnable() {
 
-    @Override
-    public List<DBObject> getDocuments() {
-        return new ArrayList<>(data);
-    }
-
-    @Override
-    public int getPageSize() {
-        return pageSize;
-    }
-
-    @Override
-    public void setPageSize(int pageSize) {
-        this.pageSize = pageSize;
-    }
-
-    @Override
-    public int getPage() {
-        return page;
-    }
-
-    @Override
-    public void setPage(int page) {
-        this.page = page;
-    }
-
-    @Override
-    public int getPageCount() {
-        if (pageSize > 0) {
-            final double pageCount = (double) totalDocumentsCount / (double) pageSize;
-            return (int) Math.ceil(pageCount);
-        }
-        return 1;
-    }
-
-    @Override
-    public int getTotalDocumentsCount() {
-        return totalDocumentsCount;
+            @Override
+            public void run() {
+                setRoot(rootNode);
+            }
+        });
     }
 
     @Override
@@ -152,35 +97,5 @@ public final class DocumentsTreeTableModel extends DefaultTreeTableModel impleme
     @Override
     public Class<?> getColumnClass(int columnIndex) {
         return DBObject.class;
-    }
-
-    @Override
-    public DBObject getCriteria() {
-        return criteria;
-    }
-
-    @Override
-    public void setCriteria(DBObject criteria) {
-        this.criteria = criteria;
-    }
-
-    @Override
-    public DBObject getProjection() {
-        return projection;
-    }
-
-    @Override
-    public void setProjection(DBObject projection) {
-        this.projection = projection;
-    }
-
-    @Override
-    public DBObject getSort() {
-        return sort;
-    }
-
-    @Override
-    public void setSort(DBObject sort) {
-        this.sort = sort;
     }
 }

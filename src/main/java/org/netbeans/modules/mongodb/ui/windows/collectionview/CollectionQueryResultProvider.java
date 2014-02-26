@@ -21,41 +21,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.netbeans.modules.mongodb.ui.windows.collectionview.actions;
 
-import java.awt.event.ActionEvent;
-import javax.swing.ImageIcon;
-import org.netbeans.modules.mongodb.Images;
-import org.netbeans.modules.mongodb.ui.windows.CollectionView;
-import org.netbeans.modules.mongodb.ui.windows.CollectionViewAction;
-import org.netbeans.modules.mongodb.ui.windows.collectionview.CollectionQueryResult;
-import org.openide.util.NbBundle.Messages;
+package org.netbeans.modules.mongodb.ui.windows.collectionview;
 
 /**
  *
  * @author Yann D'Isanto
  */
-@Messages({
-    "ACTION_navRight=Next Page",
-    "ACTION_navRight_tooltip=Next Page"
-})
-public final class NavRightAction extends CollectionViewAction {
-
-    public NavRightAction(CollectionView view) {
-        super(view,
-            Bundle.ACTION_navRight(),
-            new ImageIcon(Images.NAV_RIGHT_ICON),
-            Bundle.ACTION_navRight_tooltip());
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        final CollectionQueryResult result = getView().getCollectionQueryResult();
-        int page = result.getPage();
-        if (page < result.getPageCount()) {
-            result.setPage(page + 1);
-            result.update();
-            getView().updatePagination();
-        }
-    }
+public interface CollectionQueryResultProvider {
+    
+    CollectionQueryResult getCollectionQueryResult();
 }

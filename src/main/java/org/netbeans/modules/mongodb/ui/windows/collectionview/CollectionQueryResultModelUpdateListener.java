@@ -21,44 +21,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package org.netbeans.modules.mongodb.ui.windows.collectionview;
 
 import com.mongodb.DBObject;
-import java.util.List;
 
 /**
  *
  * @author Yann D'Isanto
  */
-public interface CollectionQueryResultTableModel {
-
-    int DEFAULT_PAGE_SIZE = 20;
-
-    void update();
-
-    List<DBObject> getDocuments();
-
-    int getPageSize();
-
-    void setPageSize(int pageSize);
-
-    int getPage();
-
-    void setPage(int page);
-
-    int getPageCount();
-
-    int getTotalDocumentsCount();
-
-    DBObject getCriteria();
-
-    void setCriteria(DBObject criteria);
-
-    DBObject getProjection();
-
-    void setProjection(DBObject projection);
-
-    DBObject getSort();
-
-    void setSort(DBObject sort);
+public interface CollectionQueryResultModelUpdateListener {
+    
+    void updateStarting();
+    
+    void documentAdded(DBObject document);
+    
+    void updateFinished();
 }

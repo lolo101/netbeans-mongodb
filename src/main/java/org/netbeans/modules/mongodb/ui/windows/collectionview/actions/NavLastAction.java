@@ -28,7 +28,7 @@ import javax.swing.ImageIcon;
 import org.netbeans.modules.mongodb.Images;
 import org.netbeans.modules.mongodb.ui.windows.CollectionView;
 import org.netbeans.modules.mongodb.ui.windows.CollectionViewAction;
-import org.netbeans.modules.mongodb.ui.windows.collectionview.CollectionQueryResultTableModel;
+import org.netbeans.modules.mongodb.ui.windows.collectionview.CollectionQueryResult;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -50,9 +50,9 @@ public final class NavLastAction extends CollectionViewAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        final CollectionQueryResultTableModel resultModel = getView().getResultTableModel();
-        resultModel.setPage(resultModel.getPageCount());
-        resultModel.update();
+        final CollectionQueryResult result = getView().getCollectionQueryResult();
+        result.setPage(result.getPageCount());
+        result.update();
         getView().updatePagination();
     }
 }
