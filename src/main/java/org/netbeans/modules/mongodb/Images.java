@@ -42,7 +42,7 @@ public interface Images {
     String COLLECTION_ICON_PATH = "org/netbeans/modules/mongodb/images/collection.png"; //NOI18N
 
     @StaticResource
-    String SYSTEM_COLLECTION_ICON_PATH = "org/netbeans/modules/mongodb/images/tableSystem.gif"; //NOI18N
+    String SYSTEM_COLLECTION_ICON_PATH = "org/netbeans/modules/mongodb/images/systemCollection.png"; //NOI18N
 
     @StaticResource
     String CONNECTION_ICON_PATH = "org/netbeans/modules/mongodb/images/connection.gif"; //NOI18N
@@ -84,7 +84,7 @@ public interface Images {
     String TREE_TABLE_VIEW_ICON_PATH = "org/netbeans/modules/mongodb/images/chart_organisation.png"; //NOI18N
 
     @StaticResource
-    String FLAT_TABLE_VIEW_ICON_PATH = "org/netbeans/modules/mongodb/images/table.png"; //NOI18N
+    String FLAT_TABLE_VIEW_ICON_PATH = "org/netbeans/modules/mongodb/images/flat_table.png"; //NOI18N
 
     Image COLLECTION_ICON = ImageUtilities.loadImage(COLLECTION_ICON_PATH);
 
