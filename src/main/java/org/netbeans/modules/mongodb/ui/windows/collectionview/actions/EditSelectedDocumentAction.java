@@ -43,7 +43,7 @@ import org.openide.util.NbBundle.Messages;
  */
 @Messages({
     "editDocumentTitle=Edit document",
-    "ACTION_editSelectedDocument=Edit Selected Document",
+    "ACTION_editSelectedDocument=Edit document",
     "ACTION_editSelectedDocument_tooltip=Edit Selected Document"
 })
 public final class EditSelectedDocumentAction extends CollectionViewAction {

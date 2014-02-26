@@ -43,7 +43,7 @@ import org.openide.util.NbBundle.Messages;
  */
 @Messages({
     "confirmDocumentDeletionText=Delete document?",
-    "ACTION_deleteSelectedDocument=Delete Selected Document",
+    "ACTION_deleteSelectedDocument=Delete document",
     "ACTION_deleteSelectedDocument_tooltip=Delete Selected Document"
 })
 public final class DeleteSelectedDocumentAction extends CollectionViewAction {

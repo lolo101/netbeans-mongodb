@@ -747,14 +747,15 @@ public final class CollectionView extends TopComponent {
         if (node != documentNode) {
             if (node instanceof JsonPropertyNode) {
                 final JsonProperty property = ((JsonPropertyNode) node).getUserObject();
-                menu.addSeparator();
                 menu.add(new JMenuItem(new CopyKeyToClipboardAction(property)));
                 menu.add(new JMenuItem(new CopyValueToClipboardAction(property.getValue())));
             } else {
-                menu.addSeparator();
                 menu.add(new JMenuItem(new CopyValueToClipboardAction(node.getUserObject())));
             }
         }
+        menu.addSeparator();
+        menu.add(new JMenuItem(new EditSelectedDocumentAction(this)));
+        menu.add(new JMenuItem(new DeleteSelectedDocumentAction(this)));
         return menu;
     }
 
@@ -766,9 +767,11 @@ public final class CollectionView extends TopComponent {
         final JsonProperty property = new JsonProperty(
             model.getColumnName(column),
             model.getValueAt(row, column));
-        menu.addSeparator();
         menu.add(new JMenuItem(new CopyKeyToClipboardAction(property)));
         menu.add(new JMenuItem(new CopyValueToClipboardAction(property.getValue())));
+        menu.addSeparator();
+        menu.add(new JMenuItem(new EditSelectedDocumentAction(this)));
+        menu.add(new JMenuItem(new DeleteSelectedDocumentAction(this)));
         return menu;
     }
 
