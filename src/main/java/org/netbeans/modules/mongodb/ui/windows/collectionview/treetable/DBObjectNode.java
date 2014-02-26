@@ -21,10 +21,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.netbeans.modules.mongodb.ui.windows.collectionview;
+package org.netbeans.modules.mongodb.ui.windows.collectionview.treetable;
 
+import com.mongodb.DBObject;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.jdesktop.swingx.treetable.TreeTableNode;
@@ -34,32 +34,22 @@ import org.netbeans.modules.mongodb.util.JsonProperty;
  *
  * @author Yann D'Isanto
  */
-public final class JsonValueNode extends CollectionViewTreeTableNode<Object> {
+public class DBObjectNode extends CollectionViewTreeTableNode<DBObject> {
 
-    public JsonValueNode(TreeTableNode parent, Object value) {
-        super(parent, value, new ChildrenFactory<Object>() {
+    public DBObjectNode(TreeTableNode parent, DBObject userObject) {
+        super(parent, userObject, new ChildrenFactory<DBObject>() {
 
             @Override
             @SuppressWarnings("unchecked")
-            public List<TreeTableNode> createChildren(TreeTableNode parent, Object value) {
-                if (value instanceof Map) {
-                    final Map<String, Object> map = (Map<String, Object>) value;
-                    final List<TreeTableNode> children = new ArrayList<>(map.size());
-                    for (Map.Entry<String, Object> entry : map.entrySet()) {
-                        children.add(new JsonPropertyNode(
-                            parent,
-                            new JsonProperty(entry.getKey(), entry.getValue())));
-                    }
-                    return children;
-                } else if (value instanceof List) {
-                    final List<Object> objects = (List<Object>) value;
-                    final List<TreeTableNode> children = new ArrayList<>(objects.size());
-                    for (Object object : objects) {
-                        children.add(new JsonValueNode(parent, object));
-                    }
-                    return children;
+            public List<TreeTableNode> createChildren(TreeTableNode parent, DBObject userObject) {
+                final Map<String, Object> map = userObject.toMap();
+                final List<TreeTableNode> children = new ArrayList<>(map.size());
+                for (Map.Entry<String, Object> entry : map.entrySet()) {
+                    children.add(new JsonPropertyNode(
+                        parent,
+                        new JsonProperty(entry.getKey(), entry.getValue())));
                 }
-                return Collections.emptyList();
+                return children;
             }
         });
     }

@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.netbeans.modules.mongodb.ui.windows.collectionview;
+package org.netbeans.modules.mongodb.ui.windows.collectionview.flattable;
 
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
@@ -29,6 +29,7 @@ import com.mongodb.DBObject;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.table.AbstractTableModel;
+import org.netbeans.modules.mongodb.ui.windows.collectionview.CollectionQueryResultTableModel;
 
 /**
  *
@@ -53,7 +54,7 @@ public final class DocumentsFlatTableModel extends AbstractTableModel implements
     private DBObject sort;
     
     private final List<String> columns = new ArrayList<>();
-    
+
     public DocumentsFlatTableModel(DBCollection dbCollection) {
         this.dbCollection = dbCollection;
     }

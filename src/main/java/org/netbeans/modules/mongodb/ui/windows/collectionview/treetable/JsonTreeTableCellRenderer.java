@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.netbeans.modules.mongodb.ui.windows.collectionview;
+package org.netbeans.modules.mongodb.ui.windows.collectionview.treetable;
 
 import org.netbeans.modules.mongodb.options.JsonTreeCellRendererOptions;
 import java.awt.Color;

@@ -21,9 +21,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.netbeans.modules.mongodb.ui.windows.collectionview;
+package org.netbeans.modules.mongodb.ui.windows.collectionview.treetable;
 
-import com.mongodb.DBObject;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -35,15 +34,14 @@ import org.netbeans.modules.mongodb.util.JsonProperty;
  *
  * @author Yann D'Isanto
  */
-public final class JsonPropertyNode extends CollectionViewTreeTableNode<JsonProperty> {
+public final class JsonValueNode extends CollectionViewTreeTableNode<Object> {
 
-    public JsonPropertyNode(TreeTableNode parent, JsonProperty property) {
-        super(parent, property, new ChildrenFactory<JsonProperty>() {
+    public JsonValueNode(TreeTableNode parent, Object value) {
+        super(parent, value, new ChildrenFactory<Object>() {
 
             @Override
             @SuppressWarnings("unchecked")
-            public List<TreeTableNode> createChildren(TreeTableNode parent, JsonProperty property) {
-                final Object value = property.getValue();
+            public List<TreeTableNode> createChildren(TreeTableNode parent, Object value) {
                 if (value instanceof Map) {
                     final Map<String, Object> map = (Map<String, Object>) value;
                     final List<TreeTableNode> children = new ArrayList<>(map.size());
@@ -57,11 +55,7 @@ public final class JsonPropertyNode extends CollectionViewTreeTableNode<JsonProp
                     final List<Object> objects = (List<Object>) value;
                     final List<TreeTableNode> children = new ArrayList<>(objects.size());
                     for (Object object : objects) {
-                        if(object instanceof DBObject) {
-                            children.add(new DBObjectNode(parent, (DBObject) object));
-                        } else {
-                            children.add(new JsonValueNode(parent, object));
-                        }
+                        children.add(new JsonValueNode(parent, object));
                     }
                     return children;
                 }

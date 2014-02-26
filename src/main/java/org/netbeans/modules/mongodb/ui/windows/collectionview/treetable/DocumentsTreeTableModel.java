@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.netbeans.modules.mongodb.ui.windows.collectionview;
+package org.netbeans.modules.mongodb.ui.windows.collectionview.treetable;
 
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
@@ -31,6 +31,7 @@ import java.util.List;
 import javax.swing.SwingUtilities;
 import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
 import org.jdesktop.swingx.treetable.TreeTableNode;
+import org.netbeans.modules.mongodb.ui.windows.collectionview.CollectionQueryResultTableModel;
 
 /**
  *

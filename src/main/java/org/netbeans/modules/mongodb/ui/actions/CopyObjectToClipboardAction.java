@@ -35,7 +35,7 @@ import javax.swing.Icon;
  *
  * @author Yann D'Isanto
  */
-public abstract class CopyObjectToClipboardAction<T> extends AbstractAction {
+public class CopyObjectToClipboardAction<T> extends AbstractAction {
 
     /**
      * The object to copy to the clipboard.

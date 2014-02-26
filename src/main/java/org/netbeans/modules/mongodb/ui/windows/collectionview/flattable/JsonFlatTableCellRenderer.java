@@ -21,31 +21,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.netbeans.modules.mongodb.ui.windows.collectionview;
+package org.netbeans.modules.mongodb.ui.windows.collectionview.flattable;
 
 import org.netbeans.modules.mongodb.options.JsonTreeCellRendererOptions;
-import java.awt.Color;
 import java.awt.Component;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import javax.swing.BorderFactory;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JTable;
-import javax.swing.JTree;
-import javax.swing.UIManager;
-import javax.swing.border.Border;
-import javax.swing.plaf.UIResource;
 import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.tree.TreeCellRenderer;
 import org.bson.types.ObjectId;
 import org.netbeans.modules.mongodb.options.LabelCategory;
 import org.netbeans.modules.mongodb.options.LabelFontConf;
-import org.netbeans.modules.mongodb.util.JsonProperty;
 
 /**
  *
@@ -69,12 +55,19 @@ public final class JsonFlatTableCellRenderer extends DefaultTableCellRenderer {
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
         super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+        setToolTipText(getText());
         if (value != null && isSelected == false) {
             final LabelCategory valueLabelCategory = LABEL_CATEGORIES.get(value.getClass());
-            final LabelFontConf valueFontConf = options.getLabelFontConf(valueLabelCategory);
-            setFont(valueFontConf.getFont());
-            setForeground(valueFontConf.getForeground());
-            setBackground(valueFontConf.getBackground());
+            if (valueLabelCategory != null) {
+                final LabelFontConf valueFontConf = options.getLabelFontConf(valueLabelCategory);
+                setFont(valueFontConf.getFont());
+                setForeground(valueFontConf.getForeground());
+                setBackground(valueFontConf.getBackground());
+            } else {
+                setFont(table.getFont());
+                setForeground(table.getForeground());
+                setBackground(table.getBackground());
+            }
         }
         return this;
     }

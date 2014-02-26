@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package org.netbeans.modules.mongodb.ui.windows.collectionview;
+package org.netbeans.modules.mongodb.ui.windows.collectionview.treetable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
