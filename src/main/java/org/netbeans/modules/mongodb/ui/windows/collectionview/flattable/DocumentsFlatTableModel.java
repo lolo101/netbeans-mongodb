@@ -40,16 +40,16 @@ public final class DocumentsFlatTableModel extends AbstractTableModel implements
     
     private final List<String> columns = new ArrayList<>();
     
-    private final CollectionQueryResult collectionQueryResultModel;
+    private final CollectionQueryResult collectionQueryResult;
 
-    public DocumentsFlatTableModel(DBCollection dbCollection) {
-        collectionQueryResultModel = new CollectionQueryResult(dbCollection);
-        collectionQueryResultModel.addCollectionQueryResultModelUpdateListener(this);
+    public DocumentsFlatTableModel(CollectionQueryResult collectionQueryResult) {
+        this.collectionQueryResult = collectionQueryResult;
+        collectionQueryResult.addCollectionQueryResultModelUpdateListener(this);
     }
-
+    
     @Override
     public CollectionQueryResult getCollectionQueryResult() {
-        return collectionQueryResultModel;
+        return collectionQueryResult;
     }
 
     @Override
@@ -94,7 +94,7 @@ public final class DocumentsFlatTableModel extends AbstractTableModel implements
 
     @Override
     public int getRowCount() {
-        return collectionQueryResultModel.getDocuments().size();
+        return collectionQueryResult.getDocuments().size();
     }
 
     @Override
@@ -116,6 +116,6 @@ public final class DocumentsFlatTableModel extends AbstractTableModel implements
         if (rowIndex == -1) {
             return null;
         }
-        return collectionQueryResultModel.getDocuments().get(rowIndex);
+        return collectionQueryResult.getDocuments().get(rowIndex);
     }    
 }

@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.prefs.Preferences;
 import javax.swing.JLabel;
 import javax.swing.UIManager;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -49,7 +50,7 @@ public enum JsonTreeCellRendererOptions {
     }
 
     private Preferences getPreferences() {
-        return Preferences.userNodeForPackage(JsonTreeCellRendererOptions.class);
+        return NbPreferences.forModule(JsonTreeCellRendererOptions.class);
     }
 
     public LabelFontConf getLabelFontConf(LabelCategory category) {

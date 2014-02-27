@@ -21,35 +21,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+package org.netbeans.modules.mongodb.ui.windows;
 
-package org.netbeans.modules.mongodb.ui.windows.collectionview.actions;
-
-import java.awt.event.ActionEvent;
-import javax.swing.ImageIcon;
-import org.netbeans.modules.mongodb.Images;
-import org.netbeans.modules.mongodb.ui.windows.CollectionView;
-import org.netbeans.modules.mongodb.ui.windows.CollectionViewAction;
-import org.openide.util.NbBundle.Messages;
+import java.util.Set;
+import org.openide.modules.OnStop;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  *
  * @author Yann D'Isanto
  */
-//@Messages({
-//    "ACTION_displayResultsAsTreeTable=Refresh",
-//    "ACTION_displayResultsAsTreeTable_tooltip=Refresh Documents"
-//})
-public final class DisplayResultAsTreeTableAction extends CollectionViewAction {
-    
-    public DisplayResultAsTreeTableAction(CollectionView view) {
-        super(view, 
-            Bundle.ACTION_displayResultsAsTreeTable(), 
-            new ImageIcon(Images.FLAT_TABLE_VIEW_ICON), 
-            Bundle.ACTION_displayResultsAsTreeTable_tooltip());
+@OnStop
+public final class OnStopCollectionViewsPrefsWriter implements Runnable {
+
+    @Override
+    public void run() {
+        System.out.println("OnStopCollectionViewsPrefsWriter.run()");
+        final Set<TopComponent> openTopComponents = WindowManager.getDefault().getRegistry().getOpened();
+        for (TopComponent tc : openTopComponents) {
+            if (tc instanceof CollectionView) {
+                ((CollectionView) tc).writePreferences();
+            }
+        }
     }
 
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            getView().changeResultView(CollectionView.ResultView.TREE_TABLE);
-        }
 }

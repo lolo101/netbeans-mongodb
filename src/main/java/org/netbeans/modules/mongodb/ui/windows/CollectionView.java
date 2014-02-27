@@ -34,12 +34,16 @@ import org.netbeans.modules.mongodb.util.Json;
 import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.EnumMap;
+import java.util.Map;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
+import javax.swing.JToggleButton;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
@@ -81,8 +85,10 @@ import org.netbeans.modules.mongodb.util.SystemCollectionPredicate;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.NbPreferences;
 import org.openide.windows.TopComponent;
 
 /**
@@ -90,7 +96,7 @@ import org.openide.windows.TopComponent;
  */
 @TopComponent.Description(
     preferredID = "CollectionView",
-    persistenceType = TopComponent.PERSISTENCE_ALWAYS)
+    persistenceType = TopComponent.PERSISTENCE_NEVER)
 @Messages({
     "invalidJson=invalid json",
     "# {0} - total documents count",
@@ -100,13 +106,19 @@ import org.openide.windows.TopComponent;
     "pageCountLabel=Page {0} of {1}"})
 public final class CollectionView extends TopComponent {
 
+    private static final ResultView DEFAULT_RESULT_VIEW = ResultView.TREE_TABLE;
+
     private final boolean isSystemCollection;
 
     private final EditorKit jsonEditorKit = MimeLookup.getLookup("text/x-json").lookup(EditorKit.class);
 
     private final QueryEditor queryEditor = new QueryEditor();
 
-    private ResultView resultView = ResultView.TREE_TABLE;
+    private ResultView resultView = DEFAULT_RESULT_VIEW;
+
+    private final CollectionQueryResult collectionQueryResult;
+
+    private final Map<ResultView, JToggleButton> resultViewButtons;
 
     public CollectionView(CollectionInfo collectionInfo, Lookup lookup) {
         super(lookup);
@@ -121,10 +133,14 @@ public final class CollectionView extends TopComponent {
             ? Images.SYSTEM_COLLECTION_ICON
             : Images.COLLECTION_ICON);
 
+        resultViewButtons = new EnumMap<>(ResultView.class);
+        resultViewButtons.put(ResultView.FLAT_TABLE, flatTableViewButton);
+        resultViewButtons.put(ResultView.TREE_TABLE, treeTableViewButton);
         final DBCollection dbCollection = lookup.lookup(DBCollection.class);
 
-        final DocumentsTreeTableModel treeTableModel = new DocumentsTreeTableModel(dbCollection);
-        final DocumentsFlatTableModel flatTableModel = new DocumentsFlatTableModel(dbCollection);
+        collectionQueryResult = new CollectionQueryResult(dbCollection);
+        final DocumentsTreeTableModel treeTableModel = new DocumentsTreeTableModel(collectionQueryResult);
+        final DocumentsFlatTableModel flatTableModel = new DocumentsFlatTableModel(collectionQueryResult);
 
         final ListSelectionListener tableSelectionListener = new ListSelectionListener() {
 
@@ -146,15 +162,9 @@ public final class CollectionView extends TopComponent {
         documentsTreeTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         documentsTreeTable.getSelectionModel().addListSelectionListener(tableSelectionListener);
 
-        final int pageSize = prefs().getInt("table-page-size", CollectionQueryResult.DEFAULT_PAGE_SIZE);
-        treeTableModel.getCollectionQueryResult().setPageSize(pageSize);
-        flatTableModel.getCollectionQueryResult().setPageSize(pageSize);
         final PlainDocument document = (PlainDocument) pageSizeField.getDocument();
         document.setDocumentFilter(new IntegerDocumentFilter());
-        pageSizeField.setText(String.valueOf(pageSize));
 
-        changeResultView(ResultView.TREE_TABLE);
-        treeTableViewButton.setSelected(true);
         documentsTreeTable.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
@@ -175,16 +185,26 @@ public final class CollectionView extends TopComponent {
             public void mouseReleased(MouseEvent e) {
                 if (e.isPopupTrigger()) {
                     final int row = documentsFlatTable.rowAtPoint(e.getPoint());
-                    if(row > -1) {
+                    if (row > -1) {
                         final int column = documentsFlatTable.columnAtPoint(e.getPoint());
                         documentsFlatTable.setRowSelectionInterval(row, row);
                         final JPopupMenu menu = createFlatTableContextMenu(row, column);
-                        menu.show(e.getComponent(), e.getX(), e.getY());                        
+                        menu.show(e.getComponent(), e.getX(), e.getY());
                     }
                 }
             }
 
         });
+    }
+
+    @Override
+    protected void componentShowing() {
+        loadPreferences();
+    }
+
+    @Override
+    protected void componentClosed() {
+        writePreferences();
     }
 
     public QueryEditor getQueryEditor() {
@@ -202,19 +222,8 @@ public final class CollectionView extends TopComponent {
         }
     }
 
-    public CollectionQueryResultProvider getResultModelProvider() {
-        switch (resultView) {
-            case FLAT_TABLE:
-                return (CollectionQueryResultProvider) documentsFlatTable.getModel();
-            case TREE_TABLE:
-                return (CollectionQueryResultProvider) documentsTreeTable.getTreeTableModel();
-            default:
-                throw new AssertionError();
-        }
-    }
-    
     public CollectionQueryResult getCollectionQueryResult() {
-        return getResultModelProvider().getCollectionQueryResult();
+        return collectionQueryResult;
     }
 
     public DBObject getResultTableSelectedDocument() {
@@ -252,18 +261,13 @@ public final class CollectionView extends TopComponent {
         });
     }
 
-    public Preferences prefs() {
-        return Preferences.userNodeForPackage(CollectionView.class);
-    }
-
     public void refreshResults() {
         new Thread(new Runnable() {
 
             @Override
             public void run() {
-                final CollectionQueryResult result = getCollectionQueryResult();
-                result.setPage(1);
-                result.update();
+                collectionQueryResult.setPage(1);
+                collectionQueryResult.update();
                 updatePagination();
                 updateDocumentButtonsState();
             }
@@ -275,10 +279,10 @@ public final class CollectionView extends TopComponent {
 
             @Override
             public void run() {
-                final CollectionQueryResult result = getCollectionQueryResult();
-                totalDocumentsLabel.setText(Bundle.totalDocuments(result.getTotalDocumentsCount()));
-                int page = result.getPage();
-                int pageCount = result.getPageCount();
+                totalDocumentsLabel.setText(
+                    Bundle.totalDocuments(collectionQueryResult.getTotalDocumentsCount()));
+                int page = collectionQueryResult.getPage();
+                int pageCount = collectionQueryResult.getPageCount();
                 pageCountLabel.setText(Bundle.pageCountLabel(page, pageCount));
 
                 boolean leftNavEnabled = page > 1;
@@ -311,10 +315,9 @@ public final class CollectionView extends TopComponent {
         criteriaField.setText(criteria != null ? JSON.serialize(criteria) : "");
         projectionField.setText(projection != null ? JSON.serialize(projection) : "");
         sortField.setText(sort != null ? JSON.serialize(sort) : "");
-        final CollectionQueryResult result = getCollectionQueryResult();
-        result.setCriteria(criteria);
-        result.setProjection(projection);
-        result.setSort(sort);
+        collectionQueryResult.setCriteria(criteria);
+        collectionQueryResult.setProjection(projection);
+        collectionQueryResult.setSort(sort);
         refreshResults();
     }
 
@@ -351,7 +354,6 @@ public final class CollectionView extends TopComponent {
         ((CollectionQueryResultProvider) documentsTreeTable.getTreeTableModel())
             .getCollectionQueryResult().setPageSize(pageSize);
         refreshResults();
-        prefs().putInt("table-page-size", pageSize);
     }
 
     /**
@@ -643,16 +645,34 @@ public final class CollectionView extends TopComponent {
     private javax.swing.JToggleButton treeTableViewButton;
     // End of variables declaration//GEN-END:variables
 
-    void writeProperties(java.util.Properties p) {
-        // better to version settings since initial version as advocated at
-        // http://wiki.apidesign.org/wiki/PropertyFiles
-        p.setProperty("version", "1.0");
-        // TODO store your settings
+    public Preferences prefs() {
+        return NbPreferences.forModule(CollectionView.class).node(CollectionView.class.getName());
     }
 
-    void readProperties(java.util.Properties p) {
-        String version = p.getProperty("version");
-        // TODO read your settings according to their version
+    void loadPreferences() {
+        System.out.println("loading prefs");
+        final Preferences prefs = prefs();
+        final String version = prefs.get("version", "1.0");
+        final int pageSize = prefs.getInt("result-view-table-page-size", collectionQueryResult.getPageSize());
+        collectionQueryResult.setPageSize(pageSize);
+        pageSizeField.setText(String.valueOf(pageSize));
+        final String resultViewPref = prefs.get("result-view", ResultView.TREE_TABLE.name());
+        final ResultView rView = ResultView.valueOf(resultViewPref);
+        resultViewButtons.get(rView).setSelected(true);
+        changeResultView(rView);
+    }
+
+    void writePreferences() {
+        System.out.println("writing prefs");
+        final Preferences prefs = prefs();
+        prefs.put("version", "1.0");
+        prefs.putInt("result-view-table-page-size", collectionQueryResult.getPageSize());
+        prefs.put("result-view", resultView.name());
+        try {
+            prefs.flush();
+        } catch (BackingStoreException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     private final Action editQueryAction = new EditQueryAction(this);
@@ -761,7 +781,7 @@ public final class CollectionView extends TopComponent {
 
     private JPopupMenu createFlatTableContextMenu(int row, int column) {
         final JPopupMenu menu = new JPopupMenu();
-        final DBObject document = getCollectionQueryResult().getDocuments().get(row);
+        final DBObject document = collectionQueryResult.getDocuments().get(row);
         menu.add(new JMenuItem(new CopyDocumentToClipboardAction(document)));
         final DocumentsFlatTableModel model = (DocumentsFlatTableModel) documentsFlatTable.getModel();
         final JsonProperty property = new JsonProperty(

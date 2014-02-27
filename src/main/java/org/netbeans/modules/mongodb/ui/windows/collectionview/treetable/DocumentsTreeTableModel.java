@@ -40,16 +40,16 @@ import org.netbeans.modules.mongodb.ui.windows.collectionview.CollectionQueryRes
  */
 public final class DocumentsTreeTableModel extends DefaultTreeTableModel implements CollectionQueryResultProvider, CollectionQueryResultModelUpdateListener {
 
-    private final CollectionQueryResult collectionQueryResultModel;
+    private final CollectionQueryResult collectionQueryResult;
 
-    public DocumentsTreeTableModel(DBCollection dbCollection) {
-        collectionQueryResultModel = new CollectionQueryResult(dbCollection);
-        collectionQueryResultModel.addCollectionQueryResultModelUpdateListener(this);
+    public DocumentsTreeTableModel(CollectionQueryResult collectionQueryResult) {
+        this.collectionQueryResult = collectionQueryResult;
+        collectionQueryResult.addCollectionQueryResultModelUpdateListener(this);
     }
-
+    
     @Override
     public CollectionQueryResult getCollectionQueryResult() {
-        return collectionQueryResultModel;
+        return collectionQueryResult;
     }
 
     @Override
@@ -62,7 +62,7 @@ public final class DocumentsTreeTableModel extends DefaultTreeTableModel impleme
 
     @Override
     public void updateFinished() {
-        final TreeTableNode rootNode = new CollectionViewTreeTableNode<>(null, collectionQueryResultModel.getDocuments(),
+        final TreeTableNode rootNode = new CollectionViewTreeTableNode<>(null, collectionQueryResult.getDocuments(),
             new CollectionViewTreeTableNode.ChildrenFactory<List<DBObject>>() {
 
                 @Override

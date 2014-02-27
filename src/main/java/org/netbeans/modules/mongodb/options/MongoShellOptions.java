@@ -24,6 +24,7 @@
 package org.netbeans.modules.mongodb.options;
 
 import java.util.prefs.Preferences;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -42,7 +43,7 @@ public enum MongoShellOptions {
     }
 
     private Preferences getPreferences() {
-        return Preferences.userNodeForPackage(MongoShellOptions.class);
+        return NbPreferences.forModule(MongoShellOptions.class);
     }
 
     public void load() {
