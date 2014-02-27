@@ -650,7 +650,6 @@ public final class CollectionView extends TopComponent {
     }
 
     void loadPreferences() {
-        System.out.println("loading prefs");
         final Preferences prefs = prefs();
         final String version = prefs.get("version", "1.0");
         final int pageSize = prefs.getInt("result-view-table-page-size", collectionQueryResult.getPageSize());
@@ -663,7 +662,6 @@ public final class CollectionView extends TopComponent {
     }
 
     void writePreferences() {
-        System.out.println("writing prefs");
         final Preferences prefs = prefs();
         prefs.put("version", "1.0");
         prefs.putInt("result-view-table-page-size", collectionQueryResult.getPageSize());

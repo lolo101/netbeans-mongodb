@@ -37,7 +37,6 @@ public final class OnStopCollectionViewsPrefsWriter implements Runnable {
 
     @Override
     public void run() {
-        System.out.println("OnStopCollectionViewsPrefsWriter.run()");
         final Set<TopComponent> openTopComponents = WindowManager.getDefault().getRegistry().getOpened();
         for (TopComponent tc : openTopComponents) {
             if (tc instanceof CollectionView) {
@@ -45,5 +44,4 @@ public final class OnStopCollectionViewsPrefsWriter implements Runnable {
             }
         }
     }
-
 }
