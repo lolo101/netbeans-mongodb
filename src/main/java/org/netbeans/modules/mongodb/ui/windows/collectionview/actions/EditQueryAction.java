@@ -25,7 +25,6 @@ package org.netbeans.modules.mongodb.ui.windows.collectionview.actions;
 
 import java.awt.event.ActionEvent;
 import org.netbeans.modules.mongodb.ui.windows.CollectionView;
-import org.netbeans.modules.mongodb.ui.windows.CollectionViewAction;
 import org.openide.util.NbBundle.Messages;
 
 /**

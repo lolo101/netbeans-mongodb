@@ -21,11 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.netbeans.modules.mongodb.ui.windows;
+package org.netbeans.modules.mongodb.ui.windows.collectionview.actions;
 
 import javax.swing.AbstractAction;
 import static javax.swing.Action.SHORT_DESCRIPTION;
 import javax.swing.Icon;
+import org.netbeans.modules.mongodb.ui.windows.CollectionView;
 
 /**
  *

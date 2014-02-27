@@ -29,7 +29,6 @@ import javax.swing.ImageIcon;
 import org.netbeans.modules.mongodb.Images;
 import org.netbeans.modules.mongodb.ui.windows.CollectionView;
 import org.netbeans.modules.mongodb.ui.windows.CollectionView.ResultView;
-import org.netbeans.modules.mongodb.ui.windows.CollectionViewAction;
 import org.openide.util.NbBundle.Messages;
 
 /**

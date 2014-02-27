@@ -31,7 +31,6 @@ import org.netbeans.modules.mongodb.CollectionInfo;
 import org.netbeans.modules.mongodb.Images;
 import org.netbeans.modules.mongodb.ui.components.QueryEditor;
 import org.netbeans.modules.mongodb.ui.windows.CollectionView;
-import org.netbeans.modules.mongodb.ui.windows.CollectionViewAction;
 import org.netbeans.modules.mongodb.ui.wizards.ExportWizardAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
