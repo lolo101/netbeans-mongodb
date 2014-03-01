@@ -375,14 +375,14 @@ public final class CollectionView extends TopComponent {
         editQueryButton = new javax.swing.JButton();
         clearQueryButton = new javax.swing.JButton();
         documentsToolBar = new javax.swing.JToolBar();
+        treeTableViewButton = new javax.swing.JToggleButton();
+        flatTableViewButton = new javax.swing.JToggleButton();
+        jSeparator4 = new javax.swing.JToolBar.Separator();
         addButton = new javax.swing.JButton();
         deleteButton = new javax.swing.JButton();
         editButton = new javax.swing.JButton();
         exportButton = new javax.swing.JButton();
         jSeparator1 = new javax.swing.JToolBar.Separator();
-        treeTableViewButton = new javax.swing.JToggleButton();
-        flatTableViewButton = new javax.swing.JToggleButton();
-        jSeparator4 = new javax.swing.JToolBar.Separator();
         refreshDocumentsButton = new javax.swing.JButton();
         navFirstButton = new javax.swing.JButton();
         navLeftButton = new javax.swing.JButton();
@@ -472,6 +472,23 @@ public final class CollectionView extends TopComponent {
         documentsToolBar.setFloatable(false);
         documentsToolBar.setRollover(true);
 
+        treeTableViewButton.setAction(getTreeTableViewAction());
+        resultsViewButtonGroup.add(treeTableViewButton);
+        treeTableViewButton.setFocusable(false);
+        treeTableViewButton.setHideActionText(true);
+        treeTableViewButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        treeTableViewButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        documentsToolBar.add(treeTableViewButton);
+
+        flatTableViewButton.setAction(getFlatTableViewAction());
+        resultsViewButtonGroup.add(flatTableViewButton);
+        flatTableViewButton.setFocusable(false);
+        flatTableViewButton.setHideActionText(true);
+        flatTableViewButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        flatTableViewButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        documentsToolBar.add(flatTableViewButton);
+        documentsToolBar.add(jSeparator4);
+
         addButton.setAction(getAddDocumentAction());
         addButton.setFocusable(false);
         addButton.setHideActionText(true);
@@ -502,23 +519,6 @@ public final class CollectionView extends TopComponent {
         exportButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         documentsToolBar.add(exportButton);
         documentsToolBar.add(jSeparator1);
-
-        treeTableViewButton.setAction(getTreeTableViewAction());
-        resultsViewButtonGroup.add(treeTableViewButton);
-        treeTableViewButton.setFocusable(false);
-        treeTableViewButton.setHideActionText(true);
-        treeTableViewButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        treeTableViewButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        documentsToolBar.add(treeTableViewButton);
-
-        flatTableViewButton.setAction(getFlatTableViewAction());
-        resultsViewButtonGroup.add(flatTableViewButton);
-        flatTableViewButton.setFocusable(false);
-        flatTableViewButton.setHideActionText(true);
-        flatTableViewButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        flatTableViewButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        documentsToolBar.add(flatTableViewButton);
-        documentsToolBar.add(jSeparator4);
 
         refreshDocumentsButton.setAction(getRefreshDocumentsAction());
         refreshDocumentsButton.setFocusable(false);
