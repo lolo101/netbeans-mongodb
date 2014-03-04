@@ -23,30 +23,28 @@
  */
 package org.netbeans.modules.mongodb.ui.windows.collectionview.flattable;
 
-import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.table.AbstractTableModel;
 import org.netbeans.modules.mongodb.ui.windows.collectionview.CollectionQueryResult;
 import org.netbeans.modules.mongodb.ui.windows.collectionview.CollectionQueryResultProvider;
-import org.netbeans.modules.mongodb.ui.windows.collectionview.CollectionQueryResultModelUpdateListener;
+import org.netbeans.modules.mongodb.ui.windows.collectionview.CollectionQueryResultView;
 
 /**
  *
  * @author Yann D'Isanto
  */
-public final class DocumentsFlatTableModel extends AbstractTableModel implements CollectionQueryResultProvider, CollectionQueryResultModelUpdateListener {
-    
+public final class DocumentsFlatTableModel extends AbstractTableModel implements CollectionQueryResultProvider, CollectionQueryResultView {
+
     private final List<String> columns = new ArrayList<>();
-    
+
     private final CollectionQueryResult collectionQueryResult;
 
     public DocumentsFlatTableModel(CollectionQueryResult collectionQueryResult) {
         this.collectionQueryResult = collectionQueryResult;
-        collectionQueryResult.addCollectionQueryResultModelUpdateListener(this);
     }
-    
+
     @Override
     public CollectionQueryResult getCollectionQueryResult() {
         return collectionQueryResult;
@@ -54,24 +52,23 @@ public final class DocumentsFlatTableModel extends AbstractTableModel implements
 
     @Override
     public void updateStarting() {
-            columns.clear();
-            columns.add("_id");
+        columns.clear();
+        columns.add("_id");
     }
 
     @Override
     public void documentAdded(DBObject document) {
-                updateColumns(document);
+        updateColumns(document);
     }
 
     @Override
     public void updateFinished() {
-            fireTableStructureChanged();
-//            fireTableDataChanged();
+        fireTableStructureChanged();
     }
 
     private void updateColumns(DBObject document) {
         for (String field : document.keySet()) {
-            if(columns.contains(field) == false) {
+            if (columns.contains(field) == false) {
                 columns.add(field);
             }
         }
@@ -100,7 +97,7 @@ public final class DocumentsFlatTableModel extends AbstractTableModel implements
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
         final DBObject document = getRowValue(rowIndex);
-        if(document == null) {
+        if (document == null) {
             return null;
         }
         final String field = columns.get(columnIndex);
@@ -117,5 +114,5 @@ public final class DocumentsFlatTableModel extends AbstractTableModel implements
             return null;
         }
         return collectionQueryResult.getDocuments().get(rowIndex);
-    }    
+    }
 }

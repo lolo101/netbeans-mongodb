@@ -53,7 +53,9 @@ public final class CollectionQueryResult {
 
     private DBObject sort;
 
-    private final List<CollectionQueryResultModelUpdateListener> updateListeners = new ArrayList<>();
+    private CollectionQueryResultView view;
+
+    private boolean viewRefreshNecessary;
 
     public CollectionQueryResult(DBCollection dbCollection) {
         this.dbCollection = dbCollection;
@@ -79,6 +81,19 @@ public final class CollectionQueryResult {
             }
         }
         fireUpdateFinished();
+        viewRefreshNecessary = true;
+    }
+
+    public void refreshViewIfNecessary() {
+        if(viewRefreshNecessary == false) {
+            return;
+        }
+        fireUpdateStarting();
+        for (DBObject dBObject : documents) {
+            fireDocumentAdded(dBObject);
+        }
+        fireUpdateFinished();
+        viewRefreshNecessary = false;
     }
 
     private DBCursor getPageCursor(DBCursor queryCursor) {
@@ -90,29 +105,25 @@ public final class CollectionQueryResult {
     }
 
     private void fireUpdateStarting() {
-        for (CollectionQueryResultModelUpdateListener listener : updateListeners) {
-            listener.updateStarting();
+        if (view != null) {
+            view.updateStarting();
         }
     }
 
     private void fireDocumentAdded(DBObject document) {
-        for (CollectionQueryResultModelUpdateListener listener : updateListeners) {
-            listener.documentAdded(document);
+        if (view != null) {
+            view.documentAdded(document);
         }
     }
 
     private void fireUpdateFinished() {
-        for (CollectionQueryResultModelUpdateListener listener : updateListeners) {
-            listener.updateFinished();
+        if (view != null) {
+            view.updateFinished();
         }
     }
 
-    public void addCollectionQueryResultModelUpdateListener(CollectionQueryResultModelUpdateListener listener) {
-        updateListeners.add(listener);
-    }
-
-    public void removeCollectionQueryResultModelUpdateListener(CollectionQueryResultModelUpdateListener listener) {
-        updateListeners.remove(listener);
+    public void setView(CollectionQueryResultView view) {
+        this.view = view;
     }
 
     public List<DBObject> getDocuments() {

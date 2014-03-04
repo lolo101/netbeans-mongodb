@@ -30,7 +30,7 @@ import com.mongodb.DBObject;
  *
  * @author Yann D'Isanto
  */
-public interface CollectionQueryResultModelUpdateListener {
+public interface CollectionQueryResultView {
     
     void updateStarting();
     

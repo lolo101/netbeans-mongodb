@@ -31,19 +31,18 @@ import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
 import org.jdesktop.swingx.treetable.TreeTableNode;
 import org.netbeans.modules.mongodb.ui.windows.collectionview.CollectionQueryResult;
 import org.netbeans.modules.mongodb.ui.windows.collectionview.CollectionQueryResultProvider;
-import org.netbeans.modules.mongodb.ui.windows.collectionview.CollectionQueryResultModelUpdateListener;
+import org.netbeans.modules.mongodb.ui.windows.collectionview.CollectionQueryResultView;
 
 /**
  *
  * @author Yann D'Isanto
  */
-public final class DocumentsTreeTableModel extends DefaultTreeTableModel implements CollectionQueryResultProvider, CollectionQueryResultModelUpdateListener {
+public final class DocumentsTreeTableModel extends DefaultTreeTableModel implements CollectionQueryResultProvider, CollectionQueryResultView {
 
     private final CollectionQueryResult collectionQueryResult;
 
     public DocumentsTreeTableModel(CollectionQueryResult collectionQueryResult) {
         this.collectionQueryResult = collectionQueryResult;
-        collectionQueryResult.addCollectionQueryResultModelUpdateListener(this);
     }
     
     @Override

@@ -59,6 +59,7 @@ import org.netbeans.modules.mongodb.ui.components.QueryEditor;
 import org.netbeans.modules.mongodb.ui.util.IntegerDocumentFilter;
 import org.netbeans.modules.mongodb.ui.windows.collectionview.CollectionQueryResult;
 import org.netbeans.modules.mongodb.ui.windows.collectionview.CollectionQueryResultProvider;
+import org.netbeans.modules.mongodb.ui.windows.collectionview.CollectionQueryResultView;
 import org.netbeans.modules.mongodb.ui.windows.collectionview.flattable.JsonFlatTableCellRenderer;
 import org.netbeans.modules.mongodb.ui.windows.collectionview.actions.ChangeResultViewAction;
 import org.netbeans.modules.mongodb.ui.windows.collectionview.actions.ClearQueryAction;
@@ -121,6 +122,8 @@ public final class CollectionView extends TopComponent {
 
     private ResultView resultView = DEFAULT_RESULT_VIEW;
 
+    private final Map<ResultView, CollectionQueryResultView> resultViews = new EnumMap<>(ResultView.class);
+
     public CollectionView(CollectionInfo collectionInfo, Lookup lookup) {
         super(lookup);
         isSystemCollection = SystemCollectionPredicate.get().eval(collectionInfo.getName());
@@ -137,11 +140,13 @@ public final class CollectionView extends TopComponent {
         resultViewButtons = new EnumMap<>(ResultView.class);
         resultViewButtons.put(ResultView.FLAT_TABLE, flatTableViewButton);
         resultViewButtons.put(ResultView.TREE_TABLE, treeTableViewButton);
+        
         final DBCollection dbCollection = lookup.lookup(DBCollection.class);
-
         collectionQueryResult = new CollectionQueryResult(dbCollection);
         final DocumentsTreeTableModel treeTableModel = new DocumentsTreeTableModel(collectionQueryResult);
         final DocumentsFlatTableModel flatTableModel = new DocumentsFlatTableModel(collectionQueryResult);
+        resultViews.put(ResultView.TREE_TABLE, treeTableModel);
+        resultViews.put(ResultView.FLAT_TABLE, flatTableModel);
 
         final ListSelectionListener tableSelectionListener = new ListSelectionListener() {
 
@@ -248,6 +253,8 @@ public final class CollectionView extends TopComponent {
 
     public void changeResultView(ResultView resultView) {
         this.resultView = resultView;
+        collectionQueryResult.setView(resultViews.get(resultView));
+        collectionQueryResult.refreshViewIfNecessary();
         updateResultPanel();
     }
 
@@ -659,8 +666,8 @@ public final class CollectionView extends TopComponent {
         final String resultViewPref = prefs.get("result-view", ResultView.TREE_TABLE.name());
         final ResultView rView = ResultView.valueOf(resultViewPref);
         resultViewButtons.get(rView).setSelected(true);
-        refreshResults();
         changeResultView(rView);
+        refreshResults();
     }
 
     void writePreferences() {
