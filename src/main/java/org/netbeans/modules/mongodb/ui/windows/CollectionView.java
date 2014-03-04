@@ -115,11 +115,11 @@ public final class CollectionView extends TopComponent {
 
     private final QueryEditor queryEditor = new QueryEditor();
 
-    private ResultView resultView = DEFAULT_RESULT_VIEW;
-
     private final CollectionQueryResult collectionQueryResult;
 
     private final Map<ResultView, JToggleButton> resultViewButtons;
+
+    private ResultView resultView = DEFAULT_RESULT_VIEW;
 
     public CollectionView(CollectionInfo collectionInfo, Lookup lookup) {
         super(lookup);
@@ -159,7 +159,7 @@ public final class CollectionView extends TopComponent {
         documentsFlatTable.getSelectionModel().addListSelectionListener(tableSelectionListener);
 
         documentsTreeTable.setTreeTableModel(treeTableModel);
-        documentsTreeTable.setTreeCellRenderer(new JsonTreeTableCellRenderer());        
+        documentsTreeTable.setTreeCellRenderer(new JsonTreeTableCellRenderer());
         documentsTreeTable.addHighlighter(new DocumentTreeTableHighlighter());
         documentsTreeTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         documentsTreeTable.getSelectionModel().addListSelectionListener(tableSelectionListener);
@@ -258,7 +258,6 @@ public final class CollectionView extends TopComponent {
             public void run() {
                 final CardLayout layout = (CardLayout) resultPanel.getLayout();
                 layout.show(resultPanel, resultView.name());
-                refreshResults();
             }
         });
     }
@@ -660,6 +659,7 @@ public final class CollectionView extends TopComponent {
         final String resultViewPref = prefs.get("result-view", ResultView.TREE_TABLE.name());
         final ResultView rView = ResultView.valueOf(resultViewPref);
         resultViewButtons.get(rView).setSelected(true);
+        refreshResults();
         changeResultView(rView);
     }
 
