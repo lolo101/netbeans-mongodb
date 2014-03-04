@@ -89,7 +89,7 @@ public final class JsonTreeTableCellRenderer extends JPanel implements TreeCellR
     /**
      * Set to true after the constructor has run.
      */
-    private boolean inited;
+    private final boolean inited;
 
     public JsonTreeTableCellRenderer() {
         super(new GridBagLayout());

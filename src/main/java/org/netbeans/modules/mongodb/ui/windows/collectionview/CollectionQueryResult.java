@@ -21,7 +21,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 package org.netbeans.modules.mongodb.ui.windows.collectionview;
 
 import com.mongodb.DBCollection;
@@ -35,9 +34,9 @@ import java.util.List;
  * @author Yann D'Isanto
  */
 public final class CollectionQueryResult {
-    
+
     public static final int DEFAULT_PAGE_SIZE = 20;
-    
+
     private final DBCollection dbCollection;
 
     private final List<DBObject> documents = new ArrayList<>();
@@ -53,13 +52,13 @@ public final class CollectionQueryResult {
     private DBObject projection;
 
     private DBObject sort;
-    
+
     private final List<CollectionQueryResultModelUpdateListener> updateListeners = new ArrayList<>();
 
     public CollectionQueryResult(DBCollection dbCollection) {
         this.dbCollection = dbCollection;
     }
-    
+
     public void update() {
         documents.clear();
         fireUpdateStarting();
@@ -68,49 +67,54 @@ public final class CollectionQueryResult {
             return;
         }
         try (DBCursor cursor = dbCollection.find(criteria, projection)) {
-            if(sort != null) {
+            if (sort != null) {
                 cursor.sort(sort);
             }
             totalDocumentsCount = cursor.count();
-            DBCursor pageCursor = cursor;
-            if (pageSize > 0) {
-                final int toSkip = (page - 1) * pageSize;
-                pageCursor = cursor.skip(toSkip).limit(pageSize);
-            }
-            for (DBObject document : pageCursor) {
-                documents.add(document);
-                fireDocumentAdded(document);
+            try (DBCursor pageCursor = getPageCursor(cursor)) {
+                for (DBObject document : pageCursor) {
+                    documents.add(document);
+                    fireDocumentAdded(document);
+                }
             }
         }
         fireUpdateFinished();
     }
-    
+
+    private DBCursor getPageCursor(DBCursor queryCursor) {
+        if (pageSize > 0) {
+            final int toSkip = (page - 1) * pageSize;
+            return queryCursor.skip(toSkip).limit(pageSize);
+        }
+        return queryCursor;
+    }
+
     private void fireUpdateStarting() {
         for (CollectionQueryResultModelUpdateListener listener : updateListeners) {
             listener.updateStarting();
         }
     }
-    
+
     private void fireDocumentAdded(DBObject document) {
         for (CollectionQueryResultModelUpdateListener listener : updateListeners) {
             listener.documentAdded(document);
         }
     }
-    
+
     private void fireUpdateFinished() {
         for (CollectionQueryResultModelUpdateListener listener : updateListeners) {
             listener.updateFinished();
         }
     }
-    
+
     public void addCollectionQueryResultModelUpdateListener(CollectionQueryResultModelUpdateListener listener) {
         updateListeners.add(listener);
     }
-    
+
     public void removeCollectionQueryResultModelUpdateListener(CollectionQueryResultModelUpdateListener listener) {
         updateListeners.remove(listener);
     }
-    
+
     public List<DBObject> getDocuments() {
         return documents;
     }
