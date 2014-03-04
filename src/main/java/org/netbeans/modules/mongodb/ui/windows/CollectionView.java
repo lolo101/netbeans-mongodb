@@ -77,6 +77,7 @@ import org.netbeans.modules.mongodb.ui.windows.collectionview.actions.RefreshDoc
 import org.netbeans.modules.mongodb.ui.windows.collectionview.flattable.DocumentsFlatTableModel;
 import org.netbeans.modules.mongodb.ui.windows.collectionview.treetable.CollectionViewTreeTableNode;
 import org.netbeans.modules.mongodb.ui.windows.collectionview.treetable.DocumentNode;
+import org.netbeans.modules.mongodb.ui.windows.collectionview.treetable.DocumentTreeTableHighlighter;
 import org.netbeans.modules.mongodb.ui.windows.collectionview.treetable.JsonPropertyNode;
 import org.netbeans.modules.mongodb.ui.windows.collectionview.treetable.JsonTreeTableCellRenderer;
 import org.netbeans.modules.mongodb.ui.windows.collectionview.treetable.DocumentsTreeTableModel;
@@ -158,7 +159,8 @@ public final class CollectionView extends TopComponent {
         documentsFlatTable.getSelectionModel().addListSelectionListener(tableSelectionListener);
 
         documentsTreeTable.setTreeTableModel(treeTableModel);
-        documentsTreeTable.setTreeCellRenderer(new JsonTreeTableCellRenderer());
+        documentsTreeTable.setTreeCellRenderer(new JsonTreeTableCellRenderer());        
+        documentsTreeTable.addHighlighter(new DocumentTreeTableHighlighter());
         documentsTreeTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         documentsTreeTable.getSelectionModel().addListSelectionListener(tableSelectionListener);
 

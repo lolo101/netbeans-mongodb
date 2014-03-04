@@ -23,7 +23,6 @@
  */
 package org.netbeans.modules.mongodb.ui.windows.collectionview.treetable;
 
-import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 import java.util.ArrayList;
 import java.util.List;

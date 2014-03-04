@@ -124,6 +124,10 @@ public enum JsonTreeCellRendererOptions {
                 font.deriveFont(Font.BOLD),
                 textForeground,
                 textBackground));
+            map.put(LabelCategory.DOCUMENT, new LabelFontConf(
+                font,
+                textForeground,
+                new Color(0xF5ECCE)));
             map.put(LabelCategory.ID, new LabelFontConf(
                 font,
                 Color.LIGHT_GRAY,

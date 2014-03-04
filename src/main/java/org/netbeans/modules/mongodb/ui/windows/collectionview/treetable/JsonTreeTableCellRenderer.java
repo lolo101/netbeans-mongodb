@@ -59,7 +59,6 @@ public final class JsonTreeTableCellRenderer extends JPanel implements TreeCellR
         LABEL_CATEGORIES.put(Double.class, LabelCategory.DECIMAL_VALUE);
         LABEL_CATEGORIES.put(Boolean.class, LabelCategory.BOOLEAN_VALUE);
         LABEL_CATEGORIES.put(ObjectId.class, LabelCategory.ID);
-
     }
 
     private final JsonTreeCellRendererOptions options = JsonTreeCellRendererOptions.INSTANCE;
@@ -114,9 +113,12 @@ public final class JsonTreeTableCellRenderer extends JPanel implements TreeCellR
         setBackground(selected ? getBackgroundSelectionColor() : getBackgroundNonSelectionColor());
         setBorder(selected ? selectionBorder : nonSelectionBorder);
         if (value instanceof DBObjectNode) {
-            final LabelFontConf keyFontConf = options.getLabelFontConf(LabelCategory.KEY);
+            final boolean isDocumentNode = value instanceof DocumentNode;
+            final LabelFontConf keyFontConf = options.getLabelFontConf(isDocumentNode 
+                ? LabelCategory.DOCUMENT 
+                : LabelCategory.KEY);
             keyLabel.setFont(keyFontConf.getFont());
-            if (value instanceof DocumentNode) {
+            if (isDocumentNode) {
                 final DocumentNode node = (DocumentNode) value;
                 final Object id = node.getUserObject().get("_id");
                 keyLabel.setText(String.valueOf(id));
@@ -130,8 +132,10 @@ public final class JsonTreeTableCellRenderer extends JPanel implements TreeCellR
             } else {
                 keyLabel.setForeground(keyFontConf.getForeground());
                 keyLabel.setBackground(keyFontConf.getBackground());
+                if (isDocumentNode) {
+                    setBackground(keyFontConf.getBackground());
+                }
             }
-        } else if (value instanceof DBObjectNode) {
         } else if (value instanceof JsonPropertyNode) {
             computRendererForJsonPropertyNode((JsonPropertyNode) value, selected);
         } else if (value instanceof JsonValueNode) {

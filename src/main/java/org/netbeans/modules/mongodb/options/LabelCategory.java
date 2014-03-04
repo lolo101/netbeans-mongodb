@@ -31,6 +31,7 @@ import java.util.ResourceBundle;
  */
 public enum LabelCategory {
 
+    DOCUMENT,
     KEY,
     ID,
     STRING_VALUE,
