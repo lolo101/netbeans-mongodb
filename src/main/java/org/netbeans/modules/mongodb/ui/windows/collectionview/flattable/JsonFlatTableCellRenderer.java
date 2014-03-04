@@ -46,7 +46,7 @@ public final class JsonFlatTableCellRenderer extends DefaultTableCellRenderer {
         LABEL_CATEGORIES.put(Integer.class, LabelCategory.INT_VALUE);
         LABEL_CATEGORIES.put(Double.class, LabelCategory.DECIMAL_VALUE);
         LABEL_CATEGORIES.put(Boolean.class, LabelCategory.BOOLEAN_VALUE);
-        LABEL_CATEGORIES.put(ObjectId.class, LabelCategory.ID);
+        LABEL_CATEGORIES.put(ObjectId.class, LabelCategory.DOCUMENT);
 
     }
 
