@@ -21,7 +21,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 package org.netbeans.modules.mongodb.ui.windows.collectionview.actions;
 
 import java.awt.event.ActionEvent;
@@ -39,16 +38,16 @@ import org.openide.util.NbBundle.Messages;
     "ACTION_refreshDocuments_tooltip=Refresh Documents"
 })
 public final class RefreshDocumentsAction extends CollectionViewAction {
-    
+
     public RefreshDocumentsAction(CollectionView view) {
-        super(view, 
-            Bundle.ACTION_refreshDocuments(), 
-            new ImageIcon(Images.REFRESH_ICON), 
+        super(view,
+            Bundle.ACTION_refreshDocuments(),
+            new ImageIcon(Images.REFRESH_ICON),
             Bundle.ACTION_refreshDocuments_tooltip());
     }
 
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            getView().refreshResults();
-        }
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        getView().refreshResults();
+    }
 }

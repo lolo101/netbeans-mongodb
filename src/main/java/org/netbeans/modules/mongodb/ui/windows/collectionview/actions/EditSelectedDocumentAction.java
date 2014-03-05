@@ -21,7 +21,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 package org.netbeans.modules.mongodb.ui.windows.collectionview.actions;
 
 import com.mongodb.DBCollection;
@@ -46,29 +45,29 @@ import org.openide.util.NbBundle.Messages;
     "ACTION_editSelectedDocument_tooltip=Edit Selected Document"
 })
 public final class EditSelectedDocumentAction extends CollectionViewAction {
-    
+
     public EditSelectedDocumentAction(CollectionView view) {
-        super(view, 
-            Bundle.ACTION_editSelectedDocument(), 
-            new ImageIcon(Images.EDIT_DOCUMENT_ICON), 
+        super(view,
+            Bundle.ACTION_editSelectedDocument(),
+            new ImageIcon(Images.EDIT_DOCUMENT_ICON),
             Bundle.ACTION_editSelectedDocument_tooltip());
     }
 
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            final DBObject document = getView().getResultTableSelectedDocument();
-            final DBObject modifiedDocument = getView().showJsonEditor(
-                    Bundle.editDocumentTitle(),
-                    JSON.serialize(document));
-            if (modifiedDocument != null) {
-                try {
-                    final DBCollection dbCollection = getView().getLookup().lookup(DBCollection.class);
-                    dbCollection.save(modifiedDocument);
-                    getView().refreshResults();
-                } catch (MongoException ex) {
-                    DialogDisplayer.getDefault().notify(
-                            new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE));
-                }
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        final DBObject document = getView().getResultTableSelectedDocument();
+        final DBObject modifiedDocument = getView().showJsonEditor(
+            Bundle.editDocumentTitle(),
+            JSON.serialize(document));
+        if (modifiedDocument != null) {
+            try {
+                final DBCollection dbCollection = getView().getLookup().lookup(DBCollection.class);
+                dbCollection.save(modifiedDocument);
+                getView().refreshResults();
+            } catch (MongoException ex) {
+                DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE));
             }
         }
+    }
 }

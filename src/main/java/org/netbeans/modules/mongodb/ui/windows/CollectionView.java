@@ -57,6 +57,7 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.text.EditorKit;
 import javax.swing.text.PlainDocument;
 import javax.swing.tree.TreePath;
+import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.treetable.TreeTableNode;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.modules.mongodb.ConnectionInfo;
@@ -72,12 +73,14 @@ import org.netbeans.modules.mongodb.ui.windows.collectionview.CollectionQueryRes
 import org.netbeans.modules.mongodb.ui.windows.collectionview.flattable.JsonFlatTableCellRenderer;
 import org.netbeans.modules.mongodb.ui.windows.collectionview.actions.ChangeResultViewAction;
 import org.netbeans.modules.mongodb.ui.windows.collectionview.actions.ClearQueryAction;
+import org.netbeans.modules.mongodb.ui.windows.collectionview.actions.CollapseAllDocumentsAction;
 import org.netbeans.modules.mongodb.ui.windows.collectionview.actions.CopyDocumentToClipboardAction;
 import org.netbeans.modules.mongodb.ui.windows.collectionview.actions.CopyKeyToClipboardAction;
 import org.netbeans.modules.mongodb.ui.windows.collectionview.actions.CopyValueToClipboardAction;
 import org.netbeans.modules.mongodb.ui.windows.collectionview.actions.DeleteSelectedDocumentAction;
 import org.netbeans.modules.mongodb.ui.windows.collectionview.actions.EditQueryAction;
 import org.netbeans.modules.mongodb.ui.windows.collectionview.actions.EditSelectedDocumentAction;
+import org.netbeans.modules.mongodb.ui.windows.collectionview.actions.ExpandAllDocumentsAction;
 import org.netbeans.modules.mongodb.ui.windows.collectionview.actions.ExportQueryResultAction;
 import org.netbeans.modules.mongodb.ui.windows.collectionview.actions.NavFirstAction;
 import org.netbeans.modules.mongodb.ui.windows.collectionview.actions.NavLastAction;
@@ -246,9 +249,9 @@ public final class CollectionView extends TopComponent {
                     if (path != null) {
                         final int row = documentsTreeTable.getRowForPath(path);
                         documentsTreeTable.setRowSelectionInterval(row, row);
-                        final JPopupMenu menu = createTreeTableContextMenu(path);
-                        menu.show(e.getComponent(), e.getX(), e.getY());
                     }
+                    final JPopupMenu menu = createTreeTableContextMenu(path);
+                    menu.show(e.getComponent(), e.getX(), e.getY());
                 }
             }
 
@@ -301,6 +304,14 @@ public final class CollectionView extends TopComponent {
             default:
                 throw new AssertionError();
         }
+    }
+
+    public JTable getResultFlatTable() {
+        return documentsFlatTable;
+    }
+
+    public JXTreeTable getResultTreeTable() {
+        return documentsTreeTable;
     }
 
     public CollectionQueryResult getCollectionQueryResult() {
@@ -842,21 +853,26 @@ public final class CollectionView extends TopComponent {
 
     private JPopupMenu createTreeTableContextMenu(TreePath treePath) {
         final JPopupMenu menu = new JPopupMenu();
-        final CollectionViewTreeTableNode node = (CollectionViewTreeTableNode) treePath.getLastPathComponent();
-        final DocumentNode documentNode = (DocumentNode) treePath.getPathComponent(1);
-        menu.add(new JMenuItem(new CopyDocumentToClipboardAction(documentNode.getUserObject())));
-        if (node != documentNode) {
-            if (node instanceof JsonPropertyNode) {
-                final JsonProperty property = ((JsonPropertyNode) node).getUserObject();
-                menu.add(new JMenuItem(new CopyKeyToClipboardAction(property)));
-                menu.add(new JMenuItem(new CopyValueToClipboardAction(property.getValue())));
-            } else {
-                menu.add(new JMenuItem(new CopyValueToClipboardAction(node.getUserObject())));
+        if (treePath != null) {
+            final CollectionViewTreeTableNode node = (CollectionViewTreeTableNode) treePath.getLastPathComponent();
+            final DocumentNode documentNode = (DocumentNode) treePath.getPathComponent(1);
+            menu.add(new JMenuItem(new CopyDocumentToClipboardAction(documentNode.getUserObject())));
+            if (node != documentNode) {
+                if (node instanceof JsonPropertyNode) {
+                    final JsonProperty property = ((JsonPropertyNode) node).getUserObject();
+                    menu.add(new JMenuItem(new CopyKeyToClipboardAction(property)));
+                    menu.add(new JMenuItem(new CopyValueToClipboardAction(property.getValue())));
+                } else {
+                    menu.add(new JMenuItem(new CopyValueToClipboardAction(node.getUserObject())));
+                }
             }
+            menu.addSeparator();
+            menu.add(new JMenuItem(new EditSelectedDocumentAction(this)));
+            menu.add(new JMenuItem(new DeleteSelectedDocumentAction(this)));
+            menu.addSeparator();
         }
-        menu.addSeparator();
-        menu.add(new JMenuItem(new EditSelectedDocumentAction(this)));
-        menu.add(new JMenuItem(new DeleteSelectedDocumentAction(this)));
+        menu.add(new JMenuItem(new CollapseAllDocumentsAction(this)));
+        menu.add(new JMenuItem(new ExpandAllDocumentsAction(this)));
         return menu;
     }
 

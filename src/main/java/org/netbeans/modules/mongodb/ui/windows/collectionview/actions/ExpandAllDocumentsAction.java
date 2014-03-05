@@ -24,8 +24,6 @@
 package org.netbeans.modules.mongodb.ui.windows.collectionview.actions;
 
 import java.awt.event.ActionEvent;
-import javax.swing.ImageIcon;
-import org.netbeans.modules.mongodb.resources.Images;
 import org.netbeans.modules.mongodb.ui.windows.CollectionView;
 import org.openide.util.NbBundle.Messages;
 
@@ -34,20 +32,21 @@ import org.openide.util.NbBundle.Messages;
  * @author Yann D'Isanto
  */
 @Messages({
-    "ACTION_navFirst=First Page",
-    "ACTION_navFirst_tooltip=First Page"
+    "ACTION_expandDocuments=Expand All",
+    "ACTION_expandDocuments_tooltip=Expand all documents"
 })
-public final class NavFirstAction extends CollectionViewAction {
+public final class ExpandAllDocumentsAction extends CollectionViewAction {
 
-    public NavFirstAction(CollectionView view) {
+    public ExpandAllDocumentsAction(CollectionView view) {
         super(view,
-            Bundle.ACTION_navFirst(),
-            new ImageIcon(Images.NAV_FIRST_ICON),
-            Bundle.ACTION_navFirst_tooltip());
+            Bundle.ACTION_expandDocuments(),
+            null,
+            Bundle.ACTION_expandDocuments_tooltip());
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        getView().refreshResults();
+        getView().getResultTreeTable().expandAll();
+
     }
 }

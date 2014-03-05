@@ -21,13 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 package org.netbeans.modules.mongodb.ui.windows.collectionview.actions;
 
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 import com.mongodb.MongoException;
-import com.mongodb.util.JSON;
 import java.awt.event.ActionEvent;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.mongodb.resources.Images;
@@ -46,28 +44,28 @@ import org.openide.util.NbBundle.Messages;
     "ACTION_deleteSelectedDocument_tooltip=Delete Selected Document"
 })
 public final class DeleteSelectedDocumentAction extends CollectionViewAction {
-    
+
     public DeleteSelectedDocumentAction(CollectionView view) {
-        super(view, 
-            Bundle.ACTION_deleteSelectedDocument(), 
-            new ImageIcon(Images.DELETE_DOCUMENT_ICON), 
+        super(view,
+            Bundle.ACTION_deleteSelectedDocument(),
+            new ImageIcon(Images.DELETE_DOCUMENT_ICON),
             Bundle.ACTION_deleteSelectedDocument_tooltip());
     }
 
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            final DBObject document = getView().getResultTableSelectedDocument();
-            final Object dlgResult = DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Confirmation(Bundle.confirmDocumentDeletionText(), NotifyDescriptor.YES_NO_OPTION));
-            if (dlgResult.equals(NotifyDescriptor.OK_OPTION)) {
-                try {
-                    final DBCollection dbCollection = getView().getLookup().lookup(DBCollection.class);
-                    dbCollection.remove(document);
-                    getView().refreshResults();
-                } catch (MongoException ex) {
-                    DialogDisplayer.getDefault().notify(
-                            new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE));
-                }
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        final DBObject document = getView().getResultTableSelectedDocument();
+        final Object dlgResult = DialogDisplayer.getDefault().notify(
+            new NotifyDescriptor.Confirmation(Bundle.confirmDocumentDeletionText(), NotifyDescriptor.YES_NO_OPTION));
+        if (dlgResult.equals(NotifyDescriptor.OK_OPTION)) {
+            try {
+                final DBCollection dbCollection = getView().getLookup().lookup(DBCollection.class);
+                dbCollection.remove(document);
+                getView().refreshResults();
+            } catch (MongoException ex) {
+                DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE));
             }
         }
+    }
 }
