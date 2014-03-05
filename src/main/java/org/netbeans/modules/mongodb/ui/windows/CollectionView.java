@@ -32,6 +32,7 @@ import java.awt.CardLayout;
 import org.netbeans.modules.mongodb.CollectionInfo;
 import org.netbeans.modules.mongodb.util.Json;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.EnumMap;
@@ -46,15 +47,23 @@ import javax.swing.JTable;
 import javax.swing.JToggleButton;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableColumnModelEvent;
+import javax.swing.event.TableColumnModelListener;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 import javax.swing.text.EditorKit;
 import javax.swing.text.PlainDocument;
 import javax.swing.tree.TreePath;
+import org.jdesktop.swingx.treetable.TreeTableNode;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.modules.mongodb.ConnectionInfo;
 import org.netbeans.modules.mongodb.DbInfo;
 import org.netbeans.modules.mongodb.Images;
+import org.netbeans.modules.mongodb.options.JsonTreeCellRendererOptions;
+import org.netbeans.modules.mongodb.options.LabelCategory;
 import org.netbeans.modules.mongodb.ui.components.QueryEditor;
 import org.netbeans.modules.mongodb.ui.util.IntegerDocumentFilter;
 import org.netbeans.modules.mongodb.ui.windows.collectionview.CollectionQueryResult;
@@ -140,7 +149,7 @@ public final class CollectionView extends TopComponent {
         resultViewButtons = new EnumMap<>(ResultView.class);
         resultViewButtons.put(ResultView.FLAT_TABLE, flatTableViewButton);
         resultViewButtons.put(ResultView.TREE_TABLE, treeTableViewButton);
-        
+
         final DBCollection dbCollection = lookup.lookup(DBCollection.class);
         collectionQueryResult = new CollectionQueryResult(dbCollection);
         final DocumentsTreeTableModel treeTableModel = new DocumentsTreeTableModel(collectionQueryResult);
@@ -162,6 +171,35 @@ public final class CollectionView extends TopComponent {
         documentsFlatTable.setDefaultRenderer(DBObject.class, new JsonFlatTableCellRenderer());
         documentsFlatTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         documentsFlatTable.getSelectionModel().addListSelectionListener(tableSelectionListener);
+        documentsFlatTable.getColumnModel().addColumnModelListener(new TableColumnModelListener() {
+
+            @Override
+            public void columnAdded(TableColumnModelEvent e) {
+                final TableColumnModel model = (TableColumnModel) e.getSource();
+                final TableColumn column = model.getColumn(e.getToIndex());
+                if ("_id".equals(column.getHeaderValue())) {
+                    final Font font = JsonTreeCellRendererOptions.INSTANCE.getLabelFontConf(LabelCategory.DOCUMENT).getFont();
+                    final int preferredWidth = getFontMetrics(font).stringWidth("000000000000000000000000");
+                    column.setPreferredWidth(preferredWidth);
+                }
+            }
+
+            @Override
+            public void columnRemoved(TableColumnModelEvent e) {
+            }
+
+            @Override
+            public void columnMoved(TableColumnModelEvent e) {
+            }
+
+            @Override
+            public void columnMarginChanged(ChangeEvent e) {
+            }
+
+            @Override
+            public void columnSelectionChanged(ListSelectionEvent e) {
+            }
+        });
 
         documentsTreeTable.setTreeTableModel(treeTableModel);
         documentsTreeTable.setTreeCellRenderer(new JsonTreeTableCellRenderer());
@@ -173,6 +211,20 @@ public final class CollectionView extends TopComponent {
         document.setDocumentFilter(new IntegerDocumentFilter());
 
         documentsTreeTable.addMouseListener(new MouseAdapter() {
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2 && SwingUtilities.isLeftMouseButton(e)) {
+                    final TreePath path = documentsTreeTable.getPathForLocation(e.getX(), e.getY());
+                    final TreeTableNode node = (TreeTableNode) path.getLastPathComponent();
+                    if (node.isLeaf()) {
+                        editSelectedDocumentAction.actionPerformed(null);
+                    } else {
+                        documentsTreeTable.expandPath(path);
+                    }
+                }
+            }
+
             @Override
             public void mouseReleased(MouseEvent e) {
                 if (e.isPopupTrigger()) {
@@ -188,6 +240,14 @@ public final class CollectionView extends TopComponent {
 
         });
         documentsFlatTable.addMouseListener(new MouseAdapter() {
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2 && SwingUtilities.isLeftMouseButton(e)) {
+                    editSelectedDocumentAction.actionPerformed(null);
+                }
+            }
+
             @Override
             public void mouseReleased(MouseEvent e) {
                 if (e.isPopupTrigger()) {
