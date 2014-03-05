@@ -230,7 +230,11 @@ public final class CollectionView extends TopComponent {
                     if (node.isLeaf()) {
                         editSelectedDocumentAction.actionPerformed(null);
                     } else {
-                        documentsTreeTable.expandPath(path);
+                        if (documentsTreeTable.isCollapsed(path)) {
+                            documentsTreeTable.expandPath(path);
+                        } else {
+                            documentsTreeTable.collapsePath(path);
+                        }
                     }
                 }
             }
