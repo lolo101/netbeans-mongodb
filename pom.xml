@@ -19,7 +19,7 @@
     
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <netbeans.target.version>RELEASE74</netbeans.target.version>
+        <netbeans.target.version>RELEASE73</netbeans.target.version>
         <netbeans.run.params.ide/>
         <netbeans.run.params>${netbeans.run.params.ide}</netbeans.run.params>
     </properties>
