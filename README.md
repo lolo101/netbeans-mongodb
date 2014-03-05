@@ -21,7 +21,9 @@ See [release notes](https://github.com/le-yams/netbeans-mongodb/wiki/ReleaseNote
 Get and Install
 ---------------
 
-The latest release is available at the netbeans plugin portal, you can download it [here](http://plugins.netbeans.org/plugin/52638/nbmongo)
+NBMongo is now directly available through the NetBeans Plugin Portal Update Center. 
+In NetBeans, go to **_Tools > Plugins_** and on the **_Available Plugins_** tab search for _NBMongo_. Select the plugin and hit the _Install_ button.
+See also [NBMongo Plugin Portal page](http://plugins.netbeans.org/plugin/52638).
 
 If you want to try the development version, as it's a Maven project built using the NBM Maven Plugin, just check out and build.
 In NetBeans, install using Tools | Plugins on the Downloaded tab.
