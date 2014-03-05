@@ -21,19 +21,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.netbeans.modules.mongodb;
+package org.netbeans.modules.mongodb.ui.explorer;
 
 import com.mongodb.DB;
 import com.mongodb.MongoClient;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Callable;
+import org.netbeans.modules.mongodb.CollectionInfo;
+import org.netbeans.modules.mongodb.ConnectionProblems;
+import org.netbeans.modules.mongodb.DbInfo;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 
 /**
- *
  * @author Tim Boudreau
+ * @author Yann D'Isanto
  */
 final class OneDBChildren extends RefreshableChildFactory<CollectionInfo> {
 
@@ -51,7 +54,7 @@ final class OneDBChildren extends RefreshableChildFactory<CollectionInfo> {
             public Void call() throws Exception {
                 MongoClient client = lookup.lookup(MongoClient.class);
                 DbInfo info = lookup.lookup(DbInfo.class);
-                DB db = client.getDB(info.dbName);
+                final DB db = client.getDB(info.getDbName());
                 List<String> names = new LinkedList<>(db.getCollectionNames());
                 for (String name : names) {
                     list.add(new CollectionInfo(name, lookup));

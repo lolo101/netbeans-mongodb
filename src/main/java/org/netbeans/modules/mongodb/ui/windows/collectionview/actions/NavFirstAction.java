@@ -26,7 +26,7 @@ package org.netbeans.modules.mongodb.ui.windows.collectionview.actions;
 
 import java.awt.event.ActionEvent;
 import javax.swing.ImageIcon;
-import org.netbeans.modules.mongodb.Images;
+import org.netbeans.modules.mongodb.resources.Images;
 import org.netbeans.modules.mongodb.ui.windows.CollectionView;
 import org.openide.util.NbBundle.Messages;
 

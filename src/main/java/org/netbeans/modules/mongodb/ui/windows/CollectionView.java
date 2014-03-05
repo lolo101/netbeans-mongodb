@@ -61,8 +61,8 @@ import org.jdesktop.swingx.treetable.TreeTableNode;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.modules.mongodb.ConnectionInfo;
 import org.netbeans.modules.mongodb.DbInfo;
-import org.netbeans.modules.mongodb.Images;
-import org.netbeans.modules.mongodb.options.JsonTreeCellRendererOptions;
+import org.netbeans.modules.mongodb.resources.Images;
+import org.netbeans.modules.mongodb.options.JsonCellRenderingOptions;
 import org.netbeans.modules.mongodb.options.LabelCategory;
 import org.netbeans.modules.mongodb.ui.components.QueryEditor;
 import org.netbeans.modules.mongodb.ui.util.IntegerDocumentFilter;
@@ -114,7 +114,14 @@ import org.openide.windows.TopComponent;
     "totalDocuments=Total Documents: {0}      ",
     "# {0} - current page",
     "# {1} - total page count",
-    "pageCountLabel=Page {0} of {1}"})
+    "pageCountLabel=Page {0} of {1}",
+    "# {0} - db name",
+    "# {1} - collection name",
+    "collectionViewTitle={0}.{1}",
+    "# {0} - connection name",
+    "# {1} - view title",
+    "collectionViewTooltip={0}: {1}"
+})
 public final class CollectionView extends TopComponent {
 
     private static final ResultView DEFAULT_RESULT_VIEW = ResultView.TREE_TABLE;
@@ -137,11 +144,12 @@ public final class CollectionView extends TopComponent {
         super(lookup);
         isSystemCollection = SystemCollectionPredicate.get().eval(collectionInfo.getName());
         initComponents();
-        final ConnectionInfo ci = lookup.lookup(ConnectionInfo.class);
-        final DbInfo di = lookup.lookup(DbInfo.class);
-        final String name = di.getDbName() + "." + collectionInfo.getName();
-        setName(name);
-        setToolTipText(ci.getDisplayName() + ": " + name);
+        final ConnectionInfo connectionInfo = lookup.lookup(ConnectionInfo.class);
+        final DbInfo dbInfo = lookup.lookup(DbInfo.class);
+        final String title = Bundle.collectionViewTitle(dbInfo.getDbName(), collectionInfo.getName());
+        setName(title);
+        setToolTipText(
+            Bundle.collectionViewTooltip(connectionInfo.getDisplayName(), title));
         setIcon(isSystemCollection
             ? Images.SYSTEM_COLLECTION_ICON
             : Images.COLLECTION_ICON);
@@ -178,8 +186,10 @@ public final class CollectionView extends TopComponent {
                 final TableColumnModel model = (TableColumnModel) e.getSource();
                 final TableColumn column = model.getColumn(e.getToIndex());
                 if ("_id".equals(column.getHeaderValue())) {
-                    final Font font = JsonTreeCellRendererOptions.INSTANCE.getLabelFontConf(LabelCategory.DOCUMENT).getFont();
-                    final int preferredWidth = getFontMetrics(font).stringWidth("000000000000000000000000");
+                    final Font font = JsonCellRenderingOptions.INSTANCE
+                        .getLabelFontConf(LabelCategory.DOCUMENT).getFont();
+                    final int preferredWidth = getFontMetrics(font)
+                        .stringWidth("000000000000000000000000");
                     column.setPreferredWidth(preferredWidth);
                 }
             }

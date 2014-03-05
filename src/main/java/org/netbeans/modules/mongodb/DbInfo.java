@@ -30,10 +30,12 @@ import org.openide.util.Parameters;
 /**
  *
  * @author Tim Boudreau
+ * @author Yann D'Isanto
  */
 public final class DbInfo implements Comparable<DbInfo> {
 
     final Lookup lookup;
+
     final String dbName;
 
     public DbInfo(Lookup lookup, String dbName) {
@@ -46,26 +48,28 @@ public final class DbInfo implements Comparable<DbInfo> {
         return dbName;
     }
 
+    public Lookup getLookup() {
+        return lookup;
+    }
+
     @Override
     public boolean equals(Object o) {
-        boolean result = o instanceof DbInfo;
-        if (result) {
-            DbInfo other = (DbInfo) o;
-            result = dbName.equals(other.dbName);
-            if (result) {
-                ConnectionInfo mine = lookup.lookup(ConnectionInfo.class);
-                ConnectionInfo info = other.lookup.lookup(ConnectionInfo.class);
-                result = Objects.equals(mine, info);
+        if (o instanceof DbInfo) {
+            final DbInfo other = (DbInfo) o;
+            if (dbName.equals(other.dbName)) {
+                final ConnectionInfo mine = lookup.lookup(ConnectionInfo.class);
+                final ConnectionInfo info = other.lookup.lookup(ConnectionInfo.class);
+                return Objects.equals(mine, info);
             }
         }
-        return result;
+        return false;
     }
-    
+
     @Override
     public int hashCode() {
         return dbName.hashCode();
     }
-    
+
     @Override
     public String toString() {
         return dbName;

@@ -21,39 +21,37 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.netbeans.modules.mongodb;
+package org.netbeans.modules.mongodb.properties;
 
+import com.mongodb.MongoClientURI;
 import java.lang.reflect.InvocationTargetException;
+import org.netbeans.modules.mongodb.ConnectionInfo;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 
 /**
  *
- * @author Tim Boudreau
+ * @author Yann D'Isanto
  */
-@Messages("ConnectionName=Connection Name")
-public class ConnectionNameProperty extends PropertySupport.ReadWrite<String> {
+@Messages("LABEL_mongoURI=Mongo URI")
+public final class MongoClientURIProperty extends PropertySupport.ReadOnly<MongoClientURI> {
 
+    public static final String KEY = "mongoURI";
+    
     private final Lookup lkp;
 
-    ConnectionNameProperty(Lookup lkp) {
-        super("connectionName", String.class, Bundle.ConnectionName(), null);
+    public MongoClientURIProperty(Lookup lkp) {
+        super(KEY, MongoClientURI.class, displayName(), null);
         this.lkp = lkp;
     }
 
     @Override
-    public String getValue() throws IllegalAccessException, InvocationTargetException {
-        ConnectionInfo info = lkp.lookup(ConnectionInfo.class);
-        return info == null ? "[no value]" : info.getDisplayName();
+    public MongoClientURI getValue() throws IllegalAccessException, InvocationTargetException {
+        return lkp.lookup(ConnectionInfo.class).getMongoURI();
     }
-
-    @Override
-    public void setValue(String t) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        ConnectionInfo info = lkp.lookup(ConnectionInfo.class);
-        if (info != null) {
-            info.setDisplayName(t);
-        }
+    
+    public static String displayName() {
+        return Bundle.LABEL_mongoURI();
     }
-
 }

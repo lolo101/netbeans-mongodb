@@ -1,7 +1,7 @@
-/*
+/* 
  * The MIT License
  *
- * Copyright 2013 Yann D'Isanto.
+ * Copyright 2013 Tim Boudreau.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,28 +21,37 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.netbeans.modules.mongodb;
+package org.netbeans.modules.mongodb.properties;
 
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
+import java.lang.reflect.InvocationTargetException;
+import org.netbeans.modules.mongodb.CollectionInfo;
+import org.openide.nodes.PropertySupport;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 
 /**
  *
+ * @author Tim Boudreau
  * @author Yann D'Isanto
  */
-@Messages("LBL_refresh=Refresh")
-final class RefreshChildrenAction extends AbstractAction {
+@Messages({
+    "LABEL_collectionName=Collection Name",
+    "EMPTY_collectionName=[no name]"
+})
+public final class CollectionNameProperty extends PropertySupport.ReadOnly<String> {
 
-    private final RefreshableChildFactory<?> childFactory;
-
-    public RefreshChildrenAction(RefreshableChildFactory<?> childFactory) {
-        super(Bundle.LBL_refresh());
-        this.childFactory = childFactory;
-    }
+    public static final String KEY = "collectionName";
     
+    private final Lookup lkp;
+
+    public CollectionNameProperty(Lookup lkp) {
+        super(KEY, String.class, Bundle.LABEL_collectionName(), null);
+        this.lkp = lkp;
+    }
+
     @Override
-    public void actionPerformed(ActionEvent e) {
-        childFactory.refresh();
+    public String getValue() throws IllegalAccessException, InvocationTargetException {
+        CollectionInfo info = lkp.lookup(CollectionInfo.class);
+        return info == null ? Bundle.EMPTY_collectionName() : info.getName();
     }
 }

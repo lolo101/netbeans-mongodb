@@ -23,7 +23,7 @@
  */
 package org.netbeans.modules.mongodb.ui.windows.collectionview.treetable;
 
-import org.netbeans.modules.mongodb.options.JsonTreeCellRendererOptions;
+import org.netbeans.modules.mongodb.options.JsonCellRenderingOptions;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
@@ -61,7 +61,7 @@ public final class JsonTreeTableCellRenderer extends JPanel implements TreeCellR
         LABEL_CATEGORIES.put(ObjectId.class, LabelCategory.ID);
     }
 
-    private final JsonTreeCellRendererOptions options = JsonTreeCellRendererOptions.INSTANCE;
+    private final JsonCellRenderingOptions options = JsonCellRenderingOptions.INSTANCE;
 
     private final JLabel keyLabel = new JLabel();
 

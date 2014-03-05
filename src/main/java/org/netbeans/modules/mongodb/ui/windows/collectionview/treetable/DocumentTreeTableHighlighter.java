@@ -29,7 +29,7 @@ import java.awt.Component;
 import org.jdesktop.swingx.decorator.AbstractHighlighter;
 import org.jdesktop.swingx.decorator.ComponentAdapter;
 import org.jdesktop.swingx.decorator.HighlightPredicate;
-import org.netbeans.modules.mongodb.options.JsonTreeCellRendererOptions;
+import org.netbeans.modules.mongodb.options.JsonCellRenderingOptions;
 import org.netbeans.modules.mongodb.options.LabelCategory;
 
 /**
@@ -56,7 +56,7 @@ public final class DocumentTreeTableHighlighter extends AbstractHighlighter {
 
     @Override
     protected Component doHighlight(Component component, ComponentAdapter adapter) {
-        final Color background = JsonTreeCellRendererOptions.INSTANCE
+        final Color background = JsonCellRenderingOptions.INSTANCE
             .getLabelFontConf(LabelCategory.DOCUMENT)
             .getBackground();
         component.setBackground(background);

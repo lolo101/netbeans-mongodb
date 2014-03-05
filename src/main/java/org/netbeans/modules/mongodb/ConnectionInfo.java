@@ -100,10 +100,7 @@ public final class ConnectionInfo implements Comparable<ConnectionInfo>, AutoClo
     public MongoClientURI getMongoURI() {
         return new MongoClientURI(node.get(PREFS_KEY_URI, DEFAULT_URI));
     }
-//    public String getMongoURI() {
-//        return node.get(PREFS_KEY_URI, DEFAULT_URI);
-//    }
-
+    
     public void setMongoURI(MongoClientURI uri) {
         Parameters.notNull(PREFS_KEY_URI, uri);
         final MongoClientURI old = getMongoURI();
@@ -112,36 +109,7 @@ public final class ConnectionInfo implements Comparable<ConnectionInfo>, AutoClo
             supp.firePropertyChange(PREFS_KEY_URI, old, uri);
         }
     }
-//    public void setMongoURI(String uri) {
-//        Parameters.notNull(PREFS_KEY_URI, uri);
-//        final String old = getMongoURI();
-//        if (!old.equals(uri)) {
-//            node.put(PREFS_KEY_URI, uri);
-//            supp.firePropertyChange(PREFS_KEY_URI, old, uri);
-//        }
-//    }
-
-    @Override
-    public String toString() {
-//        return getMongoURI(); //NOI18N
-        return getDisplayName(); //NOI18N
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        return o instanceof ConnectionInfo && ((ConnectionInfo) o).id.equals(id);
-    }
-
-    @Override
-    public int hashCode() {
-        return id.hashCode();
-    }
-
-    @Override
-    public int compareTo(ConnectionInfo o) {
-        return id.compareTo(o.id);
-    }
-
+    
     private void save() {
         try {
             node.parent().flush();
@@ -154,11 +122,11 @@ public final class ConnectionInfo implements Comparable<ConnectionInfo>, AutoClo
         }
     }
 
-    String id() {
+    public String getId() {
         return id;
     }
 
-    Preferences getPreferences() {
+    public Preferences getPreferences() {
         return node;
     }
 
@@ -166,4 +134,25 @@ public final class ConnectionInfo implements Comparable<ConnectionInfo>, AutoClo
     public void close() {
         save();
     }
+    
+    @Override
+    public String toString() {
+        return getDisplayName(); //NOI18N
+    }
+
+    @Override
+    public int compareTo(ConnectionInfo o) {
+        return id.compareTo(o.id);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof ConnectionInfo && ((ConnectionInfo) o).id.equals(id);
+    }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
+
 }

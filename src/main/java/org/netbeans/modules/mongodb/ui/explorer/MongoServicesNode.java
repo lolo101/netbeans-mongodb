@@ -21,8 +21,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.netbeans.modules.mongodb;
+package org.netbeans.modules.mongodb.ui.explorer;
 
+import org.netbeans.modules.mongodb.resources.Images;
 import org.netbeans.modules.mongodb.ui.components.NewConnectionPanel;
 import com.mongodb.DBTCPConnector;
 import com.mongodb.MongoClientURI;
@@ -35,6 +36,7 @@ import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
+import org.netbeans.modules.mongodb.ConnectionInfo;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;

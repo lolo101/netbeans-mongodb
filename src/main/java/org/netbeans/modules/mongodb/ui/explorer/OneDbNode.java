@@ -21,8 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.netbeans.modules.mongodb;
+package org.netbeans.modules.mongodb.ui.explorer;
 
+import org.netbeans.modules.mongodb.properties.DatabaseNameProperty;
+import org.netbeans.modules.mongodb.properties.ConnectionNameProperty;
+import org.netbeans.modules.mongodb.properties.MongoClientURIProperty;
+import org.netbeans.modules.mongodb.resources.Images;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
 import com.mongodb.DBObject;
@@ -31,6 +35,7 @@ import com.mongodb.MongoException;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import org.netbeans.modules.mongodb.DbInfo;
 import org.netbeans.modules.mongodb.ui.util.CollectionNameValidator;
 import org.netbeans.modules.mongodb.ui.util.ValidatingInputLine;
 import org.netbeans.modules.mongodb.ui.wizards.ExportWizardAction;
@@ -53,8 +58,6 @@ import org.openide.util.lookup.ProxyLookup;
  * @author Yann D'Isanto
  */
 @Messages({
-    "DB_NAME_DESC=The name of the database",
-    "DB_NAME=Database Name",
     "ACTION_AddCollection=Add Collection",
     "ACTION_Export=Export",
     "ACTION_Import=Import",
@@ -76,7 +79,7 @@ final class OneDbNode extends AbstractNode {
     }
 
     OneDbNode(DbInfo info, InstanceContent content, AbstractLookup lkp) {
-        this(info, content, new ProxyLookup(info.lookup, lkp, Lookups.fixed(info)));
+        this(info, content, new ProxyLookup(info.getLookup(), lkp, Lookups.fixed(info)));
     }
 
     OneDbNode(DbInfo info, InstanceContent content, ProxyLookup lkp) {
@@ -88,8 +91,8 @@ final class OneDbNode extends AbstractNode {
         this.childFactory = childFactory;
         this.lookup = lookup;
         content.add(info, new DBConverter());
-        setName(info.dbName);
-        setDisplayName(info.dbName);
+        setName(info.getDbName());
+        setDisplayName(info.getDbName());
         setIconBaseWithExtension(Images.DB_ICON_PATH);
     }
 
@@ -99,7 +102,7 @@ final class OneDbNode extends AbstractNode {
         Sheet.Set set = Sheet.createPropertiesSet();
         set.put(new DatabaseNameProperty(getLookup()));
         set.put(new ConnectionNameProperty(getLookup()));
-        set.put(new ConnectionURIReadOnlyProperty(getLookup()));
+        set.put(new MongoClientURIProperty(getLookup()));
         sheet.put(set);
         return sheet;
     }
@@ -131,7 +134,7 @@ final class OneDbNode extends AbstractNode {
         public DB convert(DbInfo t) {
             DbInfo info = getLookup().lookup(DbInfo.class);
             MongoClient client = getLookup().lookup(MongoClient.class);
-            return client.getDB(info.dbName);
+            return client.getDB(info.getDbName());
         }
 
         @Override
@@ -141,7 +144,7 @@ final class OneDbNode extends AbstractNode {
 
         @Override
         public String id(DbInfo t) {
-            return t.dbName;
+            return t.getDbName();
         }
 
         @Override

@@ -39,18 +39,18 @@ import org.openide.util.NbPreferences;
  *
  * @author Yann D'Isanto
  */
-public enum JsonTreeCellRendererOptions {
+public enum JsonCellRenderingOptions {
 
     INSTANCE;
     
     private final Map<LabelCategory, LabelFontConf> labelConfs = new HashMap<>();
 
-    private JsonTreeCellRendererOptions() {
+    private JsonCellRenderingOptions() {
         load();
     }
 
     private Preferences getPreferences() {
-        return NbPreferences.forModule(JsonTreeCellRendererOptions.class);
+        return NbPreferences.forModule(JsonCellRenderingOptions.class);
     }
 
     public LabelFontConf getLabelFontConf(LabelCategory category) {
@@ -111,7 +111,7 @@ public enum JsonTreeCellRendererOptions {
 
     public static final class Default {
 
-        private static final Map<LabelCategory, LabelFontConf> LABEL_CONFS;
+        public static final Map<LabelCategory, LabelFontConf> LABEL_CONFS;
 
         static {
             final Font font = new JLabel().getFont();
@@ -150,10 +150,5 @@ public enum JsonTreeCellRendererOptions {
                 textBackground));
             LABEL_CONFS = Collections.unmodifiableMap(map);
         }
-        
-        public static Map<LabelCategory, LabelFontConf> labelConfs() {
-            return LABEL_CONFS;
-        }
-
     }
 }

@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package org.netbeans.modules.mongodb;
+package org.netbeans.modules.mongodb.resources;
 
 import java.awt.Image;
 import org.netbeans.api.annotations.common.StaticResource;

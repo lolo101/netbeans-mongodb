@@ -21,8 +21,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.netbeans.modules.mongodb;
+package org.netbeans.modules.mongodb.ui.explorer;
 
+import org.netbeans.modules.mongodb.properties.ConnectionNameProperty;
+import org.netbeans.modules.mongodb.properties.MongoClientURIProperty;
+import org.netbeans.modules.mongodb.resources.Images;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import com.mongodb.MongoException;
@@ -40,7 +43,10 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressUtils;
-import org.netbeans.modules.mongodb.beans.MongoClientURIPropertyEditor;
+import org.netbeans.modules.mongodb.ConnectionInfo;
+import org.netbeans.modules.mongodb.ConnectionProblems;
+import org.netbeans.modules.mongodb.MongoDisconnect;
+import org.netbeans.modules.mongodb.properties.MongoClientURIPropertyEditor;
 import org.netbeans.modules.mongodb.shell.MongoShellAction;
 import org.netbeans.modules.mongodb.options.MongoShellOptions;
 import org.netbeans.modules.mongodb.ui.windows.CollectionView;
@@ -111,7 +117,7 @@ final class OneConnectionNode extends AbstractNode implements PropertyChangeList
         content.add(problems);
         content.add(connection, converter);
         setDisplayName(connection.getDisplayName());
-        setName(connection.id());
+        setName(connection.getId());
         childFactory.setParentNode(this);
         connection.addPropertyChangeListener(WeakListeners.propertyChange(this, connection));
     }
@@ -262,14 +268,14 @@ final class OneConnectionNode extends AbstractNode implements PropertyChangeList
         final Sheet.Set set = Sheet.createPropertiesSet();
         set.put(new ConnectionNameProperty(getLookup()));
         if (isConnected()) {
-            set.put(new ConnectionURIReadOnlyProperty(getLookup()));
+            set.put(new MongoClientURIProperty(getLookup()));
         } else {
             final ConnectionInfo connection = getLookup().lookup(ConnectionInfo.class);
             try {
                 final PropertySupport.Reflection<MongoClientURI> uriProperty
-                        = new PropertySupport.Reflection<>(connection, MongoClientURI.class, "mongoURI");
+                        = new PropertySupport.Reflection<>(connection, MongoClientURI.class, MongoClientURIProperty.KEY);
                 uriProperty.setPropertyEditorClass(MongoClientURIPropertyEditor.class);
-                uriProperty.setDisplayName(Bundle.ConnectionURI());
+                uriProperty.setDisplayName(MongoClientURIProperty.displayName());
                 set.put(uriProperty);
             } catch (NoSuchMethodException ex) {
                 Exceptions.printStackTrace(ex);

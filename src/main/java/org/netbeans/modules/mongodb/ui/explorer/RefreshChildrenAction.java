@@ -1,7 +1,7 @@
-/* 
+/*
  * The MIT License
  *
- * Copyright 2013 Tim Boudreau.
+ * Copyright 2013 Yann D'Isanto.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,27 +21,28 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.netbeans.modules.mongodb;
+package org.netbeans.modules.mongodb.ui.explorer;
 
-import java.lang.reflect.InvocationTargetException;
-import org.openide.nodes.PropertySupport;
-import org.openide.util.Lookup;
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
- * @author Tim Boudreau
+ * @author Yann D'Isanto
  */
-final class DatabaseNameProperty extends PropertySupport.ReadOnly<String> {
-    private final Lookup lkp;
+@Messages("LBL_refresh=Refresh")
+final class RefreshChildrenAction extends AbstractAction {
 
-    public DatabaseNameProperty(Lookup lkp) {
-        super("databaseName", String.class, Bundle.DB_NAME(), Bundle.DB_NAME_DESC());
-        this.lkp = lkp;
+    private final RefreshableChildFactory<?> childFactory;
+
+    public RefreshChildrenAction(RefreshableChildFactory<?> childFactory) {
+        super(Bundle.LBL_refresh());
+        this.childFactory = childFactory;
     }
-
+    
     @Override
-    public String getValue() throws IllegalAccessException, InvocationTargetException {
-        DbInfo info = lkp.lookup(DbInfo.class);
-        return info == null ? "[no name]" : info.dbName;
+    public void actionPerformed(ActionEvent e) {
+        childFactory.refresh();
     }
 }

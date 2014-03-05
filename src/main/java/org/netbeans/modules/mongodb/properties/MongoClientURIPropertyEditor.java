@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.netbeans.modules.mongodb.beans;
+package org.netbeans.modules.mongodb.properties;
 
 import com.mongodb.MongoClientURI;
 import java.awt.Component;
@@ -77,10 +77,6 @@ public final class MongoClientURIPropertyEditor extends PropertyEditorSupport im
     @Override
     public void attachEnv(PropertyEnv env) {
         this.env = env;
-    }
-
-    private PropertyEnv getEnv() {
-        return env;
     }
 
     private void setEnvState(Object state) {

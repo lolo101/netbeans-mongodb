@@ -21,8 +21,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.netbeans.modules.mongodb;
+package org.netbeans.modules.mongodb.ui.explorer;
 
+import org.netbeans.modules.mongodb.properties.CollectionNameProperty;
+import org.netbeans.modules.mongodb.properties.DatabaseNameProperty;
+import org.netbeans.modules.mongodb.properties.ConnectionNameProperty;
+import org.netbeans.modules.mongodb.properties.MongoClientURIProperty;
+import org.netbeans.modules.mongodb.resources.Images;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.MongoException;
@@ -33,6 +38,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import org.netbeans.modules.mongodb.CollectionInfo;
 import org.netbeans.modules.mongodb.ui.util.CollectionNameValidator;
 import org.netbeans.modules.mongodb.ui.util.ValidatingInputLine;
 import org.netbeans.modules.mongodb.ui.windows.CollectionView;
@@ -121,7 +127,7 @@ final class CollectionNode extends AbstractNode {
         set.put(new CollectionNameProperty(getLookup()));
         set.put(new DatabaseNameProperty(getLookup()));
         set.put(new ConnectionNameProperty(getLookup()));
-        set.put(new ConnectionURIReadOnlyProperty(getLookup()));
+        set.put(new MongoClientURIProperty(getLookup()));
         sheet.put(set);
         return sheet;
     }

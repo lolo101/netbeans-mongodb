@@ -23,7 +23,7 @@
  */
 package org.netbeans.modules.mongodb.ui.windows.collectionview.flattable;
 
-import org.netbeans.modules.mongodb.options.JsonTreeCellRendererOptions;
+import org.netbeans.modules.mongodb.options.JsonCellRenderingOptions;
 import java.awt.Component;
 import java.util.HashMap;
 import java.util.Map;
@@ -50,7 +50,7 @@ public final class JsonFlatTableCellRenderer extends DefaultTableCellRenderer {
 
     }
 
-    private final JsonTreeCellRendererOptions options = JsonTreeCellRendererOptions.INSTANCE;
+    private final JsonCellRenderingOptions options = JsonCellRenderingOptions.INSTANCE;
 
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
