@@ -36,6 +36,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.mongodb.DbInfo;
+import org.netbeans.modules.mongodb.native_tools.MongoNativeToolsAction;
 import org.netbeans.modules.mongodb.ui.util.CollectionNameValidator;
 import org.netbeans.modules.mongodb.ui.util.ValidatingInputLine;
 import org.netbeans.modules.mongodb.ui.wizards.ExportWizardAction;
@@ -112,6 +113,8 @@ final class OneDbNode extends AbstractNode {
         return new Action[]{
             new AddCollectionAction(),
             new RefreshChildrenAction(childFactory),
+            null,
+            new MongoNativeToolsAction(lookup),
             null,
             new ExportWizardAction(getLookup()),
             new ImportWizardAction(getLookup(), new Runnable() {

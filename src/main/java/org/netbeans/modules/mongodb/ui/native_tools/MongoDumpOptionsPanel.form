@@ -22,7 +22,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="passwordLabel" linkSize="2" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="passwordField" max="32767" attributes="0"/>
+                      <Component id="passwordField" pref="372" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="displayPasswordCheckBox" min="-2" max="-2" attributes="0"/>
                   </Group>
@@ -41,6 +41,16 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="portField" max="32767" attributes="0"/>
                   </Group>
+                  <Group type="102" alignment="1" attributes="0">
+                      <Component id="dbLabel" linkSize="2" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="dbField" max="32767" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="collectionLabel" linkSize="2" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="collectionField" max="32767" attributes="0"/>
+                  </Group>
                   <Component id="ipv6CheckBox" alignment="0" max="32767" attributes="0"/>
                   <Component id="sslCheckBox" alignment="0" max="32767" attributes="0"/>
                   <Component id="directoryPerDbCheckBox" alignment="0" max="32767" attributes="0"/>
@@ -51,7 +61,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="outputLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="outputField" pref="267" max="32767" attributes="0"/>
+                      <Component id="outputField" pref="362" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="browseOutputButton" min="-2" max="-2" attributes="0"/>
                   </Group>
@@ -83,6 +93,16 @@
                   <Component id="passwordLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="passwordField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="displayPasswordCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace type="separate" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="dbLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="dbField" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="collectionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="collectionField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace type="separate" max="-2" attributes="0"/>
               <Component id="ipv6CheckBox" min="-2" max="-2" attributes="0"/>
@@ -226,6 +246,24 @@
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="browseOutputButtonActionPerformed"/>
       </Events>
+    </Component>
+    <Component class="javax.swing.JLabel" name="dbLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/mongodb/ui/native_tools/Bundle.properties" key="MongoDumpOptionsPanel.dbLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="collectionLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/mongodb/ui/native_tools/Bundle.properties" key="MongoDumpOptionsPanel.collectionLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="dbField">
+    </Component>
+    <Component class="javax.swing.JTextField" name="collectionField">
     </Component>
   </SubComponents>
 </Form>

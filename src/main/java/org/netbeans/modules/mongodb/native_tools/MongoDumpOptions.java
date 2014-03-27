@@ -37,6 +37,10 @@ public interface MongoDumpOptions {
 
     String PASSWORD = "--password";
 
+    String DB = "--db";
+
+    String COLLECTION = "--collection";
+
     String IPV6 = "--ipv6";
 
     String SSL = "--ssl";

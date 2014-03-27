@@ -39,6 +39,7 @@ import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.mongodb.CollectionInfo;
+import org.netbeans.modules.mongodb.native_tools.MongoNativeToolsAction;
 import org.netbeans.modules.mongodb.ui.util.CollectionNameValidator;
 import org.netbeans.modules.mongodb.ui.util.ValidatingInputLine;
 import org.netbeans.modules.mongodb.ui.windows.CollectionView;
@@ -150,6 +151,8 @@ final class CollectionNode extends AbstractNode {
             null,
             dropAction,
             renameAction,
+            null,
+            new MongoNativeToolsAction(lookup),
             null,
             new ExportWizardAction(getLookup(), properties),
             importAction

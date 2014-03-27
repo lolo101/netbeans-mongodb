@@ -25,7 +25,6 @@ package org.netbeans.modules.mongodb.ui.native_tools;
 
 import java.io.File;
 import java.nio.file.Paths;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.text.PlainDocument;
@@ -72,6 +71,14 @@ public class MongoDumpOptionsPanel extends javax.swing.JPanel {
         if (password != null) {
             passwordField.setText(password);
         }
+        final String db = options.get(MongoDumpOptions.DB);
+        if (db != null) {
+            dbField.setText(db);
+        }
+        final String collection = options.get(MongoDumpOptions.COLLECTION);
+        if (collection != null) {
+            collectionField.setText(collection);
+        }
         ipv6CheckBox.setSelected(options.containsKey(MongoDumpOptions.IPV6));
         sslCheckBox.setSelected(options.containsKey(MongoDumpOptions.SSL));
         directoryPerDbCheckBox.setSelected(options.containsKey(MongoDumpOptions.DIRECTORY_PER_DB));
@@ -102,6 +109,14 @@ public class MongoDumpOptionsPanel extends javax.swing.JPanel {
         final String password = new String(passwordField.getPassword());
         if (password.isEmpty() == false) {
             options.put(MongoDumpOptions.PASSWORD, password);
+        }
+        final String db = dbField.getText().trim();
+        if (db.isEmpty() == false) {
+            options.put(MongoDumpOptions.DB, db);
+        }
+        final String collection = collectionField.getText().trim();
+        if (collection.isEmpty() == false) {
+            options.put(MongoDumpOptions.COLLECTION, collection);
         }
         if (ipv6CheckBox.isSelected()) {
             options.put(MongoDumpOptions.IPV6, "");
@@ -159,6 +174,10 @@ public class MongoDumpOptionsPanel extends javax.swing.JPanel {
         outputLabel = new javax.swing.JLabel();
         outputField = new javax.swing.JTextField();
         browseOutputButton = new javax.swing.JButton();
+        dbLabel = new javax.swing.JLabel();
+        collectionLabel = new javax.swing.JLabel();
+        dbField = new javax.swing.JTextField();
+        collectionField = new javax.swing.JTextField();
 
         org.openide.awt.Mnemonics.setLocalizedText(hostLabel, org.openide.util.NbBundle.getMessage(MongoDumpOptionsPanel.class, "MongoDumpOptionsPanel.hostLabel.text")); // NOI18N
 
@@ -200,6 +219,10 @@ public class MongoDumpOptionsPanel extends javax.swing.JPanel {
             }
         });
 
+        org.openide.awt.Mnemonics.setLocalizedText(dbLabel, org.openide.util.NbBundle.getMessage(MongoDumpOptionsPanel.class, "MongoDumpOptionsPanel.dbLabel.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(collectionLabel, org.openide.util.NbBundle.getMessage(MongoDumpOptionsPanel.class, "MongoDumpOptionsPanel.collectionLabel.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -210,7 +233,7 @@ public class MongoDumpOptionsPanel extends javax.swing.JPanel {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(passwordLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(passwordField)
+                        .addComponent(passwordField, javax.swing.GroupLayout.DEFAULT_SIZE, 372, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(displayPasswordCheckBox))
                     .addGroup(layout.createSequentialGroup()
@@ -225,6 +248,14 @@ public class MongoDumpOptionsPanel extends javax.swing.JPanel {
                         .addComponent(portLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(portField))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(dbLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(dbField))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(collectionLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(collectionField))
                     .addComponent(ipv6CheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(sslCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(directoryPerDbCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -235,13 +266,13 @@ public class MongoDumpOptionsPanel extends javax.swing.JPanel {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(outputLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(outputField, javax.swing.GroupLayout.DEFAULT_SIZE, 267, Short.MAX_VALUE)
+                        .addComponent(outputField, javax.swing.GroupLayout.DEFAULT_SIZE, 362, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(browseOutputButton)))
                 .addContainerGap())
         );
 
-        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {hostLabel, passwordLabel, portLabel, usernameLabel});
+        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {collectionLabel, dbLabel, hostLabel, passwordLabel, portLabel, usernameLabel});
 
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -263,6 +294,14 @@ public class MongoDumpOptionsPanel extends javax.swing.JPanel {
                     .addComponent(passwordLabel)
                     .addComponent(passwordField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(displayPasswordCheckBox))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(dbLabel)
+                    .addComponent(dbField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(collectionLabel)
+                    .addComponent(collectionField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addComponent(ipv6CheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -309,6 +348,10 @@ public class MongoDumpOptionsPanel extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton browseOutputButton;
+    private javax.swing.JTextField collectionField;
+    private javax.swing.JLabel collectionLabel;
+    private javax.swing.JTextField dbField;
+    private javax.swing.JLabel dbLabel;
     private javax.swing.JCheckBox directoryPerDbCheckBox;
     private javax.swing.JCheckBox displayPasswordCheckBox;
     private javax.swing.JCheckBox forceTableScanCheckBox;

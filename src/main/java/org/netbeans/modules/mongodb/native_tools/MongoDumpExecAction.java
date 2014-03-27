@@ -30,7 +30,9 @@ import java.util.concurrent.Callable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.modules.mongodb.CollectionInfo;
 import org.netbeans.modules.mongodb.ConnectionInfo;
+import org.netbeans.modules.mongodb.DbInfo;
 import org.netbeans.modules.mongodb.ui.actions.ExecutionAction;
 import org.netbeans.modules.mongodb.ui.native_tools.MongoDumpOptionsPanel;
 import org.netbeans.modules.mongodb.util.ProcessCreator;
@@ -75,10 +77,18 @@ public final class MongoDumpExecAction extends ExecutionAction {
 
     private Map<String, String> getOptionsFromContext() {
         final Map<String, String> options = new HashMap<>();
-        final ConnectionInfo ci = getLookup().lookup(ConnectionInfo.class);
-        if (ci != null) {
-            final MongoClientURI uri = ci.getMongoURI();
+        final ConnectionInfo connectionInfo = getLookup().lookup(ConnectionInfo.class);
+        if (connectionInfo != null) {
+            final MongoClientURI uri = connectionInfo.getMongoURI();
             parseOptionsFromURI(uri, options);
+        }
+        final DbInfo dbInfo = getLookup().lookup(DbInfo.class);
+        if(dbInfo != null) {
+            options.put(MongoDumpOptions.DB, dbInfo.getDbName());
+        }
+        final CollectionInfo collection = getLookup().lookup(CollectionInfo.class);
+        if(collection != null) {
+            options.put(MongoDumpOptions.COLLECTION, collection.getName());
         }
         return options;
     }
@@ -104,6 +114,12 @@ public final class MongoDumpExecAction extends ExecutionAction {
                     }
                 }
             }
+        }
+        if (uri.getDatabase() != null && uri.getDatabase().isEmpty() == false) {
+            options.put(MongoDumpOptions.DB, uri.getDatabase());
+        }
+        if (uri.getCollection() != null && uri.getCollection().isEmpty() == false) {
+            options.put(MongoDumpOptions.COLLECTION, uri.getCollection());
         }
     }
 }

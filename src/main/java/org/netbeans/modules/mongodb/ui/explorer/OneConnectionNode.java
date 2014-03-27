@@ -153,12 +153,9 @@ final class OneConnectionNode extends AbstractNode implements PropertyChangeList
         final Action refreshAction = new RefreshChildrenAction(childFactory);
         final Action connectAction = new ConnectAction();
         final Action disconnectAction = new DisconnectAction();
-//        final Action mongoShellAction = new MongoShellExecAction(getLookup());
-        
         refreshAction.setEnabled(isConnected());
         connectAction.setEnabled(isConnected() == false);
         disconnectAction.setEnabled(isConnected());
-//        mongoShellAction.setEnabled(MongoNativeToolsOptions.INSTANCE.isToolsFolderConfigured());
         nue[0] = connectAction;
         nue[1] = disconnectAction;
         nue[2] = null;
