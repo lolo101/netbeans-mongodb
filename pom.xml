@@ -4,7 +4,7 @@
 
     <groupId>org.netbeans.modules</groupId>
     <artifactId>nbmongo</artifactId>
-    <version>1.4.0</version>
+    <version>1.5.0-SNAPSHOT</version>
     <packaging>nbm</packaging>
 
     <name>NBMongo</name>
@@ -19,7 +19,7 @@
     
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <netbeans.target.version>RELEASE80-BETA</netbeans.target.version>
+        <netbeans.target.version>RELEASE80</netbeans.target.version>
         <netbeans.run.params.ide/>
         <netbeans.run.params>${netbeans.run.params.ide}</netbeans.run.params>
     </properties>

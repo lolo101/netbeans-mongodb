@@ -37,6 +37,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
 import org.netbeans.modules.mongodb.ConnectionInfo;
+import org.netbeans.modules.mongodb.native_tools.MongoNativeToolsAction;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -101,7 +102,11 @@ public final class MongoServicesNode extends AbstractNode {
 
     @Override
     public Action[] getActions(boolean context) {
-        return new Action[]{new NewConnectionAction()};
+        return new Action[]{
+            new NewConnectionAction(),
+            null,
+            new MongoNativeToolsAction(getLookup())
+        };
     }
 
     @Messages("LBL_newConnection=New Connection")

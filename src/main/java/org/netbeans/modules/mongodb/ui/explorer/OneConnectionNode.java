@@ -46,9 +46,8 @@ import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.mongodb.ConnectionInfo;
 import org.netbeans.modules.mongodb.ConnectionProblems;
 import org.netbeans.modules.mongodb.MongoDisconnect;
+import org.netbeans.modules.mongodb.native_tools.MongoNativeToolsAction;
 import org.netbeans.modules.mongodb.properties.MongoClientURIPropertyEditor;
-import org.netbeans.modules.mongodb.shell.MongoShellAction;
-import org.netbeans.modules.mongodb.options.MongoShellOptions;
 import org.netbeans.modules.mongodb.ui.windows.CollectionView;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -154,18 +153,19 @@ final class OneConnectionNode extends AbstractNode implements PropertyChangeList
         final Action refreshAction = new RefreshChildrenAction(childFactory);
         final Action connectAction = new ConnectAction();
         final Action disconnectAction = new DisconnectAction();
-        final Action mongoShellAction = new MongoShellAction(getLookup());
+//        final Action mongoShellAction = new MongoShellExecAction(getLookup());
+        
         refreshAction.setEnabled(isConnected());
         connectAction.setEnabled(isConnected() == false);
         disconnectAction.setEnabled(isConnected());
-        mongoShellAction.setEnabled(MongoShellOptions.INSTANCE.getMongoExecPath() != null);
+//        mongoShellAction.setEnabled(MongoNativeToolsOptions.INSTANCE.isToolsFolderConfigured());
         nue[0] = connectAction;
         nue[1] = disconnectAction;
         nue[2] = null;
         nue[3] = new DeleteAction();
         nue[4] = refreshAction;
         nue[5] = null;
-        nue[6] = mongoShellAction;
+        nue[6] = new MongoNativeToolsAction(getLookup());
         nue[7] = null;
         return nue;
     }

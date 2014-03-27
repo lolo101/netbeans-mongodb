@@ -28,15 +28,17 @@ import java.awt.Font;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import org.netbeans.modules.mongodb.options.MongoShellOptions;
+import org.netbeans.modules.mongodb.options.MongoNativeToolsOptions;
 import org.netbeans.modules.mongodb.options.LabelCategory;
 import org.netbeans.modules.mongodb.options.LabelFontConf;
+import org.netbeans.modules.mongodb.options.MongoNativeToolsFolderPredicate;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.ColorComboBox;
@@ -49,7 +51,7 @@ final class MongoOptionsPanel extends javax.swing.JPanel {
 
     private final JsonCellRenderingOptions jsonRenderingOptions = JsonCellRenderingOptions.INSTANCE;
 
-    private final MongoShellOptions mongoShellOptions = MongoShellOptions.INSTANCE;
+    private final MongoNativeToolsOptions mongoToolsOptions = MongoNativeToolsOptions.INSTANCE;
 
     private final MongoOptionsPanelController controller;
 
@@ -81,7 +83,7 @@ final class MongoOptionsPanel extends javax.swing.JPanel {
                 updateSelectedLabelFontConfUI();
             }
         });
-        mongoExecPathField.getDocument().addDocumentListener(new DocumentListener() {
+        mongoToolsFolderPathField.getDocument().addDocumentListener(new DocumentListener() {
 
             @Override
             public void insertUpdate(DocumentEvent e) {
@@ -147,9 +149,9 @@ final class MongoOptionsPanel extends javax.swing.JPanel {
         restoreDefaultRenderingLabel = new javax.swing.JLabel();
         restoreDefaultRenderingButton = new javax.swing.JButton();
         shellOptionsPanel = new javax.swing.JPanel();
-        mongoExecPathLabel = new javax.swing.JLabel();
-        mongoExecPathField = new javax.swing.JTextField();
-        browseMongoExecPathButton = new javax.swing.JButton();
+        mongoToolsFolderPathLabel = new javax.swing.JLabel();
+        mongoToolsFolderPathField = new javax.swing.JTextField();
+        browseMongoToolsFolderPathButton = new javax.swing.JButton();
 
         jsonTreeRenderingOptionsPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(MongoOptionsPanel.class, "MongoOptionsPanel.jsonTreeRenderingOptionsPanel.border.title"))); // NOI18N
 
@@ -279,13 +281,13 @@ final class MongoOptionsPanel extends javax.swing.JPanel {
 
         shellOptionsPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(MongoOptionsPanel.class, "MongoOptionsPanel.shellOptionsPanel.border.title"))); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(mongoExecPathLabel, org.openide.util.NbBundle.getMessage(MongoOptionsPanel.class, "MongoOptionsPanel.mongoExecPathLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(mongoToolsFolderPathLabel, org.openide.util.NbBundle.getMessage(MongoOptionsPanel.class, "MongoOptionsPanel.mongoToolsFolderPathLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(browseMongoExecPathButton, org.openide.util.NbBundle.getMessage(MongoOptionsPanel.class, "MongoOptionsPanel.browseMongoExecPathButton.text")); // NOI18N
-        browseMongoExecPathButton.setActionCommand(org.openide.util.NbBundle.getMessage(MongoOptionsPanel.class, "MongoOptionsPanel.browseMongoExecPathButton.actionCommand")); // NOI18N
-        browseMongoExecPathButton.addActionListener(new java.awt.event.ActionListener() {
+        org.openide.awt.Mnemonics.setLocalizedText(browseMongoToolsFolderPathButton, org.openide.util.NbBundle.getMessage(MongoOptionsPanel.class, "MongoOptionsPanel.browseMongoToolsFolderPathButton.text")); // NOI18N
+        browseMongoToolsFolderPathButton.setActionCommand(org.openide.util.NbBundle.getMessage(MongoOptionsPanel.class, "MongoOptionsPanel.browseMongoToolsFolderPathButton.actionCommand")); // NOI18N
+        browseMongoToolsFolderPathButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                browseMongoExecPathButtonActionPerformed(evt);
+                browseMongoToolsFolderPathButtonActionPerformed(evt);
             }
         });
 
@@ -297,23 +299,23 @@ final class MongoOptionsPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(shellOptionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(shellOptionsPanelLayout.createSequentialGroup()
-                        .addComponent(mongoExecPathLabel)
-                        .addGap(0, 223, Short.MAX_VALUE))
+                        .addComponent(mongoToolsFolderPathLabel)
+                        .addGap(0, 241, Short.MAX_VALUE))
                     .addGroup(shellOptionsPanelLayout.createSequentialGroup()
-                        .addComponent(mongoExecPathField)
+                        .addComponent(mongoToolsFolderPathField)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(browseMongoExecPathButton)))
+                        .addComponent(browseMongoToolsFolderPathButton)))
                 .addContainerGap())
         );
         shellOptionsPanelLayout.setVerticalGroup(
             shellOptionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(shellOptionsPanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(mongoExecPathLabel)
+                .addComponent(mongoToolsFolderPathLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(shellOptionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(mongoExecPathField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(browseMongoExecPathButton))
+                    .addComponent(mongoToolsFolderPathField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(browseMongoToolsFolderPathButton))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -367,23 +369,25 @@ final class MongoOptionsPanel extends javax.swing.JPanel {
         fireChangeEvent();
     }//GEN-LAST:event_backgroundComboBoxActionPerformed
 
-    private void browseMongoExecPathButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseMongoExecPathButtonActionPerformed
+    private void browseMongoToolsFolderPathButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseMongoToolsFolderPathButtonActionPerformed
         final String mongoHomePath = System.getenv("MONGO_HOME");
-        final FileChooserBuilder fcb = new FileChooserBuilder(MongoShellOptions.class);
-        final String mongoExecPath = mongoExecPathField.getText().trim();
-        if(mongoExecPath.isEmpty() == false) {
-            fcb.setDefaultWorkingDirectory(new File(mongoExecPath).getParentFile());
+        final FileChooserBuilder fcb = new FileChooserBuilder(MongoNativeToolsOptions.class);
+        fcb.setDirectoriesOnly(true);
+        fcb.setSelectionApprover(new MongoToolsFolderSelectionApprover());
+        final String mongoToolsFolderPath = mongoToolsFolderPathField.getText().trim();
+        if(mongoToolsFolderPath.isEmpty() == false) {
+            fcb.setDefaultWorkingDirectory(new File(mongoToolsFolderPath));
         } else if(mongoHomePath != null) {
-            final File mongoBin = new File(mongoHomePath, "bin");
-            if(mongoBin.isDirectory()) {
-                fcb.setDefaultWorkingDirectory(mongoBin);
+            final File mongoHome = new File(mongoHomePath);
+            if(mongoHome.isDirectory()) {
+                fcb.setDefaultWorkingDirectory(mongoHome);
             }
         }
         final File file = fcb.showOpenDialog();
         if(file != null) {
-            mongoExecPathField.setText(file.getAbsolutePath());
+            mongoToolsFolderPathField.setText(file.getAbsolutePath());
         }
-    }//GEN-LAST:event_browseMongoExecPathButtonActionPerformed
+    }//GEN-LAST:event_browseMongoToolsFolderPathButtonActionPerformed
 
     private void restoreDefaultRenderingButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_restoreDefaultRenderingButtonActionPerformed
         for (Map.Entry<LabelCategory, LabelFontConf> entry : JsonCellRenderingOptions.Default.LABEL_CONFS.entrySet()) {
@@ -399,9 +403,9 @@ final class MongoOptionsPanel extends javax.swing.JPanel {
             labelConfBuilders.put(labelCategory, new LabelFontConf.Builder(conf));
         }
         loadLabelFontConfInUI(getSelectedLabelFontConfBuilder());
-        final String mongoExecPath = mongoShellOptions.getMongoExecPath();
-        if (mongoExecPath != null) {
-            mongoExecPathField.setText(mongoExecPath);
+        final String mongoToolsFolderPath = mongoToolsOptions.getToolsFolder();
+        if (mongoToolsFolderPath != null) {
+            mongoToolsFolderPathField.setText(mongoToolsFolderPath);
         }
         internalUpdate = false;
     }
@@ -411,15 +415,15 @@ final class MongoOptionsPanel extends javax.swing.JPanel {
             jsonRenderingOptions.setLabelFontConf(labelCategory, labelConfBuilders.get(labelCategory).build());
         }
         jsonRenderingOptions.store();
-        final String mongoExecPath = mongoExecPathField.getText().trim();
-        mongoShellOptions.setMongoExecPath(mongoExecPath.isEmpty() ? null : mongoExecPath);
-        mongoShellOptions.store();
+        final String mongoToolsFolderPath = mongoToolsFolderPathField.getText().trim();
+        mongoToolsOptions.setToolsFolder(mongoToolsFolderPath.isEmpty() ? null : mongoToolsFolderPath);
+        mongoToolsOptions.store();
     }
 
     boolean valid() {
-        final String mongoExecPath = mongoExecPathField.getText().trim();
+        final String mongoExecPath = mongoToolsFolderPathField.getText().trim();
         if (mongoExecPath.isEmpty() == false) {
-            return new File(mongoExecPath).isFile();
+            return new File(mongoExecPath).isDirectory();
         }
         return true;
     }
@@ -428,7 +432,7 @@ final class MongoOptionsPanel extends javax.swing.JPanel {
     private javax.swing.JComboBox backgroundComboBox;
     private javax.swing.JLabel backgroundLabel;
     private javax.swing.JButton browseFontButton;
-    private javax.swing.JButton browseMongoExecPathButton;
+    private javax.swing.JButton browseMongoToolsFolderPathButton;
     private javax.swing.JLabel categoriesLabel;
     private javax.swing.JList<LabelCategory> categoriesList;
     private javax.swing.JScrollPane categoriesScrollPane;
@@ -437,8 +441,8 @@ final class MongoOptionsPanel extends javax.swing.JPanel {
     private javax.swing.JComboBox foregroundComboBox;
     private javax.swing.JLabel foregroundLabel;
     private javax.swing.JPanel jsonTreeRenderingOptionsPanel;
-    private javax.swing.JTextField mongoExecPathField;
-    private javax.swing.JLabel mongoExecPathLabel;
+    private javax.swing.JTextField mongoToolsFolderPathField;
+    private javax.swing.JLabel mongoToolsFolderPathLabel;
     private javax.swing.JPanel renderingOptionsPanel;
     private javax.swing.JButton restoreDefaultRenderingButton;
     private javax.swing.JLabel restoreDefaultRenderingLabel;

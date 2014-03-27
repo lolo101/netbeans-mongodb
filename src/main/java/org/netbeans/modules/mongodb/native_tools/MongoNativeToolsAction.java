@@ -21,47 +21,49 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.netbeans.modules.mongodb.shell;
+package org.netbeans.modules.mongodb.native_tools;
 
-import com.mongodb.MongoClientURI;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
-import org.netbeans.api.extexecution.ExecutionDescriptor;
-import org.netbeans.api.extexecution.ExecutionService;
-import org.netbeans.modules.mongodb.ConnectionInfo;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import org.netbeans.modules.mongodb.options.MongoNativeToolsOptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.actions.Presenter;
 
 /**
  *
  * @author Yann D'Isanto
  */
 @Messages({
-    "ACTION_MongoShell=Mongo shell",
-    "# {0} - connection uri",
-    "mongoShellOutputTitle=mongo shell - {0}"
+    "ACTION_MongoNativeTools=Native Tools"
 })
-public final class MongoShellAction extends AbstractAction {
+public final class MongoNativeToolsAction extends AbstractAction implements Presenter.Popup {
 
     private final Lookup lookup;
 
-    public MongoShellAction(Lookup lookup) {
-        super(Bundle.ACTION_MongoShell());
+    public MongoNativeToolsAction(Lookup lookup) {
+        super(Bundle.ACTION_MongoNativeTools());
         this.lookup = lookup;
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {
-        final ConnectionInfo ci = lookup.lookup(ConnectionInfo.class);
-        final MongoClientURI uri = ci.getMongoURI();
-        final ExecutionDescriptor descriptor = new ExecutionDescriptor()
-            .inputVisible(true)
-//            .controllable(true)
-            .frontWindow(true);
-        final ExecutionService service = ExecutionService.newService(
-            new MongoShellProcessCreator(uri),
-            descriptor,
-            Bundle.mongoShellOutputTitle(uri.toString()));
-        service.run();
+    public JMenuItem getPopupPresenter() {
+        final JMenu menu = new JMenu(this);
+        menu.add(new JMenuItem(new MongoShellExecAction(lookup)));
+        menu.add(new JMenuItem(new MongoDumpExecAction(lookup)));
+        return menu;
     }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        // do nothing, only container for native tools action menu items
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return MongoNativeToolsOptions.INSTANCE.isToolsFolderConfigured();
+    }
+
 }

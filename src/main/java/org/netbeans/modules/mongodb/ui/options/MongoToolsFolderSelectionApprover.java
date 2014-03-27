@@ -21,48 +21,34 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.netbeans.modules.mongodb.options;
+package org.netbeans.modules.mongodb.ui.options;
 
-import java.util.prefs.Preferences;
-import org.openide.util.NbPreferences;
+import java.io.File;
+import org.netbeans.modules.mongodb.options.MongoNativeToolsFolderPredicate;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileChooserBuilder;
 
 /**
  *
  * @author Yann D'Isanto
  */
-public enum MongoShellOptions {
+public final class MongoToolsFolderSelectionApprover implements FileChooserBuilder.SelectionApprover {
 
-    INSTANCE;
-    
-    public static final String MONGO_EXEC_PATH = "mongo-exec-path";
-
-    private String mongoExecPath;
-
-    private MongoShellOptions() {
-        load();
-    }
-
-    private Preferences getPreferences() {
-        return NbPreferences.forModule(MongoShellOptions.class);
-    }
-
-    public void load() {
-        mongoExecPath = getPreferences().get(MONGO_EXEC_PATH, null);
-    }
-
-    public void store() {
-        if (mongoExecPath == null) {
-            getPreferences().remove(MONGO_EXEC_PATH);
-        } else {
-            getPreferences().put(MONGO_EXEC_PATH, mongoExecPath);
+    @Override
+    public boolean approve(File[] selection) {
+        if (selection.length == 0) {
+            return false;
         }
-    }
-
-    public String getMongoExecPath() {
-        return mongoExecPath;
-    }
-
-    public void setMongoExecPath(String mongoExecPath) {
-        this.mongoExecPath = mongoExecPath;
+        final File selectedFolder = selection[0];
+        if (selectedFolder.isDirectory()) {
+            if (new MongoNativeToolsFolderPredicate().eval(selectedFolder.toPath())) {
+                return true;
+            }
+        }
+        DialogDisplayer.getDefault().notify(
+            new NotifyDescriptor.Message("The selected folder doesn't contain the mongo tools executables",
+                NotifyDescriptor.ERROR_MESSAGE));
+        return false;
     }
 }
