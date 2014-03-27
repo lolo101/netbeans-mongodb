@@ -51,7 +51,7 @@ public class MongoDumpOptionsPanel extends javax.swing.JPanel {
         final PlainDocument document = (PlainDocument) portField.getDocument();
         document.setDocumentFilter(new IntegerDocumentFilter());
         defaultPasswordEchoChar = passwordField.getEchoChar();
-        outputField.setText(Paths.get("output").toAbsolutePath().toString());
+        outputField.setText(Paths.get("dump").toAbsolutePath().toString());
     }
 
     public void setOptions(Map<String, String> options) {
