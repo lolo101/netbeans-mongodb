@@ -29,16 +29,23 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.swing.text.PlainDocument;
 import org.netbeans.modules.mongodb.native_tools.MongoRestoreOptions;
+import org.netbeans.modules.mongodb.options.MongoNativeToolsOptions;
 import org.netbeans.modules.mongodb.ui.util.IntegerDocumentFilter;
+import org.netbeans.modules.mongodb.util.Version;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileChooserBuilder;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Yann D'Isanto
  */
+@NbBundle.Messages({
+    "# {0} - version",
+    "restoreDialogTitle=mongorestore {0}"
+})
 public class MongoRestoreOptionsPanel extends javax.swing.JPanel {
 
     private final char defaultPasswordEchoChar;
@@ -48,10 +55,20 @@ public class MongoRestoreOptionsPanel extends javax.swing.JPanel {
      */
     public MongoRestoreOptionsPanel() {
         initComponents();
+        disableOptionsAccordingToVersion();
         final PlainDocument document = (PlainDocument) portField.getDocument();
         document.setDocumentFilter(new IntegerDocumentFilter());
         defaultPasswordEchoChar = passwordField.getEchoChar();
         inputField.setText(Paths.get("dump").toAbsolutePath().toString());
+    }
+
+    private void disableOptionsAccordingToVersion() {
+        final Version version = MongoNativeToolsOptions.INSTANCE.getToolsVersion();
+        final Version v2_4 = new Version("2.4");
+        if(version.compareTo(v2_4) < 0) {
+            sslCheckBox.setEnabled(false);
+            sslCheckBox.setToolTipText(Bundle.requiresVersion(v2_4));
+        }
     }
 
     public void setOptions(Map<String, String> options) {
@@ -313,13 +330,13 @@ public class MongoRestoreOptionsPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_displayPasswordCheckBoxActionPerformed
 
     private void browseOutputButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseOutputButtonActionPerformed
-        final FileChooserBuilder fcb = new FileChooserBuilder(MongoRestoreOptionsPanel.class);
+        final FileChooserBuilder fcb = new FileChooserBuilder("dump-restore-path");
         fcb.setDirectoriesOnly(true);
         final String output = inputField.getText().trim();
         if (output.isEmpty() == false) {
             fcb.setDefaultWorkingDirectory(new File(output));
         }
-        final File file = fcb.showSaveDialog();
+        final File file = fcb.showOpenDialog();
         if (file != null) {
             inputField.setText(file.getAbsolutePath());
         }
@@ -359,7 +376,8 @@ public class MongoRestoreOptionsPanel extends javax.swing.JPanel {
         if (options != null) {
             panel.setOptions(options);
         }
-        final DialogDescriptor desc = new DialogDescriptor(panel, "Dump options");
+        final Version version = MongoNativeToolsOptions.INSTANCE.getToolsVersion();
+        final DialogDescriptor desc = new DialogDescriptor(panel, Bundle.restoreDialogTitle(version));
         if (NotifyDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(desc))) {
             return panel.getOptions();
         }

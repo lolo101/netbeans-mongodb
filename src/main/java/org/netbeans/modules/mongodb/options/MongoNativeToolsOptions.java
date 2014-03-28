@@ -23,7 +23,14 @@
  */
 package org.netbeans.modules.mongodb.options;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.prefs.Preferences;
+import org.netbeans.modules.mongodb.util.Version;
+import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 
 /**
@@ -33,10 +40,14 @@ import org.openide.util.NbPreferences;
 public enum MongoNativeToolsOptions {
 
     INSTANCE;
-    
-    public static final String TOOLS_FOLDER = "mongodb-tools-folder";
-    
+
+    private static final String TOOLS_FOLDER = "mongodb-tools-folder";
+
+    private static final String TOOLS_VERSION = "mongodb-tools-version";
+
     private String toolsFolder;
+
+    private Version toolsVersion;
 
     private MongoNativeToolsOptions() {
         load();
@@ -48,26 +59,65 @@ public enum MongoNativeToolsOptions {
 
     public void load() {
         toolsFolder = getPreferences().get(TOOLS_FOLDER, null);
+        final String versionAsString = getPreferences().get(TOOLS_VERSION, null);
+        if (versionAsString != null) {
+            toolsVersion = new Version(versionAsString);
+        }
     }
 
     public void store() {
         if (toolsFolder == null) {
             getPreferences().remove(TOOLS_FOLDER);
+            getPreferences().remove(TOOLS_VERSION);
         } else {
             getPreferences().put(TOOLS_FOLDER, toolsFolder);
+            getPreferences().put(TOOLS_VERSION, toolsVersion.toString());
         }
     }
 
     public boolean isToolsFolderConfigured() {
         return toolsFolder != null;
     }
-    
+
     public String getToolsFolder() {
         return toolsFolder;
     }
 
+    public Version getToolsVersion() {
+        return toolsVersion;
+    }
+
     public void setToolsFolder(String toolsFolder) {
         this.toolsFolder = toolsFolder;
+        if (toolsFolder != null) {
+            try {
+                toolsVersion = readVersion(toolsFolder);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        } else {
+            toolsVersion = null;
+        }
     }
-    
+
+    private static Version readVersion(String toolsFolder) throws IOException {
+        final Process process = new ProcessBuilder(
+            new File(toolsFolder, "mongo").getAbsolutePath(),
+            "--version"
+        ).start();
+        process.getOutputStream().close();
+        process.getErrorStream().close();
+        try (InputStream input = process.getInputStream()) {
+            final String version = readVersion(input);
+            return new Version(version);
+        }
+    }
+
+    private static String readVersion(InputStream input) throws IOException {
+        try (InputStreamReader isr = new InputStreamReader(input);
+            BufferedReader reader = new BufferedReader(isr)) {
+            final String line = reader.readLine();
+            return line.substring(line.lastIndexOf(" ")).trim();
+        }
+    }
 }

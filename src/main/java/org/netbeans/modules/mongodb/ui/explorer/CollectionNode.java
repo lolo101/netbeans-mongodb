@@ -76,8 +76,6 @@ import org.openide.windows.TopComponent;
     "renameCollectionText=rename ''{0}'' to:"})
 final class CollectionNode extends AbstractNode {
 
-    private final Lookup lookup;
-
     private final CollectionInfo collection;
 
     CollectionNode(CollectionInfo connection) {
@@ -90,7 +88,6 @@ final class CollectionNode extends AbstractNode {
 
     CollectionNode(final CollectionInfo collection, final InstanceContent content, final Lookup lookup) {
         super(Children.LEAF, lookup);
-        this.lookup = lookup;
         this.collection = collection;
         content.add(collection);
         content.add(collection, new CollectionConverter());
@@ -152,7 +149,7 @@ final class CollectionNode extends AbstractNode {
             dropAction,
             renameAction,
             null,
-            new MongoNativeToolsAction(lookup),
+            new MongoNativeToolsAction(getLookup()),
             null,
             new ExportWizardAction(getLookup(), properties),
             importAction
@@ -196,13 +193,13 @@ final class CollectionNode extends AbstractNode {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            final CollectionInfo ci = lookup.lookup(CollectionInfo.class);
+            final CollectionInfo ci = getLookup().lookup(CollectionInfo.class);
             final Object dlgResult = DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(
                 Bundle.dropCollectionConfirmText(ci.getName()),
                 NotifyDescriptor.YES_NO_OPTION));
             if (dlgResult.equals(NotifyDescriptor.OK_OPTION)) {
                 try {
-                    lookup.lookup(DBCollection.class).drop();
+                    getLookup().lookup(DBCollection.class).drop();
                     ((OneDbNode) getParentNode()).refreshChildren();
                     final TopComponent tc = TopComponentUtils.find(CollectionView.class, ci);
                     if (tc != null) {
@@ -224,16 +221,16 @@ final class CollectionNode extends AbstractNode {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            final CollectionInfo ci = lookup.lookup(CollectionInfo.class);
+            final CollectionInfo ci = getLookup().lookup(CollectionInfo.class);
             final NotifyDescriptor.InputLine input = new ValidatingInputLine(
                 Bundle.renameCollectionText(ci.getName()),
                 Bundle.ACTION_RenameCollection(), 
-                new CollectionNameValidator(lookup));
+                new CollectionNameValidator(getLookup()));
             input.setInputText(ci.getName());
             final Object dlgResult = DialogDisplayer.getDefault().notify(input);
             if (dlgResult.equals(NotifyDescriptor.OK_OPTION)) {
                 try {
-                    lookup.lookup(DBCollection.class).rename(input.getInputText().trim());
+                    getLookup().lookup(DBCollection.class).rename(input.getInputText().trim());
                     ((OneDbNode) getParentNode()).refreshChildren();
                 } catch (MongoException ex) {
                     DialogDisplayer.getDefault().notify(

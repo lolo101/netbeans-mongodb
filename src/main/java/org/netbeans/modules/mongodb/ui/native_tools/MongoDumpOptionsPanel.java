@@ -29,16 +29,25 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.swing.text.PlainDocument;
 import org.netbeans.modules.mongodb.native_tools.MongoDumpOptions;
+import org.netbeans.modules.mongodb.options.MongoNativeToolsOptions;
 import org.netbeans.modules.mongodb.ui.util.IntegerDocumentFilter;
+import org.netbeans.modules.mongodb.util.Version;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileChooserBuilder;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
  * @author Yann D'Isanto
  */
+@Messages({
+    "# {0} - required version",
+    "requiresVersion=requires version {0}",
+    "# {0} - version",
+    "dumpDialogTitle=mongodump {0}"
+})
 public class MongoDumpOptionsPanel extends javax.swing.JPanel {
 
     private final char defaultPasswordEchoChar;
@@ -48,10 +57,20 @@ public class MongoDumpOptionsPanel extends javax.swing.JPanel {
      */
     public MongoDumpOptionsPanel() {
         initComponents();
+        disableOptionsAccordingToVersion();
         final PlainDocument document = (PlainDocument) portField.getDocument();
         document.setDocumentFilter(new IntegerDocumentFilter());
         defaultPasswordEchoChar = passwordField.getEchoChar();
         outputField.setText(Paths.get("dump").toAbsolutePath().toString());
+    }
+    
+    private void disableOptionsAccordingToVersion() {
+        final Version version = MongoNativeToolsOptions.INSTANCE.getToolsVersion();
+        final Version v2_4 = new Version("2.4");
+        if(version.compareTo(v2_4) < 0) {
+            sslCheckBox.setEnabled(false);
+            sslCheckBox.setToolTipText(Bundle.requiresVersion(v2_4));
+        }
     }
 
     public void setOptions(Map<String, String> options) {
@@ -333,7 +352,7 @@ public class MongoDumpOptionsPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_displayPasswordCheckBoxActionPerformed
 
     private void browseOutputButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseOutputButtonActionPerformed
-        final FileChooserBuilder fcb = new FileChooserBuilder(MongoDumpOptionsPanel.class);
+        final FileChooserBuilder fcb = new FileChooserBuilder("dump-restore-path");
         fcb.setDirectoriesOnly(true);
         final String output = outputField.getText().trim();
         if (output.isEmpty() == false) {
@@ -381,7 +400,8 @@ public class MongoDumpOptionsPanel extends javax.swing.JPanel {
         if (options != null) {
             panel.setOptions(options);
         }
-        final DialogDescriptor desc = new DialogDescriptor(panel, "Dump options");
+        final Version version = MongoNativeToolsOptions.INSTANCE.getToolsVersion();
+        final DialogDescriptor desc = new DialogDescriptor(panel, Bundle.dumpDialogTitle(version));
         if (NotifyDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(desc))) {
             return panel.getOptions();
         }
