@@ -38,7 +38,9 @@ import javax.swing.Action;
 import org.netbeans.modules.mongodb.DbInfo;
 import org.netbeans.modules.mongodb.native_tools.MongoNativeToolsAction;
 import org.netbeans.modules.mongodb.ui.util.CollectionNameValidator;
+import org.netbeans.modules.mongodb.ui.util.TopComponentUtils;
 import org.netbeans.modules.mongodb.ui.util.ValidatingInputLine;
+import org.netbeans.modules.mongodb.ui.windows.CollectionView;
 import org.netbeans.modules.mongodb.ui.wizards.ExportWizardAction;
 import org.netbeans.modules.mongodb.ui.wizards.ImportWizardAction;
 import org.openide.DialogDisplayer;
@@ -46,12 +48,12 @@ import org.openide.NotifyDescriptor;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Sheet;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
+import org.openide.windows.TopComponent;
 
 /**
  *
@@ -60,16 +62,17 @@ import org.openide.util.lookup.ProxyLookup;
  */
 @Messages({
     "ACTION_AddCollection=Add Collection",
+    "ACTION_DropDatabase=Drop Database",
     "ACTION_Export=Export",
     "ACTION_Import=Import",
     "addCollectionText=Collection name:",
     "# {0} - collection name",
-    "collectionAlreadyExists=Collection ''{0}'' already exists"})
+    "collectionAlreadyExists=Collection ''{0}'' already exists",
+    "# {0} - database name",
+    "dropDatabaseConfirmText=Permanently drop ''{0}'' database?"})
 final class OneDbNode extends AbstractNode {
 
     private final OneDBChildren childFactory;
-
-    private final Lookup lookup;
 
     OneDbNode(DbInfo info) {
         this(info, new InstanceContent());
@@ -90,7 +93,6 @@ final class OneDbNode extends AbstractNode {
     OneDbNode(DbInfo info, InstanceContent content, ProxyLookup lookup, OneDBChildren childFactory) {
         super(Children.create(childFactory, true), lookup);
         this.childFactory = childFactory;
-        this.lookup = lookup;
         content.add(info, new DBConverter());
         setName(info.getDbName());
         setDisplayName(info.getDbName());
@@ -113,8 +115,9 @@ final class OneDbNode extends AbstractNode {
         return new Action[]{
             new AddCollectionAction(),
             new RefreshChildrenAction(childFactory),
+            new DropDatabaseAction(),
             null,
-            new MongoNativeToolsAction(lookup),
+            new MongoNativeToolsAction(getLookup()),
             null,
             new ExportWizardAction(getLookup()),
             new ImportWizardAction(getLookup(), new Runnable() {
@@ -156,7 +159,7 @@ final class OneDbNode extends AbstractNode {
         }
     }
 
-    public class AddCollectionAction extends AbstractAction {
+    public final class AddCollectionAction extends AbstractAction {
 
         public AddCollectionAction() {
             super(Bundle.ACTION_AddCollection());
@@ -166,12 +169,12 @@ final class OneDbNode extends AbstractNode {
         public void actionPerformed(ActionEvent e) {
             final NotifyDescriptor.InputLine input = new ValidatingInputLine(
                 Bundle.addCollectionText(),
-                Bundle.ACTION_AddCollection(), 
-                new CollectionNameValidator(lookup));
+                Bundle.ACTION_AddCollection(),
+                new CollectionNameValidator(getLookup()));
             final Object dlgResult = DialogDisplayer.getDefault().notify(input);
             if (dlgResult.equals(NotifyDescriptor.OK_OPTION)) {
                 final String collectionName = input.getInputText().trim();
-                final DB db = lookup.lookup(DB.class);
+                final DB db = getLookup().lookup(DB.class);
                 final DBObject collectionOptions = new BasicDBObject("capped", false);
                 try {
                     db.createCollection(collectionName, collectionOptions);
@@ -184,4 +187,34 @@ final class OneDbNode extends AbstractNode {
             }
         }
     }
+
+    public final class DropDatabaseAction extends AbstractAction {
+
+        public DropDatabaseAction() {
+            super(Bundle.ACTION_DropDatabase());
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            final DB db = getLookup().lookup(DB.class);
+
+            final Object dlgResult = DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(
+                Bundle.dropDatabaseConfirmText(db.getName()),
+                NotifyDescriptor.YES_NO_OPTION));
+            if (dlgResult.equals(NotifyDescriptor.OK_OPTION)) {
+                try {
+                    db.dropDatabase();
+                    ((OneConnectionNode) getParentNode()).refreshChildren();
+                    final DbInfo dbInfo = getLookup().lookup(DbInfo.class);
+                    for (TopComponent topComponent : TopComponentUtils.findAll(CollectionView.class, dbInfo)) {
+                        topComponent.close();
+                    }
+                } catch (MongoException ex) {
+                    DialogDisplayer.getDefault().notify(
+                        new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE));
+                }
+            }
+        }
+    }
+
 }

@@ -172,6 +172,10 @@ final class OneConnectionNode extends AbstractNode implements PropertyChangeList
         return isConnected() ? null : new ConnectAction();
     }
 
+    public void refreshChildren() {
+        childFactory.refresh();
+    }
+
     private MongoClient connect(final boolean create) {
         synchronized (lock) {
             if (create && isConnected() == false) {
