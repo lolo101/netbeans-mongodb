@@ -24,6 +24,7 @@
 package org.netbeans.modules.mongodb.util;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +52,8 @@ public final class ProcessCreator implements Callable<Process> {
         private String command;
 
         private final Map<String, String> options = new HashMap<>();
+        
+        private final List<String> args = new ArrayList<>();
 
         public Builder() {
         }
@@ -79,6 +82,16 @@ public final class ProcessCreator implements Callable<Process> {
             return this;
         }
 
+        public Builder arg(String arg) {
+            args.add(arg);
+            return this;
+        }
+
+        public Builder args(String... args) {
+            this.args.addAll(Arrays.asList(args));
+            return this;
+        }
+
         public ProcessCreator build() {
             final List<String> commandLine = new ArrayList<>();
             commandLine.add(command);
@@ -89,6 +102,7 @@ public final class ProcessCreator implements Callable<Process> {
                     commandLine.add(optionValue);
                 }
             }
+            commandLine.addAll(args);
             return new ProcessCreator(commandLine);
         }
     }

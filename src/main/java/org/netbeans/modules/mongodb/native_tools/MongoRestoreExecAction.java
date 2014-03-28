@@ -24,30 +24,39 @@
 
 package org.netbeans.modules.mongodb.native_tools;
 
+import com.mongodb.MongoClientURI;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.modules.mongodb.CollectionInfo;
+import org.netbeans.modules.mongodb.ConnectionInfo;
+import org.netbeans.modules.mongodb.DbInfo;
 import org.netbeans.modules.mongodb.ui.actions.ExecutionAction;
+import org.netbeans.modules.mongodb.ui.native_tools.MongoRestoreOptionsPanel;
 import org.netbeans.modules.mongodb.util.ProcessCreator;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Yann D'Isanto
  */
+@NbBundle.Messages({
+    "ACTION_MongoRestore=Restore",
+    "mongoRestoreOutputTitle=mongorestore"
+})
 public final class MongoRestoreExecAction extends ExecutionAction {
 
-    private final Map<String, String> options = new HashMap<>();
-
-    public MongoRestoreExecAction(Map<String, String> options) {
-        super("MongoRestore", Lookup.EMPTY);
-        this.options.putAll(options);
+    public MongoRestoreExecAction(Lookup lookup) {
+        super(Bundle.ACTION_MongoRestore(), lookup);
     }
     
     @Override
     protected String getDisplayName() {
-        return "mongo restore";
+        return Bundle.mongoRestoreOutputTitle();
     }
 
     @Override
@@ -58,9 +67,62 @@ public final class MongoRestoreExecAction extends ExecutionAction {
     @Override
     protected Callable<Process> getProcessCreator() {
         final String mongoRestoreExec = MongoNativeTools.MONGO_RESTORE.getExecFullPath().toString();
+        final Map<String, String> options = MongoRestoreOptionsPanel.showDialog(getOptionsFromContext());
+        if (options == null) {
+            return null;
+        }
+        final String path = options.remove(MongoRestoreOptions.PATH);
         return new ProcessCreator.Builder(mongoRestoreExec)
             .options(options)
+            .arg(path)
             .build();
     }
     
+    private Map<String, String> getOptionsFromContext() {
+        final Map<String, String> options = new HashMap<>();
+        final ConnectionInfo connectionInfo = getLookup().lookup(ConnectionInfo.class);
+        if (connectionInfo != null) {
+            final MongoClientURI uri = connectionInfo.getMongoURI();
+            parseOptionsFromURI(uri, options);
+        }
+        final DbInfo dbInfo = getLookup().lookup(DbInfo.class);
+        if(dbInfo != null) {
+            options.put(MongoRestoreOptions.DB, dbInfo.getDbName());
+        }
+        final CollectionInfo collection = getLookup().lookup(CollectionInfo.class);
+        if(collection != null) {
+            options.put(MongoRestoreOptions.COLLECTION, collection.getName());
+        }
+        return options;
+    }
+
+    private void parseOptionsFromURI(MongoClientURI uri, Map<String, String> options) {
+        if (uri.getUsername() != null && uri.getUsername().isEmpty() == false) {
+            options.put(MongoRestoreOptions.USERNAME, uri.getUsername());
+        }
+        if (uri.getPassword() != null && uri.getPassword().length > 0) {
+            options.put(MongoRestoreOptions.PASSWORD, new String(uri.getPassword()));
+        }
+        if (uri.getHosts() != null && uri.getHosts().isEmpty() == false) {
+            final String hostWithPort = uri.getHosts().get(0);
+            final Pattern p = Pattern.compile("(.*)(:(\\d+))?");
+            final Matcher m = p.matcher(hostWithPort);
+            if (m.matches()) {
+                final String host = m.group(1);
+                final String port = m.group(3);
+                if (host.isEmpty() == false) {
+                    options.put(MongoRestoreOptions.HOST, host);
+                    if (port != null) {
+                        options.put(MongoRestoreOptions.PORT, port);
+                    }
+                }
+            }
+        }
+        if (uri.getDatabase() != null && uri.getDatabase().isEmpty() == false) {
+            options.put(MongoRestoreOptions.DB, uri.getDatabase());
+        }
+        if (uri.getCollection() != null && uri.getCollection().isEmpty() == false) {
+            options.put(MongoRestoreOptions.COLLECTION, uri.getCollection());
+        }
+    }
 }
