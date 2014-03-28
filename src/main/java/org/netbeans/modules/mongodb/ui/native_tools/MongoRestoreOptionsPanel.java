@@ -25,33 +25,33 @@ package org.netbeans.modules.mongodb.ui.native_tools;
 
 import java.io.File;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import javax.swing.JPanel;
 import javax.swing.text.PlainDocument;
 import org.netbeans.modules.mongodb.native_tools.MongoRestoreOptions;
 import org.netbeans.modules.mongodb.options.MongoNativeToolsOptions;
 import org.netbeans.modules.mongodb.ui.util.IntegerDocumentFilter;
 import org.netbeans.modules.mongodb.util.Version;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileChooserBuilder;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
  * @author Yann D'Isanto
  */
-@NbBundle.Messages({
+@Messages({
     "# {0} - version",
     "restoreDialogTitle=mongorestore {0}"
 })
-public class MongoRestoreOptionsPanel extends javax.swing.JPanel {
+public final class MongoRestoreOptionsPanel extends javax.swing.JPanel implements NativeToolOptionsDialog.OptionsPanel {
 
     private final char defaultPasswordEchoChar;
 
     /**
-     * Creates new form MongoDumpOptionsPanel
+     * Creates new form MongoDumpOptionsOptionsPanel
      */
     public MongoRestoreOptionsPanel() {
         initComponents();
@@ -59,54 +59,24 @@ public class MongoRestoreOptionsPanel extends javax.swing.JPanel {
         final PlainDocument document = (PlainDocument) portField.getDocument();
         document.setDocumentFilter(new IntegerDocumentFilter());
         defaultPasswordEchoChar = passwordField.getEchoChar();
-        inputField.setText(Paths.get("dump").toAbsolutePath().toString());
+        dumpPathField.setText(Paths.get("dump").toAbsolutePath().toString());
     }
 
     private void disableOptionsAccordingToVersion() {
         final Version version = MongoNativeToolsOptions.INSTANCE.getToolsVersion();
         final Version v2_4 = new Version("2.4");
-        if(version.compareTo(v2_4) < 0) {
+        if (version.compareTo(v2_4) < 0) {
             sslCheckBox.setEnabled(false);
             sslCheckBox.setToolTipText(Bundle.requiresVersion(v2_4));
         }
     }
 
-    public void setOptions(Map<String, String> options) {
-        final String host = options.get(MongoRestoreOptions.HOST);
-        if (host != null) {
-            hostField.setText(host);
-        }
-        final String port = options.get(MongoRestoreOptions.PORT);
-        if (port != null) {
-            portField.setText(port);
-        }
-        final String username = options.get(MongoRestoreOptions.USERNAME);
-        if (username != null) {
-            usernameField.setText(username);
-        }
-        final String password = options.get(MongoRestoreOptions.PASSWORD);
-        if (password != null) {
-            passwordField.setText(password);
-        }
-        final String db = options.get(MongoRestoreOptions.DB);
-        if (db != null) {
-            dbField.setText(db);
-        }
-        final String collection = options.get(MongoRestoreOptions.COLLECTION);
-        if (collection != null) {
-            collectionField.setText(collection);
-        }
-        ipv6CheckBox.setSelected(options.containsKey(MongoRestoreOptions.IPV6));
-        sslCheckBox.setSelected(options.containsKey(MongoRestoreOptions.SSL));
-        directoryPerDbCheckBox.setSelected(options.containsKey(MongoRestoreOptions.DIRECTORY_PER_DB));
-        journalCheckBox.setSelected(options.containsKey(MongoRestoreOptions.JOURNAL));
-        oplogReplayCheckBox.setSelected(options.containsKey(MongoRestoreOptions.OPLOG_REPLAY));
-        final String dumpPath = options.get(MongoRestoreOptions.PATH);
-        if (dumpPath != null) {
-            inputField.setText(dumpPath);
-        }
+    @Override
+    public JPanel getPanel() {
+        return this;
     }
 
+    @Override
     public Map<String, String> getOptions() {
         final Map<String, String> options = new HashMap<>();
         final String host = hostField.getText().trim();
@@ -148,11 +118,58 @@ public class MongoRestoreOptionsPanel extends javax.swing.JPanel {
         if (oplogReplayCheckBox.isSelected()) {
             options.put(MongoRestoreOptions.OPLOG_REPLAY, "");
         }
-        final String input = inputField.getText().trim();
-        if (input.isEmpty() == false) {
-            options.put(MongoRestoreOptions.PATH, input);
-        }
         return options;
+    }
+
+    @Override
+    public void setOptions(Map<String, String> options) {
+        final String host = options.get(MongoRestoreOptions.HOST);
+        if (host != null) {
+            hostField.setText(host);
+        }
+        final String port = options.get(MongoRestoreOptions.PORT);
+        if (port != null) {
+            portField.setText(port);
+        }
+        final String username = options.get(MongoRestoreOptions.USERNAME);
+        if (username != null) {
+            usernameField.setText(username);
+        }
+        final String password = options.get(MongoRestoreOptions.PASSWORD);
+        if (password != null) {
+            passwordField.setText(password);
+        }
+        final String db = options.get(MongoRestoreOptions.DB);
+        if (db != null) {
+            dbField.setText(db);
+        }
+        final String collection = options.get(MongoRestoreOptions.COLLECTION);
+        if (collection != null) {
+            collectionField.setText(collection);
+        }
+        ipv6CheckBox.setSelected(options.containsKey(MongoRestoreOptions.IPV6));
+        sslCheckBox.setSelected(options.containsKey(MongoRestoreOptions.SSL));
+        directoryPerDbCheckBox.setSelected(options.containsKey(MongoRestoreOptions.DIRECTORY_PER_DB));
+        journalCheckBox.setSelected(options.containsKey(MongoRestoreOptions.JOURNAL));
+        oplogReplayCheckBox.setSelected(options.containsKey(MongoRestoreOptions.OPLOG_REPLAY));
+    }
+
+    @Override
+    public List<String> getArgs() {
+        final List<String> args = new ArrayList<>();
+        final String dumpPath = dumpPathField.getText().trim();
+        if (dumpPath.isEmpty() == false) {
+            args.add(dumpPath);
+        }
+        return args;
+    }
+
+    @Override
+    public void setArgs(List<String> args) {
+        if (args.isEmpty() == false) {
+            final String dumpPath = args.get(0);
+            dumpPathField.setText(dumpPath);
+        }
     }
 
     /**
@@ -179,7 +196,7 @@ public class MongoRestoreOptionsPanel extends javax.swing.JPanel {
         journalCheckBox = new javax.swing.JCheckBox();
         oplogReplayCheckBox = new javax.swing.JCheckBox();
         inputLabel = new javax.swing.JLabel();
-        inputField = new javax.swing.JTextField();
+        dumpPathField = new javax.swing.JTextField();
         browseOutputButton = new javax.swing.JButton();
         dbLabel = new javax.swing.JLabel();
         collectionLabel = new javax.swing.JLabel();
@@ -213,7 +230,7 @@ public class MongoRestoreOptionsPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(inputLabel, org.openide.util.NbBundle.getMessage(MongoRestoreOptionsPanel.class, "MongoRestoreOptionsPanel.inputLabel.text")); // NOI18N
 
-        inputField.setEditable(false);
+        dumpPathField.setEditable(false);
 
         org.openide.awt.Mnemonics.setLocalizedText(browseOutputButton, org.openide.util.NbBundle.getMessage(MongoRestoreOptionsPanel.class, "MongoRestoreOptionsPanel.browseOutputButton.text")); // NOI18N
         browseOutputButton.addActionListener(new java.awt.event.ActionListener() {
@@ -267,7 +284,7 @@ public class MongoRestoreOptionsPanel extends javax.swing.JPanel {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(inputLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(inputField, javax.swing.GroupLayout.DEFAULT_SIZE, 408, Short.MAX_VALUE)
+                        .addComponent(dumpPathField, javax.swing.GroupLayout.DEFAULT_SIZE, 408, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(browseOutputButton)))
                 .addContainerGap())
@@ -316,7 +333,7 @@ public class MongoRestoreOptionsPanel extends javax.swing.JPanel {
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(inputLabel)
-                    .addComponent(inputField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(dumpPathField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(browseOutputButton))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -324,21 +341,21 @@ public class MongoRestoreOptionsPanel extends javax.swing.JPanel {
 
     private void displayPasswordCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_displayPasswordCheckBoxActionPerformed
         final char echoChar = displayPasswordCheckBox.isSelected()
-            ? 0
-            : defaultPasswordEchoChar;
+                ? 0
+                : defaultPasswordEchoChar;
         passwordField.setEchoChar(echoChar);
     }//GEN-LAST:event_displayPasswordCheckBoxActionPerformed
 
     private void browseOutputButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseOutputButtonActionPerformed
         final FileChooserBuilder fcb = new FileChooserBuilder("dump-restore-path");
         fcb.setDirectoriesOnly(true);
-        final String output = inputField.getText().trim();
+        final String output = dumpPathField.getText().trim();
         if (output.isEmpty() == false) {
             fcb.setDefaultWorkingDirectory(new File(output));
         }
         final File file = fcb.showOpenDialog();
         if (file != null) {
-            inputField.setText(file.getAbsolutePath());
+            dumpPathField.setText(file.getAbsolutePath());
         }
     }//GEN-LAST:event_browseOutputButtonActionPerformed
 
@@ -351,9 +368,9 @@ public class MongoRestoreOptionsPanel extends javax.swing.JPanel {
     private javax.swing.JLabel dbLabel;
     private javax.swing.JCheckBox directoryPerDbCheckBox;
     private javax.swing.JCheckBox displayPasswordCheckBox;
+    private javax.swing.JTextField dumpPathField;
     private javax.swing.JTextField hostField;
     private javax.swing.JLabel hostLabel;
-    private javax.swing.JTextField inputField;
     private javax.swing.JLabel inputLabel;
     private javax.swing.JCheckBox ipv6CheckBox;
     private javax.swing.JCheckBox journalCheckBox;
@@ -367,20 +384,4 @@ public class MongoRestoreOptionsPanel extends javax.swing.JPanel {
     private javax.swing.JLabel usernameLabel;
     // End of variables declaration//GEN-END:variables
 
-    public static Map<String, String> showDialog() {
-        return showDialog(null);
-    }
-
-    public static Map<String, String> showDialog(Map<String, String> options) {
-        final MongoRestoreOptionsPanel panel = new MongoRestoreOptionsPanel();
-        if (options != null) {
-            panel.setOptions(options);
-        }
-        final Version version = MongoNativeToolsOptions.INSTANCE.getToolsVersion();
-        final DialogDescriptor desc = new DialogDescriptor(panel, Bundle.restoreDialogTitle(version));
-        if (NotifyDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(desc))) {
-            return panel.getOptions();
-        }
-        return null;
-    }
 }

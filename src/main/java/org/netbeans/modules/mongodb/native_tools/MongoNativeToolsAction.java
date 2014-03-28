@@ -37,7 +37,8 @@ import org.openide.util.actions.Presenter;
  * @author Yann D'Isanto
  */
 @Messages({
-    "ACTION_MongoNativeTools=Native Tools"
+    "ACTION_MongoNativeTools=Native Tools",
+    "TOOLTIP_configureOptions=Configure native tools path in options"
 })
 public final class MongoNativeToolsAction extends AbstractAction implements Presenter.Popup {
 
@@ -46,6 +47,9 @@ public final class MongoNativeToolsAction extends AbstractAction implements Pres
     public MongoNativeToolsAction(Lookup lookup) {
         super(Bundle.ACTION_MongoNativeTools());
         this.lookup = lookup;
+        if(isEnabled() == false) {
+            putValue(SHORT_DESCRIPTION, Bundle.TOOLTIP_configureOptions());
+        }
     }
 
     @Override

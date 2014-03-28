@@ -88,7 +88,11 @@ public final class ProcessCreator implements Callable<Process> {
         }
 
         public Builder args(String... args) {
-            this.args.addAll(Arrays.asList(args));
+            return args(Arrays.asList(args));
+        }
+
+        public Builder args(List<String> args) {
+            this.args.addAll(args);
             return this;
         }
 

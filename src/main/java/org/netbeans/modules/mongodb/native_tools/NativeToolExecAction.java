@@ -23,31 +23,42 @@
  */
 package org.netbeans.modules.mongodb.native_tools;
 
+import java.util.Map;
+import java.util.concurrent.Callable;
+import org.netbeans.modules.mongodb.ui.actions.ExecutionAction;
+import org.netbeans.modules.mongodb.ui.native_tools.NativeToolOptionsDialog;
+import org.netbeans.modules.mongodb.util.ProcessCreator;
+import org.openide.util.Lookup;
+
 /**
  *
  * @author Yann D'Isanto
  */
-public interface MongoRestoreOptions {
+public abstract class NativeToolExecAction extends ExecutionAction {
 
-    String HOST = "--host";
+    protected final MongoNativeTool tool;
 
-    String PORT = "--port";
+    public NativeToolExecAction(String name, Lookup lookup, MongoNativeTool tool) {
+        super(name, lookup);
+        this.tool = tool;
+    }
 
-    String USERNAME = "--username";
+    @Override
+    protected final String getDisplayName() {
+        return tool.getExecBaseName();
+    }
 
-    String PASSWORD = "--password";
+    protected abstract Map<String, String> getOptionsFromContext();
 
-    String DB = "--db";
-
-    String COLLECTION = "--collection";
-
-    String IPV6 = "--ipv6";
-
-    String SSL = "--ssl";
-
-    String DIRECTORY_PER_DB = "--directoryperdb";
-
-    String JOURNAL = "--journal";
-
-    String OPLOG_REPLAY = "--oplogReplay";
+    @Override
+    protected final Callable<Process> getProcessCreator() {
+        final NativeToolOptionsDialog dialog = NativeToolOptionsDialog.get(tool);
+        if (dialog.show(getOptionsFromContext())) {
+            return new ProcessCreator.Builder(tool.getExecFullPath().toString())
+                    .options(dialog.getOptions())
+                    .args(dialog.getArgs())
+                    .build();
+        }
+        return null;
+    }
 }

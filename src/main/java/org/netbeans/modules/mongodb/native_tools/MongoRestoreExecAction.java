@@ -34,8 +34,6 @@ import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.modules.mongodb.CollectionInfo;
 import org.netbeans.modules.mongodb.ConnectionInfo;
 import org.netbeans.modules.mongodb.DbInfo;
-import org.netbeans.modules.mongodb.ui.actions.ExecutionAction;
-import org.netbeans.modules.mongodb.ui.native_tools.MongoRestoreOptionsPanel;
 import org.netbeans.modules.mongodb.util.ProcessCreator;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -45,18 +43,12 @@ import org.openide.util.NbBundle;
  * @author Yann D'Isanto
  */
 @NbBundle.Messages({
-    "ACTION_MongoRestore=Restore",
-    "mongoRestoreOutputTitle=mongorestore"
+    "ACTION_MongoRestore=Restore"
 })
-public final class MongoRestoreExecAction extends ExecutionAction {
+public final class MongoRestoreExecAction extends NativeToolExecAction {
 
     public MongoRestoreExecAction(Lookup lookup) {
-        super(Bundle.ACTION_MongoRestore(), lookup);
-    }
-    
-    @Override
-    protected String getDisplayName() {
-        return Bundle.mongoRestoreOutputTitle();
+        super(Bundle.ACTION_MongoRestore(), lookup, MongoNativeTool.MONGO_RESTORE);
     }
 
     @Override
@@ -65,20 +57,7 @@ public final class MongoRestoreExecAction extends ExecutionAction {
     }
 
     @Override
-    protected Callable<Process> getProcessCreator() {
-        final String mongoRestoreExec = MongoNativeTools.MONGO_RESTORE.getExecFullPath().toString();
-        final Map<String, String> options = MongoRestoreOptionsPanel.showDialog(getOptionsFromContext());
-        if (options == null) {
-            return null;
-        }
-        final String path = options.remove(MongoRestoreOptions.PATH);
-        return new ProcessCreator.Builder(mongoRestoreExec)
-            .options(options)
-            .arg(path)
-            .build();
-    }
-    
-    private Map<String, String> getOptionsFromContext() {
+    protected Map<String, String> getOptionsFromContext() {
         final Map<String, String> options = new HashMap<>();
         final ConnectionInfo connectionInfo = getLookup().lookup(ConnectionInfo.class);
         if (connectionInfo != null) {

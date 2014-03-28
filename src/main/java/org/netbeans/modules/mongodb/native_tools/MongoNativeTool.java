@@ -32,7 +32,7 @@ import org.netbeans.modules.mongodb.options.MongoNativeToolsOptions;
  *
  * @author Yann D'Isanto
  */
-public enum MongoNativeTools {
+public enum MongoNativeTool {
 
     MONGO_SHELL("mongo"),
     MONGO_DUMP("mongodump"),
@@ -47,7 +47,7 @@ public enum MongoNativeTools {
 
     private final String execBaseName;
 
-    private MongoNativeTools(String execBaseName) {
+    private MongoNativeTool(String execBaseName) {
         this.execBaseName = execBaseName;
     }
 

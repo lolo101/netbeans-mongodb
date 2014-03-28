@@ -62,7 +62,7 @@ public final class MongoShellExecAction extends ExecutionAction {
 
     @Override
     protected Callable<Process> getProcessCreator() {
-        final String shellExec = MongoNativeTools.MONGO_SHELL.getExecFullPath().toString();
+        final String shellExec = MongoNativeTool.MONGO_SHELL.getExecFullPath().toString();
         final ProcessCreator.Builder builder = new ProcessCreator.Builder(shellExec);
         final MongoClientURI uri = getMongoURI();
         if(uri != null) {
