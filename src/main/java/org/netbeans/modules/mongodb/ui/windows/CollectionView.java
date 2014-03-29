@@ -143,16 +143,14 @@ public final class CollectionView extends TopComponent {
 
     private final Map<ResultView, CollectionQueryResultView> resultViews = new EnumMap<>(ResultView.class);
 
+    private Lookup lookup;
+    
     public CollectionView(CollectionInfo collectionInfo, Lookup lookup) {
         super(lookup);
+        this.lookup = lookup;
         isSystemCollection = SystemCollectionPredicate.get().eval(collectionInfo.getName());
         initComponents();
-        final ConnectionInfo connectionInfo = lookup.lookup(ConnectionInfo.class);
-        final DbInfo dbInfo = lookup.lookup(DbInfo.class);
-        final String title = Bundle.collectionViewTitle(dbInfo.getDbName(), collectionInfo.getName());
-        setName(title);
-        setToolTipText(
-            Bundle.collectionViewTooltip(connectionInfo.getDisplayName(), title));
+        updateTitle();
         setIcon(isSystemCollection
             ? Images.SYSTEM_COLLECTION_ICON
             : Images.COLLECTION_ICON);
@@ -279,6 +277,27 @@ public final class CollectionView extends TopComponent {
             }
 
         });
+    }
+
+    @Override
+    public Lookup getLookup() {
+        return lookup;
+    }
+
+    public void setLookup(Lookup lookup) {
+        this.lookup = lookup;
+        final DBCollection dbCollection = lookup.lookup(DBCollection.class);
+        collectionQueryResult.setDbCollection(dbCollection);
+    }
+    
+    public void updateTitle() {
+        final ConnectionInfo connectionInfo = lookup.lookup(ConnectionInfo.class);
+        final DbInfo dbInfo = lookup.lookup(DbInfo.class);
+        final CollectionInfo collectionInfo = lookup.lookup(CollectionInfo.class);
+        final String title = Bundle.collectionViewTitle(dbInfo.getDbName(), collectionInfo.getName());
+        setName(title);
+        setToolTipText(
+            Bundle.collectionViewTooltip(connectionInfo.getDisplayName(), title));
     }
 
     @Override

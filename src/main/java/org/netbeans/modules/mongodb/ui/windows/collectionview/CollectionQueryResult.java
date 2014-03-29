@@ -37,7 +37,7 @@ public final class CollectionQueryResult {
 
     public static final int DEFAULT_PAGE_SIZE = 20;
 
-    private final DBCollection dbCollection;
+    private DBCollection dbCollection;
 
     private final List<DBObject> documents = new ArrayList<>();
 
@@ -58,6 +58,14 @@ public final class CollectionQueryResult {
     private boolean viewRefreshNecessary;
 
     public CollectionQueryResult(DBCollection dbCollection) {
+        this.dbCollection = dbCollection;
+    }
+
+    public DBCollection getDbCollection() {
+        return dbCollection;
+    }
+
+    public void setDbCollection(DBCollection dbCollection) {
         this.dbCollection = dbCollection;
     }
 
