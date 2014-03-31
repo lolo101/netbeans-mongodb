@@ -37,6 +37,10 @@ public interface MongoRestoreOptions {
 
     String PASSWORD = "--password";
 
+    String AUTH_DATABASE = "--authenticationDatabase";
+
+    String AUTH_MECHANISM = "--authenticationMechanism";
+
     String DB = "--db";
 
     String COLLECTION = "--collection";
