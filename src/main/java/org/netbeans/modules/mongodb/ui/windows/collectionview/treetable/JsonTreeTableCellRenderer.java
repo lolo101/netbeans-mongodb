@@ -137,14 +137,14 @@ public final class JsonTreeTableCellRenderer extends JPanel implements TreeCellR
                 }
             }
         } else if (value instanceof JsonPropertyNode) {
-            computRendererForJsonPropertyNode((JsonPropertyNode) value, selected);
+            computeRendererForJsonPropertyNode((JsonPropertyNode) value, selected);
         } else if (value instanceof JsonValueNode) {
-            computRendererForJsonValuePropertyNode((JsonValueNode) value, selected);
+            computeRendererForJsonValuePropertyNode((JsonValueNode) value, selected);
         }
         return this;
     }
 
-    private void computRendererForJsonPropertyNode(JsonPropertyNode node, boolean selected) {
+    private void computeRendererForJsonPropertyNode(JsonPropertyNode node, boolean selected) {
         final JsonProperty property = node.getUserObject();
         if (node.isLeaf() && (property.getValue() instanceof List) == false) {
             final Object value = property.getValue();
@@ -182,7 +182,7 @@ public final class JsonTreeTableCellRenderer extends JPanel implements TreeCellR
         }
     }
 
-    private void computRendererForJsonValuePropertyNode(JsonValueNode node, boolean selected) {
+    private void computeRendererForJsonValuePropertyNode(JsonValueNode node, boolean selected) {
         final Object value = node.getUserObject();
         final LabelCategory valueLabelCategory = LABEL_CATEGORIES.get(value.getClass());
         final LabelFontConf keyFontConf = options.getLabelFontConf((value instanceof ObjectId) ? LabelCategory.ID : LabelCategory.KEY);
