@@ -22,7 +22,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="passwordLabel" linkSize="2" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="passwordField" pref="372" max="32767" attributes="0"/>
+                      <Component id="passwordField" pref="313" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="displayPasswordCheckBox" min="-2" max="-2" attributes="0"/>
                   </Group>
@@ -61,9 +61,13 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="outputLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="outputField" pref="362" max="32767" attributes="0"/>
+                      <Component id="outputField" pref="303" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="browseOutputButton" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="verbosityEditor" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -118,7 +122,9 @@
               <Component id="repairCheckBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="forceTableScanCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace type="separate" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <Component id="verbosityEditor" min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="outputLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="outputField" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -264,6 +270,8 @@
     <Component class="javax.swing.JTextField" name="dbField">
     </Component>
     <Component class="javax.swing.JTextField" name="collectionField">
+    </Component>
+    <Component class="org.netbeans.modules.mongodb.ui.native_tools.VerbosityEditor" name="verbosityEditor">
     </Component>
   </SubComponents>
 </Form>

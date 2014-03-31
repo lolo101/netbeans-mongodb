@@ -22,7 +22,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="passwordLabel" linkSize="2" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="passwordField" pref="487" max="32767" attributes="0"/>
+                      <Component id="passwordField" pref="381" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="displayPasswordCheckBox" min="-2" max="-2" attributes="0"/>
                   </Group>
@@ -59,9 +59,13 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="inputLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="dumpPathField" pref="408" max="32767" attributes="0"/>
+                      <Component id="dumpPathField" pref="302" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="browseOutputButton" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="verbosityEditor" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -112,6 +116,8 @@
               <Component id="journalCheckBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="oplogReplayCheckBox" min="-2" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <Component id="verbosityEditor" min="-2" max="-2" attributes="0"/>
               <EmptySpace type="separate" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="inputLabel" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -244,6 +250,8 @@
     <Component class="javax.swing.JTextField" name="dbField">
     </Component>
     <Component class="javax.swing.JTextField" name="collectionField">
+    </Component>
+    <Component class="org.netbeans.modules.mongodb.ui.native_tools.VerbosityEditor" name="verbosityEditor">
     </Component>
   </SubComponents>
 </Form>

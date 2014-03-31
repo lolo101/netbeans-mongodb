@@ -21,7 +21,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 package org.netbeans.modules.mongodb.ui.util;
 
 import java.io.File;
@@ -44,5 +43,5 @@ public final class JsonFileFilter extends FileFilter {
     public String getDescription() {
         return Bundle.jsonFileFilter();
     }
-    
+
 }

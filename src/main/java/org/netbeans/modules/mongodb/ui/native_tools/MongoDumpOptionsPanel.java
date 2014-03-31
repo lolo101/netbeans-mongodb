@@ -25,7 +25,7 @@ package org.netbeans.modules.mongodb.ui.native_tools;
 
 import java.io.File;
 import java.nio.file.Paths;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,11 +61,11 @@ public final class MongoDumpOptionsPanel extends javax.swing.JPanel implements N
         defaultPasswordEchoChar = passwordField.getEchoChar();
         outputField.setText(Paths.get("dump").toAbsolutePath().toString());
     }
-    
+
     private void disableOptionsAccordingToVersion() {
         final Version version = MongoNativeToolsOptions.INSTANCE.getToolsVersion();
         final Version v2_4 = new Version("2.4");
-        if(version.compareTo(v2_4) < 0) {
+        if (version.compareTo(v2_4) < 0) {
             sslCheckBox.setEnabled(false);
             sslCheckBox.setToolTipText(Bundle.requiresVersion(v2_4));
         }
@@ -75,7 +75,7 @@ public final class MongoDumpOptionsPanel extends javax.swing.JPanel implements N
     public JPanel getPanel() {
         return this;
     }
-    
+
     @Override
     public Map<String, String> getOptions() {
         final Map<String, String> options = new HashMap<>();
@@ -172,12 +172,21 @@ public final class MongoDumpOptionsPanel extends javax.swing.JPanel implements N
 
     @Override
     public List<String> getArgs() {
-        return Collections.emptyList();
+        final List<String> args = new ArrayList<>();
+        if (verbosityEditor.isVerboseSelected()) {
+            args.add(verbosityEditor.getVerboseArg());
+        }
+        return args;
     }
 
     @Override
     public void setArgs(List<String> args) {
-        // no args
+        for (String arg : args) {
+            if (arg.matches("-v{1,5}")) {
+                verbosityEditor.setVerboseArg(arg);
+                verbosityEditor.setVerboseSelected(true);
+            }
+        }
     }
 
     /**
@@ -212,6 +221,7 @@ public final class MongoDumpOptionsPanel extends javax.swing.JPanel implements N
         collectionLabel = new javax.swing.JLabel();
         dbField = new javax.swing.JTextField();
         collectionField = new javax.swing.JTextField();
+        verbosityEditor = new org.netbeans.modules.mongodb.ui.native_tools.VerbosityEditor();
 
         org.openide.awt.Mnemonics.setLocalizedText(hostLabel, org.openide.util.NbBundle.getMessage(MongoDumpOptionsPanel.class, "MongoDumpOptionsPanel.hostLabel.text")); // NOI18N
 
@@ -267,7 +277,7 @@ public final class MongoDumpOptionsPanel extends javax.swing.JPanel implements N
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(passwordLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(passwordField, javax.swing.GroupLayout.DEFAULT_SIZE, 372, Short.MAX_VALUE)
+                        .addComponent(passwordField, javax.swing.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(displayPasswordCheckBox))
                     .addGroup(layout.createSequentialGroup()
@@ -300,9 +310,12 @@ public final class MongoDumpOptionsPanel extends javax.swing.JPanel implements N
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(outputLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(outputField, javax.swing.GroupLayout.DEFAULT_SIZE, 362, Short.MAX_VALUE)
+                        .addComponent(outputField, javax.swing.GroupLayout.DEFAULT_SIZE, 303, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(browseOutputButton)))
+                        .addComponent(browseOutputButton))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(verbosityEditor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
 
@@ -350,6 +363,8 @@ public final class MongoDumpOptionsPanel extends javax.swing.JPanel implements N
                 .addComponent(repairCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(forceTableScanCheckBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(verbosityEditor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(outputLabel)
@@ -404,6 +419,7 @@ public final class MongoDumpOptionsPanel extends javax.swing.JPanel implements N
     private javax.swing.JCheckBox sslCheckBox;
     private javax.swing.JTextField usernameField;
     private javax.swing.JLabel usernameLabel;
+    private org.netbeans.modules.mongodb.ui.native_tools.VerbosityEditor verbosityEditor;
     // End of variables declaration//GEN-END:variables
 
 }

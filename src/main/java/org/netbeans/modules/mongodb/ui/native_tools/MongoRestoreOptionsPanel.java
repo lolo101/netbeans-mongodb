@@ -157,6 +157,9 @@ public final class MongoRestoreOptionsPanel extends javax.swing.JPanel implement
     @Override
     public List<String> getArgs() {
         final List<String> args = new ArrayList<>();
+        if (verbosityEditor.isVerboseSelected()) {
+            args.add(verbosityEditor.getVerboseArg());
+        }
         final String dumpPath = dumpPathField.getText().trim();
         if (dumpPath.isEmpty() == false) {
             args.add(dumpPath);
@@ -166,9 +169,13 @@ public final class MongoRestoreOptionsPanel extends javax.swing.JPanel implement
 
     @Override
     public void setArgs(List<String> args) {
-        if (args.isEmpty() == false) {
-            final String dumpPath = args.get(0);
-            dumpPathField.setText(dumpPath);
+        for (String arg : args) {
+            if (arg.matches("-v{1,5}")) {
+                verbosityEditor.setVerboseArg(arg);
+                verbosityEditor.setVerboseSelected(true);
+            } else {
+                dumpPathField.setText(arg);
+            }
         }
     }
 
@@ -202,6 +209,7 @@ public final class MongoRestoreOptionsPanel extends javax.swing.JPanel implement
         collectionLabel = new javax.swing.JLabel();
         dbField = new javax.swing.JTextField();
         collectionField = new javax.swing.JTextField();
+        verbosityEditor = new org.netbeans.modules.mongodb.ui.native_tools.VerbosityEditor();
 
         org.openide.awt.Mnemonics.setLocalizedText(hostLabel, org.openide.util.NbBundle.getMessage(MongoRestoreOptionsPanel.class, "MongoRestoreOptionsPanel.hostLabel.text")); // NOI18N
 
@@ -253,7 +261,7 @@ public final class MongoRestoreOptionsPanel extends javax.swing.JPanel implement
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(passwordLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(passwordField, javax.swing.GroupLayout.DEFAULT_SIZE, 487, Short.MAX_VALUE)
+                        .addComponent(passwordField, javax.swing.GroupLayout.DEFAULT_SIZE, 381, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(displayPasswordCheckBox))
                     .addGroup(layout.createSequentialGroup()
@@ -284,9 +292,12 @@ public final class MongoRestoreOptionsPanel extends javax.swing.JPanel implement
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(inputLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(dumpPathField, javax.swing.GroupLayout.DEFAULT_SIZE, 408, Short.MAX_VALUE)
+                        .addComponent(dumpPathField, javax.swing.GroupLayout.DEFAULT_SIZE, 302, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(browseOutputButton)))
+                        .addComponent(browseOutputButton))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(verbosityEditor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
 
@@ -330,6 +341,8 @@ public final class MongoRestoreOptionsPanel extends javax.swing.JPanel implement
                 .addComponent(journalCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(oplogReplayCheckBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(verbosityEditor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(inputLabel)
@@ -382,6 +395,7 @@ public final class MongoRestoreOptionsPanel extends javax.swing.JPanel implement
     private javax.swing.JCheckBox sslCheckBox;
     private javax.swing.JTextField usernameField;
     private javax.swing.JLabel usernameLabel;
+    private org.netbeans.modules.mongodb.ui.native_tools.VerbosityEditor verbosityEditor;
     // End of variables declaration//GEN-END:variables
 
 }
