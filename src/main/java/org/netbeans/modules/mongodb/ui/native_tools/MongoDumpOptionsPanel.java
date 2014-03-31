@@ -35,7 +35,6 @@ import javax.swing.text.PlainDocument;
 import org.netbeans.modules.mongodb.native_tools.MongoDumpOptions;
 import org.netbeans.modules.mongodb.options.MongoNativeToolsOptions;
 import org.netbeans.modules.mongodb.ui.util.IntegerDocumentFilter;
-import org.netbeans.modules.mongodb.ui.windows.CollectionView;
 import org.netbeans.modules.mongodb.util.Version;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.NbBundle.Messages;
@@ -74,8 +73,15 @@ public final class MongoDumpOptionsPanel extends javax.swing.JPanel implements N
         final Version version = MongoNativeToolsOptions.INSTANCE.getToolsVersion();
         final Version v2_4 = new Version("2.4");
         if (version.compareTo(v2_4) < 0) {
+            final String toolTipText = Bundle.requiresVersion(v2_4);
             sslCheckBox.setEnabled(false);
-            sslCheckBox.setToolTipText(Bundle.requiresVersion(v2_4));
+            sslCheckBox.setToolTipText(toolTipText);
+            authDatabaseLabel.setEnabled(false);
+            authDatabaseField.setEnabled(false);
+            authDatabaseField.setToolTipText(toolTipText);
+            authMechanismLabel.setEnabled(false);
+            authMechanismField.setEnabled(false);
+            authMechanismField.setToolTipText(toolTipText);
         }
     }
 
@@ -102,6 +108,14 @@ public final class MongoDumpOptionsPanel extends javax.swing.JPanel implements N
         final String password = new String(passwordField.getPassword());
         if (password.isEmpty() == false) {
             options.put(MongoDumpOptions.PASSWORD, password);
+        }
+        final String authDatabase = authDatabaseField.getText().trim();
+        if (authDatabase.isEmpty() == false) {
+            options.put(MongoDumpOptions.AUTH_DATABASE, authDatabase);
+        }
+        final String authMechanism = authMechanismField.getText().trim();
+        if (authMechanism.isEmpty() == false) {
+            options.put(MongoDumpOptions.AUTH_MECHANISM, authMechanism);
         }
         final String db = dbField.getText().trim();
         if (db.isEmpty() == false) {
@@ -157,6 +171,14 @@ public final class MongoDumpOptionsPanel extends javax.swing.JPanel implements N
         final String password = options.get(MongoDumpOptions.PASSWORD);
         if (password != null) {
             passwordField.setText(password);
+        }
+        final String authDatabase = options.get(MongoDumpOptions.AUTH_DATABASE);
+        if (authDatabase != null) {
+            authDatabaseField.setText(authDatabase);
+        }
+        final String authMechanism = options.get(MongoDumpOptions.AUTH_MECHANISM);
+        if (authMechanism != null) {
+            authMechanismField.setText(authMechanism);
         }
         final String db = options.get(MongoDumpOptions.DB);
         if (db != null) {
@@ -231,6 +253,11 @@ public final class MongoDumpOptionsPanel extends javax.swing.JPanel implements N
         dbField = new javax.swing.JTextField();
         collectionField = new javax.swing.JTextField();
         verbosityEditor = new org.netbeans.modules.mongodb.ui.native_tools.VerbosityEditor();
+        authDatabaseLabel = new javax.swing.JLabel();
+        authMechanismLabel = new javax.swing.JLabel();
+        authDatabaseField = new javax.swing.JTextField();
+        authMechanismField = new javax.swing.JTextField();
+        authLabel = new javax.swing.JLabel();
 
         org.openide.awt.Mnemonics.setLocalizedText(hostLabel, org.openide.util.NbBundle.getMessage(MongoDumpOptionsPanel.class, "MongoDumpOptionsPanel.hostLabel.text")); // NOI18N
 
@@ -276,6 +303,12 @@ public final class MongoDumpOptionsPanel extends javax.swing.JPanel implements N
 
         org.openide.awt.Mnemonics.setLocalizedText(collectionLabel, org.openide.util.NbBundle.getMessage(MongoDumpOptionsPanel.class, "MongoDumpOptionsPanel.collectionLabel.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(authDatabaseLabel, org.openide.util.NbBundle.getMessage(MongoDumpOptionsPanel.class, "MongoDumpOptionsPanel.authDatabaseLabel.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(authMechanismLabel, org.openide.util.NbBundle.getMessage(MongoDumpOptionsPanel.class, "MongoDumpOptionsPanel.authMechanismLabel.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(authLabel, org.openide.util.NbBundle.getMessage(MongoDumpOptionsPanel.class, "MongoDumpOptionsPanel.authLabel.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -284,9 +317,20 @@ public final class MongoDumpOptionsPanel extends javax.swing.JPanel implements N
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
+                        .addGap(10, 10, 10)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(authDatabaseLabel)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(authDatabaseField))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(authMechanismLabel)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(authMechanismField))))
+                    .addGroup(layout.createSequentialGroup()
                         .addComponent(passwordLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(passwordField, javax.swing.GroupLayout.DEFAULT_SIZE, 313, Short.MAX_VALUE)
+                        .addComponent(passwordField, javax.swing.GroupLayout.DEFAULT_SIZE, 326, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(displayPasswordCheckBox))
                     .addGroup(layout.createSequentialGroup()
@@ -319,14 +363,18 @@ public final class MongoDumpOptionsPanel extends javax.swing.JPanel implements N
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(outputLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(outputField, javax.swing.GroupLayout.DEFAULT_SIZE, 303, Short.MAX_VALUE)
+                        .addComponent(outputField, javax.swing.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(browseOutputButton))
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(verbosityEditor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(authLabel)
+                            .addComponent(verbosityEditor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
+
+        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {authDatabaseLabel, authMechanismLabel});
 
         layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {collectionLabel, dbLabel, hostLabel, passwordLabel, portLabel, usernameLabel});
 
@@ -350,6 +398,16 @@ public final class MongoDumpOptionsPanel extends javax.swing.JPanel implements N
                     .addComponent(passwordLabel)
                     .addComponent(passwordField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(displayPasswordCheckBox))
+                .addGap(18, 18, 18)
+                .addComponent(authLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(authDatabaseLabel)
+                    .addComponent(authDatabaseField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(authMechanismLabel)
+                    .addComponent(authMechanismField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(dbLabel)
@@ -405,6 +463,11 @@ public final class MongoDumpOptionsPanel extends javax.swing.JPanel implements N
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextField authDatabaseField;
+    private javax.swing.JLabel authDatabaseLabel;
+    private javax.swing.JLabel authLabel;
+    private javax.swing.JTextField authMechanismField;
+    private javax.swing.JLabel authMechanismLabel;
     private javax.swing.JButton browseOutputButton;
     private javax.swing.JTextField collectionField;
     private javax.swing.JLabel collectionLabel;
