@@ -437,7 +437,7 @@ final class OneConnectionNode extends AbstractNode implements PropertyChangeList
             final NotifyDescriptor.InputLine input = new ValidatingInputLine(
                 Bundle.addCollectionText(),
                 Bundle.ACTION_AddCollection(),
-                new DatabaseNameValidator(getLookup())); // TODO: improve DatabaseNameValidator
+                new DatabaseNameValidator(getLookup()));
             final Object dlgResult = DialogDisplayer.getDefault().notify(input);
             if (dlgResult.equals(NotifyDescriptor.OK_OPTION)) {
                 final String dbName = input.getInputText().trim();

@@ -27,11 +27,24 @@ import java.awt.Component;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.openide.NotifyDescriptor.InputLine;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
  * @author Yann D'Isanto
  */
+@Messages({
+    "VALIDATION_empty=can't be empty",
+    "# {0} - type",
+    "# {1} - name",
+    "VALIDATION_exists={0} \"{1}\" already exists",
+    "# {0} - prefix",
+    "VALIDATION_invalid_prefix=can't start with \"{0}\"",
+    "# {0} - forbidden character",
+    "VALIDATION_forbidden_character=can't contains \'{0}\'",
+    "VALIDATION_invalid_character=invalid character",
+    "# {0} - max length",
+    "VALIDATION_maxLength=max length is {0} characters"})
 public final class ValidatingInputLine extends InputLine {
 
     private final InputValidator validator;

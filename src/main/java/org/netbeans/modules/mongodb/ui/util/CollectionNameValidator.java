@@ -25,23 +25,18 @@ package org.netbeans.modules.mongodb.ui.util;
 
 import com.mongodb.DB;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle.Messages;
 
 /**
  *
  * @author Yann D'Isanto
  */
-@Messages({
-    "VALIDATION_empty=can't be empty",
-    "# {0} - type",
-    "# {1} - name",
-    "VALIDATION_exists={0} \"{1}\" already exists",
-    "# {0} - prefix",
-    "VALIDATION_invalid_prefix=can't start with \"{0}\"",
-    "# {0} - forbidden character",
-    "VALIDATION_forbidden_character=can't contains \'{0}\'",
-    "VALIDATION_invalid_character=invalid character"})
 public final class CollectionNameValidator implements ValidatingInputLine.InputValidator {
+
+    private static final String[] forbiddenCharacters = {
+        "$", "\u0000"
+    };
+
+    private static final String SYSTEM_PREFIX = "system.";
 
     private final Lookup lookup;
 
@@ -56,17 +51,15 @@ public final class CollectionNameValidator implements ValidatingInputLine.InputV
             throw new IllegalArgumentException(
                 Bundle.VALIDATION_empty());
         }
-        if (value.startsWith("system.")) {
+        if (value.startsWith(SYSTEM_PREFIX)) {
             throw new IllegalArgumentException(
-                Bundle.VALIDATION_invalid_prefix("system."));
+                Bundle.VALIDATION_invalid_prefix(SYSTEM_PREFIX));
         }
-        if (value.contains("$")) {
-            throw new IllegalArgumentException(
-                Bundle.VALIDATION_forbidden_character('$'));
-        }
-        if (value.contains("\u0000")) {
-            throw new IllegalArgumentException(
-                 Bundle.VALIDATION_invalid_character());
+        for (String character : forbiddenCharacters) {
+            if (value.contains(character)) {
+                throw new IllegalArgumentException(
+                    Bundle.VALIDATION_forbidden_character(character));
+            }
         }
         if (lookup.lookup(DB.class).getCollectionNames().contains(value)) {
             throw new IllegalArgumentException(

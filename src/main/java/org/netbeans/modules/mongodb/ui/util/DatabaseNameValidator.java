@@ -30,17 +30,11 @@ import org.openide.util.Lookup;
  *
  * @author Yann D'Isanto
  */
-//@Messages({
-//    "VALIDATION_empty=can't be empty",
-//    "# {0} - type",
-//    "# {1} - name",
-//    "VALIDATION_exists={0} \"{1}\" already exists",
-//    "# {0} - prefix",
-//    "VALIDATION_invalid_prefix=can't start with \"{0}\"",
-//    "# {0} - forbidden character",
-//    "VALIDATION_forbidden_character=can't contains \'{0}\'",
-//    "VALIDATION_invalid_character=invalid character"})
 public final class DatabaseNameValidator implements ValidatingInputLine.InputValidator {
+
+    private static final String[] forbiddenCharacters = {
+        "/", "\\", ".", " ", "\"", "\u0000"
+    };
 
     private final Lookup lookup;
 
@@ -55,26 +49,21 @@ public final class DatabaseNameValidator implements ValidatingInputLine.InputVal
             throw new IllegalArgumentException(
                 Bundle.VALIDATION_empty());
         }
-//        if (value.startsWith("system.")) {
-//            throw new IllegalArgumentException(
-//                Bundle.VALIDATION_invalid_prefix("system."));
-//        }
-//        if (value.contains("$")) {
-//            throw new IllegalArgumentException(
-//                Bundle.VALIDATION_forbidden_character('$'));
-//        }
-//        if (value.contains("\u0000")) {
-//            throw new IllegalArgumentException(
-//                 Bundle.VALIDATION_invalid_character());
-//        }
-//        if (lookup.lookup(DB.class).getCollectionNames().contains(value)) {
-//            throw new IllegalArgumentException(
-//                Bundle.VALIDATION_exists("collection", value));
-//        }
-        
-        if (lookup.lookup(MongoClient.class).getDatabaseNames().contains(value)) {
+        if (value.length() >= 64) {
             throw new IllegalArgumentException(
-                Bundle.VALIDATION_exists("database", value));
+                Bundle.VALIDATION_maxLength(63));
+        }
+        for (String character : forbiddenCharacters) {
+            if (value.contains(character)) {
+                throw new IllegalArgumentException(
+                    Bundle.VALIDATION_forbidden_character(character));
+            }
+        }
+        for (String dbName : lookup.lookup(MongoClient.class).getDatabaseNames()) {
+            if (dbName.equalsIgnoreCase(value)) {
+                throw new IllegalArgumentException(
+                    Bundle.VALIDATION_exists("database", value));
+            }
         }
     }
 }
