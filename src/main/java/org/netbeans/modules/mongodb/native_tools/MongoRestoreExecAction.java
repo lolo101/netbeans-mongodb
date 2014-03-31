@@ -27,14 +27,12 @@ package org.netbeans.modules.mongodb.native_tools;
 import com.mongodb.MongoClientURI;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.modules.mongodb.CollectionInfo;
 import org.netbeans.modules.mongodb.ConnectionInfo;
 import org.netbeans.modules.mongodb.DbInfo;
-import org.netbeans.modules.mongodb.util.ProcessCreator;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 

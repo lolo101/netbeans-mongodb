@@ -29,14 +29,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.prefs.Preferences;
 import javax.swing.JPanel;
 import javax.swing.text.PlainDocument;
 import org.netbeans.modules.mongodb.native_tools.MongoDumpOptions;
 import org.netbeans.modules.mongodb.options.MongoNativeToolsOptions;
 import org.netbeans.modules.mongodb.ui.util.IntegerDocumentFilter;
+import org.netbeans.modules.mongodb.ui.windows.CollectionView;
 import org.netbeans.modules.mongodb.util.Version;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -59,7 +62,12 @@ public final class MongoDumpOptionsPanel extends javax.swing.JPanel implements N
         final PlainDocument document = (PlainDocument) portField.getDocument();
         document.setDocumentFilter(new IntegerDocumentFilter());
         defaultPasswordEchoChar = passwordField.getEchoChar();
-        outputField.setText(Paths.get("dump").toAbsolutePath().toString());
+        final String defaultPath = prefs().get("dump-restore-path", Paths.get("dump").toAbsolutePath().toString());
+        outputField.setText(defaultPath);
+    }
+
+    public Preferences prefs() {
+        return NbPreferences.forModule(MongoDumpOptionsPanel.class).node("native_tools");
     }
 
     private void disableOptionsAccordingToVersion() {
@@ -127,6 +135,7 @@ public final class MongoDumpOptionsPanel extends javax.swing.JPanel implements N
         final String output = outputField.getText().trim();
         if (output.isEmpty() == false) {
             options.put(MongoDumpOptions.OUTPUT, output);
+            prefs().put("dump-restore-path", output);
         }
         return options;
     }
