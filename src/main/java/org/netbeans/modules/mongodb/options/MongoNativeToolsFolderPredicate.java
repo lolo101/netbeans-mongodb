@@ -26,7 +26,7 @@ package org.netbeans.modules.mongodb.options;
 import com.mytdev.predicates.AbstractPredicate;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import org.netbeans.modules.mongodb.native_tools.MongoNativeTools;
+import org.netbeans.modules.mongodb.native_tools.MongoNativeTool;
 
 /**
  *
@@ -36,7 +36,7 @@ public final class MongoNativeToolsFolderPredicate extends AbstractPredicate<Pat
 
     @Override
     public boolean eval(Path path) {
-        for (MongoNativeTools tool : MongoNativeTools.values()) {
+        for (MongoNativeTool tool : MongoNativeTool.values()) {
             final Path toolPath = path.resolve(tool.getExecFileName());
             if (Files.exists(toolPath) == false) {
                 return false;

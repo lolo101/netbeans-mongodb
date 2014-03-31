@@ -23,6 +23,9 @@
  */
 package org.netbeans.modules.mongodb.ui.explorer;
 
+import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
+import com.mongodb.DBObject;
 import org.netbeans.modules.mongodb.properties.ConnectionNameProperty;
 import org.netbeans.modules.mongodb.properties.MongoClientURIProperty;
 import org.netbeans.modules.mongodb.resources.Images;
@@ -48,6 +51,8 @@ import org.netbeans.modules.mongodb.ConnectionProblems;
 import org.netbeans.modules.mongodb.MongoDisconnect;
 import org.netbeans.modules.mongodb.native_tools.MongoNativeToolsAction;
 import org.netbeans.modules.mongodb.properties.MongoClientURIPropertyEditor;
+import org.netbeans.modules.mongodb.ui.util.DatabaseNameValidator;
+import org.netbeans.modules.mongodb.ui.util.ValidatingInputLine;
 import org.netbeans.modules.mongodb.ui.windows.CollectionView;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -75,6 +80,7 @@ import org.openide.windows.TopComponent;
     "ACTION_Delete=Delete",
     "ACTION_Connect=Connect",
     "ACTION_Disconnect=Disconnect",
+    "ACTION_CreateDatabase=Create database",
     "waitWhileConnecting=Please wait while connecting to mongo database"
 })
 final class OneConnectionNode extends AbstractNode implements PropertyChangeListener {
@@ -148,22 +154,25 @@ final class OneConnectionNode extends AbstractNode implements PropertyChangeList
     @Override
     public Action[] getActions(boolean ignored) {
         final Action[] orig = super.getActions(ignored);
-        final Action[] nue = new Action[orig.length + 8];
-        System.arraycopy(orig, 0, nue, 8, orig.length);
-        final Action refreshAction = new RefreshChildrenAction(childFactory);
+        final Action[] nue = new Action[orig.length + 9];
+        System.arraycopy(orig, 0, nue, 9, orig.length);
         final Action connectAction = new ConnectAction();
         final Action disconnectAction = new DisconnectAction();
+        final Action createDatabaseAction = new CreateDatabaseAction();
+        final Action refreshAction = new RefreshChildrenAction(childFactory);
         refreshAction.setEnabled(isConnected());
+        createDatabaseAction.setEnabled(isConnected());
         connectAction.setEnabled(isConnected() == false);
         disconnectAction.setEnabled(isConnected());
         nue[0] = connectAction;
         nue[1] = disconnectAction;
         nue[2] = null;
-        nue[3] = new DeleteAction();
+        nue[3] = createDatabaseAction;
         nue[4] = refreshAction;
-        nue[5] = null;
-        nue[6] = new MongoNativeToolsAction(getLookup());
-        nue[7] = null;
+        nue[5] = new DeleteAction();
+        nue[6] = null;
+        nue[7] = new MongoNativeToolsAction(getLookup());
+        nue[8] = null;
         return nue;
     }
 
@@ -416,4 +425,34 @@ final class OneConnectionNode extends AbstractNode implements PropertyChangeList
         }
 
     }
+    
+    public final class CreateDatabaseAction extends AbstractAction {
+
+        public CreateDatabaseAction() {
+            super(Bundle.ACTION_CreateDatabase());
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            final NotifyDescriptor.InputLine input = new ValidatingInputLine(
+                Bundle.addCollectionText(),
+                Bundle.ACTION_AddCollection(),
+                new DatabaseNameValidator(getLookup())); // TODO: improve DatabaseNameValidator
+            final Object dlgResult = DialogDisplayer.getDefault().notify(input);
+            if (dlgResult.equals(NotifyDescriptor.OK_OPTION)) {
+                final String dbName = input.getInputText().trim();
+                final MongoClient client = getLookup().lookup(MongoClient.class);
+                try {
+                    final DB db = client.getDB(dbName);
+                    final DBObject collectionOptions = new BasicDBObject("capped", false);
+                    db.createCollection("default", collectionOptions);
+                    refreshChildren();
+                } catch (MongoException ex) {
+                    DialogDisplayer.getDefault().notify(
+                        new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE));
+                }
+            }
+        }
+    }
+
 }

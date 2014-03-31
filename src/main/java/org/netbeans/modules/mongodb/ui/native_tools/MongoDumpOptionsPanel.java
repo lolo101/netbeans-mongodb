@@ -25,16 +25,16 @@ package org.netbeans.modules.mongodb.ui.native_tools;
 
 import java.io.File;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import javax.swing.JPanel;
 import javax.swing.text.PlainDocument;
 import org.netbeans.modules.mongodb.native_tools.MongoDumpOptions;
 import org.netbeans.modules.mongodb.options.MongoNativeToolsOptions;
 import org.netbeans.modules.mongodb.ui.util.IntegerDocumentFilter;
 import org.netbeans.modules.mongodb.util.Version;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.NbBundle.Messages;
 
@@ -43,17 +43,15 @@ import org.openide.util.NbBundle.Messages;
  * @author Yann D'Isanto
  */
 @Messages({
-    "# {0} - required version",
-    "requiresVersion=requires version {0}",
     "# {0} - version",
     "dumpDialogTitle=mongodump {0}"
 })
-public class MongoDumpOptionsPanel extends javax.swing.JPanel {
+public final class MongoDumpOptionsPanel extends javax.swing.JPanel implements NativeToolOptionsDialog.OptionsPanel {
 
     private final char defaultPasswordEchoChar;
 
     /**
-     * Creates new form MongoDumpOptionsPanel
+     * Creates new form MongoDumpOptionsOptionsPanel
      */
     public MongoDumpOptionsPanel() {
         initComponents();
@@ -73,44 +71,12 @@ public class MongoDumpOptionsPanel extends javax.swing.JPanel {
         }
     }
 
-    public void setOptions(Map<String, String> options) {
-        final String host = options.get(MongoDumpOptions.HOST);
-        if (host != null) {
-            hostField.setText(host);
-        }
-        final String port = options.get(MongoDumpOptions.PORT);
-        if (port != null) {
-            portField.setText(port);
-        }
-        final String username = options.get(MongoDumpOptions.USERNAME);
-        if (username != null) {
-            usernameField.setText(username);
-        }
-        final String password = options.get(MongoDumpOptions.PASSWORD);
-        if (password != null) {
-            passwordField.setText(password);
-        }
-        final String db = options.get(MongoDumpOptions.DB);
-        if (db != null) {
-            dbField.setText(db);
-        }
-        final String collection = options.get(MongoDumpOptions.COLLECTION);
-        if (collection != null) {
-            collectionField.setText(collection);
-        }
-        ipv6CheckBox.setSelected(options.containsKey(MongoDumpOptions.IPV6));
-        sslCheckBox.setSelected(options.containsKey(MongoDumpOptions.SSL));
-        directoryPerDbCheckBox.setSelected(options.containsKey(MongoDumpOptions.DIRECTORY_PER_DB));
-        journalCheckBox.setSelected(options.containsKey(MongoDumpOptions.JOURNAL));
-        oplogCheckBox.setSelected(options.containsKey(MongoDumpOptions.OPLOG));
-        repairCheckBox.setSelected(options.containsKey(MongoDumpOptions.REPAIR));
-        forceTableScanCheckBox.setSelected(options.containsKey(MongoDumpOptions.FORCE_TABLE_SCAN));
-        final String output = options.get(MongoDumpOptions.OUTPUT);
-        if (output != null) {
-            outputField.setText(output);
-        }
+    @Override
+    public JPanel getPanel() {
+        return this;
     }
-
+    
+    @Override
     public Map<String, String> getOptions() {
         final Map<String, String> options = new HashMap<>();
         final String host = hostField.getText().trim();
@@ -163,6 +129,55 @@ public class MongoDumpOptionsPanel extends javax.swing.JPanel {
             options.put(MongoDumpOptions.OUTPUT, output);
         }
         return options;
+    }
+
+    @Override
+    public void setOptions(Map<String, String> options) {
+        final String host = options.get(MongoDumpOptions.HOST);
+        if (host != null) {
+            hostField.setText(host);
+        }
+        final String port = options.get(MongoDumpOptions.PORT);
+        if (port != null) {
+            portField.setText(port);
+        }
+        final String username = options.get(MongoDumpOptions.USERNAME);
+        if (username != null) {
+            usernameField.setText(username);
+        }
+        final String password = options.get(MongoDumpOptions.PASSWORD);
+        if (password != null) {
+            passwordField.setText(password);
+        }
+        final String db = options.get(MongoDumpOptions.DB);
+        if (db != null) {
+            dbField.setText(db);
+        }
+        final String collection = options.get(MongoDumpOptions.COLLECTION);
+        if (collection != null) {
+            collectionField.setText(collection);
+        }
+        ipv6CheckBox.setSelected(options.containsKey(MongoDumpOptions.IPV6));
+        sslCheckBox.setSelected(options.containsKey(MongoDumpOptions.SSL));
+        directoryPerDbCheckBox.setSelected(options.containsKey(MongoDumpOptions.DIRECTORY_PER_DB));
+        journalCheckBox.setSelected(options.containsKey(MongoDumpOptions.JOURNAL));
+        oplogCheckBox.setSelected(options.containsKey(MongoDumpOptions.OPLOG));
+        repairCheckBox.setSelected(options.containsKey(MongoDumpOptions.REPAIR));
+        forceTableScanCheckBox.setSelected(options.containsKey(MongoDumpOptions.FORCE_TABLE_SCAN));
+        final String output = options.get(MongoDumpOptions.OUTPUT);
+        if (output != null) {
+            outputField.setText(output);
+        }
+    }
+
+    @Override
+    public List<String> getArgs() {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public void setArgs(List<String> args) {
+        // no args
     }
 
     /**
@@ -391,20 +406,4 @@ public class MongoDumpOptionsPanel extends javax.swing.JPanel {
     private javax.swing.JLabel usernameLabel;
     // End of variables declaration//GEN-END:variables
 
-    public static Map<String, String> showDialog() {
-        return showDialog(null);
-    }
-
-    public static Map<String, String> showDialog(Map<String, String> options) {
-        final MongoDumpOptionsPanel panel = new MongoDumpOptionsPanel();
-        if (options != null) {
-            panel.setOptions(options);
-        }
-        final Version version = MongoNativeToolsOptions.INSTANCE.getToolsVersion();
-        final DialogDescriptor desc = new DialogDescriptor(panel, Bundle.dumpDialogTitle(version));
-        if (NotifyDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(desc))) {
-            return panel.getOptions();
-        }
-        return null;
-    }
 }

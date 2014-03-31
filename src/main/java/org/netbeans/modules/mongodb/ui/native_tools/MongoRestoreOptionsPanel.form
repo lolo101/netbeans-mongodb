@@ -59,7 +59,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="inputLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="inputField" pref="408" max="32767" attributes="0"/>
+                      <Component id="dumpPathField" pref="408" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="browseOutputButton" min="-2" max="-2" attributes="0"/>
                   </Group>
@@ -115,7 +115,7 @@
               <EmptySpace type="separate" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="inputLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="inputField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="dumpPathField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="browseOutputButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="32767" attributes="0"/>
@@ -212,7 +212,7 @@
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JTextField" name="inputField">
+    <Component class="javax.swing.JTextField" name="dumpPathField">
       <Properties>
         <Property name="editable" type="boolean" value="false"/>
       </Properties>

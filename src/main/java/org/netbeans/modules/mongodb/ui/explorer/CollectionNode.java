@@ -195,8 +195,8 @@ final class CollectionNode extends AbstractNode {
         public void actionPerformed(ActionEvent e) {
             final CollectionInfo ci = getLookup().lookup(CollectionInfo.class);
             final Object dlgResult = DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(
-                Bundle.dropCollectionConfirmText(ci.getName()),
-                NotifyDescriptor.YES_NO_OPTION));
+                    Bundle.dropCollectionConfirmText(ci.getName()),
+                    NotifyDescriptor.YES_NO_OPTION));
             if (dlgResult.equals(NotifyDescriptor.OK_OPTION)) {
                 try {
                     getLookup().lookup(DBCollection.class).drop();
@@ -207,7 +207,7 @@ final class CollectionNode extends AbstractNode {
                     }
                 } catch (MongoException ex) {
                     DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE));
+                            new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE));
                 }
             }
         }
@@ -221,20 +221,30 @@ final class CollectionNode extends AbstractNode {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            final CollectionInfo ci = getLookup().lookup(CollectionInfo.class);
             final NotifyDescriptor.InputLine input = new ValidatingInputLine(
-                Bundle.renameCollectionText(ci.getName()),
-                Bundle.ACTION_RenameCollection(), 
-                new CollectionNameValidator(getLookup()));
-            input.setInputText(ci.getName());
+                    Bundle.renameCollectionText(collection.getName()),
+                    Bundle.ACTION_RenameCollection(),
+                    new CollectionNameValidator(getLookup()));
+            input.setInputText(collection.getName());
             final Object dlgResult = DialogDisplayer.getDefault().notify(input);
             if (dlgResult.equals(NotifyDescriptor.OK_OPTION)) {
                 try {
-                    getLookup().lookup(DBCollection.class).rename(input.getInputText().trim());
-                    ((OneDbNode) getParentNode()).refreshChildren();
+                    final String name = input.getInputText().trim();
+                    getLookup().lookup(DBCollection.class).rename(name);
+                    final OneDbNode parentNode = (OneDbNode) getParentNode();
+                    parentNode.refreshChildren();
+
+                    final CollectionView view = TopComponentUtils.find(CollectionView.class, collection);
+                    if (view != null) {
+                        final CollectionNode node = (CollectionNode) parentNode.getChildren().findChild(name);
+                        if (node != null) {
+                            view.setLookup(node.getLookup());
+                            view.updateTitle();
+                        }
+                    }
                 } catch (MongoException ex) {
                     DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE));
+                            new NotifyDescriptor.Message(ex.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE));
                 }
             }
         }

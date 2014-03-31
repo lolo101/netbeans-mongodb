@@ -33,8 +33,6 @@ import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.modules.mongodb.CollectionInfo;
 import org.netbeans.modules.mongodb.ConnectionInfo;
 import org.netbeans.modules.mongodb.DbInfo;
-import org.netbeans.modules.mongodb.ui.actions.ExecutionAction;
-import org.netbeans.modules.mongodb.ui.native_tools.MongoDumpOptionsPanel;
 import org.netbeans.modules.mongodb.util.ProcessCreator;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
@@ -44,18 +42,12 @@ import org.openide.util.NbBundle.Messages;
  * @author Yann D'Isanto
  */
 @Messages({
-    "ACTION_MongoDump=Dump",
-    "mongoDumpOutputTitle=mongodump"
+    "ACTION_MongoDump=Dump"
 })
-public final class MongoDumpExecAction extends ExecutionAction {
+public final class MongoDumpExecAction extends NativeToolExecAction {
 
     public MongoDumpExecAction(Lookup lookup) {
-        super(Bundle.ACTION_MongoDump(), lookup);
-    }
-
-    @Override
-    protected String getDisplayName() {
-        return Bundle.mongoDumpOutputTitle();
+        super(Bundle.ACTION_MongoDump(), lookup, MongoNativeTool.MONGO_DUMP);
     }
 
     @Override
@@ -64,18 +56,7 @@ public final class MongoDumpExecAction extends ExecutionAction {
     }
 
     @Override
-    protected Callable<Process> getProcessCreator() {
-        final String mongoDumpExec = MongoNativeTools.MONGO_DUMP.getExecFullPath().toString();
-        final Map<String, String> options = MongoDumpOptionsPanel.showDialog(getOptionsFromContext());
-        if (options == null) {
-            return null;
-        }
-        return new ProcessCreator.Builder(mongoDumpExec)
-            .options(options)
-            .build();
-    }
-
-    private Map<String, String> getOptionsFromContext() {
+    protected Map<String, String> getOptionsFromContext() {
         final Map<String, String> options = new HashMap<>();
         final ConnectionInfo connectionInfo = getLookup().lookup(ConnectionInfo.class);
         if (connectionInfo != null) {
