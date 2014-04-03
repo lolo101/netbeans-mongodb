@@ -35,7 +35,9 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -50,15 +52,24 @@ import org.openide.util.NbBundle.Messages;
 })
 public final class NativeToolOptionsDialog {
 
-    private static final Map<MongoNativeTool, Class<? extends OptionsPanel>> OPTIONS_PANELS = new EnumMap<>(MongoNativeTool.class);
+    private static final Map<MongoNativeTool, OptionsPanel> OPTIONS_PANELS = new EnumMap<>(MongoNativeTool.class);
+//    private static final Map<MongoNativeTool, Class<? extends OptionsPanel>> OPTIONS_PANELS = new EnumMap<>(MongoNativeTool.class);
 
     static {
-        OPTIONS_PANELS.put(MongoNativeTool.MONGO_DUMP, MongoDumpOptionsPanel.class);
-        OPTIONS_PANELS.put(MongoNativeTool.MONGO_RESTORE, MongoRestoreOptionsPanel.class);
+//        OPTIONS_PANELS.put(MongoNativeTool.MONGO_DUMP, MongoDumpOptionsPanel.class);
+//        OPTIONS_PANELS.put(MongoNativeTool.MONGO_RESTORE, MongoRestoreOptionsPanel.class);
+//        OPTIONS_PANELS.put(MongoNativeTool.MONGO_TOP, MongoTopOptionsPanel.class);
+        final Lookup lookup = Lookups.metaInfServices(Thread.currentThread().getContextClassLoader());
+        for (OptionsPanel optionsPanel : lookup.lookupAll(NativeToolOptionsDialog.OptionsPanel.class)) {
+            OPTIONS_PANELS.put(optionsPanel.getNativeTool(), optionsPanel);
+        }
+        
     }
 
     public static interface OptionsPanel {
 
+        MongoNativeTool getNativeTool();
+        
         List<String> getArgs();
 
         Map<String, String> getOptions();
@@ -88,13 +99,16 @@ public final class NativeToolOptionsDialog {
     }
 
     public static NativeToolOptionsDialog get(MongoNativeTool tool) {
-        final Class<? extends OptionsPanel> panelClass = OPTIONS_PANELS.get(tool);
-        try {
-            return new NativeToolOptionsDialog(tool, panelClass.newInstance());
-        } catch (InstantiationException | IllegalAccessException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return null;
+//        final Class<? extends OptionsPanel> panelClass = OPTIONS_PANELS.get(tool);
+//        try {
+//            return new NativeToolOptionsDialog(tool, panelClass.newInstance());
+//        } catch (InstantiationException | IllegalAccessException ex) {
+//            Exceptions.printStackTrace(ex);
+//        }
+//        return null;
+        
+        final OptionsPanel panel = OPTIONS_PANELS.get(tool);
+        return new NativeToolOptionsDialog(tool, panel);
     }
 
     public boolean show(Map<String, String> options, String... args) {

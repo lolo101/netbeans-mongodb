@@ -23,8 +23,6 @@
  */
 package org.netbeans.modules.mongodb.ui.native_tools;
 
-import java.io.File;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -36,10 +34,10 @@ import javax.swing.JTextField;
 import javax.swing.text.PlainDocument;
 import org.netbeans.modules.mongodb.native_tools.MongoDumpOptions;
 import org.netbeans.modules.mongodb.native_tools.MongoNativeTool;
+import org.netbeans.modules.mongodb.native_tools.MongoTopOptions;
 import org.netbeans.modules.mongodb.options.MongoNativeToolsOptions;
 import org.netbeans.modules.mongodb.ui.util.IntegerDocumentFilter;
 import org.netbeans.modules.mongodb.util.Version;
-import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.NbPreferences;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -48,45 +46,49 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Yann D'Isanto
  */
 @ServiceProvider(service = NativeToolOptionsDialog.OptionsPanel.class)
-public final class MongoDumpOptionsPanel extends javax.swing.JPanel implements NativeToolOptionsDialog.OptionsPanel {
+public final class MongoTopOptionsPanel extends javax.swing.JPanel implements NativeToolOptionsDialog.OptionsPanel {
 
     private final char defaultPasswordEchoChar;
 
     /**
-     * Creates new form MongoDumpOptionsOptionsPanel
+     * Creates new form MongoTopOptionsOptionsPanel
      */
-    public MongoDumpOptionsPanel() {
+    public MongoTopOptionsPanel() {
         initComponents();
         disableOptionsAccordingToVersion();
-        final PlainDocument document = (PlainDocument) portField.getDocument();
+        PlainDocument document = (PlainDocument) portField.getDocument();
+        document.setDocumentFilter(new IntegerDocumentFilter());
+        document = (PlainDocument) sleepTimeField.getDocument();
         document.setDocumentFilter(new IntegerDocumentFilter());
         defaultPasswordEchoChar = passwordField.getEchoChar();
-        final String defaultPath = prefs().get("dump-restore-path", Paths.get("dump").toAbsolutePath().toString());
-        outputField.setText(defaultPath);
     }
 
     @Override
     public MongoNativeTool getNativeTool() {
-        return MongoNativeTool.MONGO_DUMP;
+        return MongoNativeTool.MONGO_TOP;
     }
 
     public Preferences prefs() {
-        return NbPreferences.forModule(MongoDumpOptionsPanel.class).node("native_tools");
+        return NbPreferences.forModule(MongoTopOptionsPanel.class).node("native_tools");
     }
 
     private void disableOptionsAccordingToVersion() {
         final Version version = MongoNativeToolsOptions.INSTANCE.getToolsVersion();
+        final Version v2_2 = new Version("2.2");
         final Version v2_4 = new Version("2.4");
         if (version.compareTo(v2_4) < 0) {
             final String toolTipText = Bundle.requiresVersion(v2_4);
-            sslCheckBox.setEnabled(false);
-            sslCheckBox.setToolTipText(toolTipText);
             authDatabaseLabel.setEnabled(false);
             authDatabaseField.setEnabled(false);
             authDatabaseField.setToolTipText(toolTipText);
             authMechanismLabel.setEnabled(false);
             authMechanismField.setEnabled(false);
             authMechanismField.setToolTipText(toolTipText);
+        }
+        if (version.compareTo(v2_2) < 0) {
+            final String toolTipText = Bundle.requiresVersion(v2_2);
+            locksCheckBox.setEnabled(false);
+            locksCheckBox.setToolTipText(toolTipText);
         }
     }
 
@@ -100,84 +102,47 @@ public final class MongoDumpOptionsPanel extends javax.swing.JPanel implements N
         final Map<String, String> options = new HashMap<>();
         final String host = hostField.getText().trim();
         if (host.isEmpty() == false) {
-            options.put(MongoDumpOptions.HOST, host);
+            options.put(MongoTopOptions.HOST, host);
         }
         final String port = portField.getText().trim();
         if (port.isEmpty() == false) {
-            options.put(MongoDumpOptions.PORT, port);
+            options.put(MongoTopOptions.PORT, port);
         }
         final String username = usernameField.getText().trim();
         if (username.isEmpty() == false) {
-            options.put(MongoDumpOptions.USERNAME, username);
+            options.put(MongoTopOptions.USERNAME, username);
         }
         final String password = new String(passwordField.getPassword());
         if (password.isEmpty() == false) {
-            options.put(MongoDumpOptions.PASSWORD, password);
+            options.put(MongoTopOptions.PASSWORD, password);
         }
         final String authDatabase = authDatabaseField.getText().trim();
         if (authDatabase.isEmpty() == false) {
-            options.put(MongoDumpOptions.AUTH_DATABASE, authDatabase);
+            options.put(MongoTopOptions.AUTH_DATABASE, authDatabase);
         }
         final String authMechanism = authMechanismField.getText().trim();
         if (authMechanism.isEmpty() == false) {
-            options.put(MongoDumpOptions.AUTH_MECHANISM, authMechanism);
-        }
-        final String db = dbField.getText().trim();
-        if (db.isEmpty() == false) {
-            options.put(MongoDumpOptions.DB, db);
-        }
-        final String collection = collectionField.getText().trim();
-        if (collection.isEmpty() == false) {
-            options.put(MongoDumpOptions.COLLECTION, collection);
+            options.put(MongoTopOptions.AUTH_MECHANISM, authMechanism);
         }
         if (ipv6CheckBox.isSelected()) {
-            options.put(MongoDumpOptions.IPV6, "");
+            options.put(MongoTopOptions.IPV6, "");
         }
-        if (sslCheckBox.isSelected()) {
-            options.put(MongoDumpOptions.SSL, "");
-        }
-        if (directoryPerDbCheckBox.isSelected()) {
-            options.put(MongoDumpOptions.DIRECTORY_PER_DB, "");
-        }
-        if (journalCheckBox.isSelected()) {
-            options.put(MongoDumpOptions.JOURNAL, "");
-        }
-        if (oplogCheckBox.isSelected()) {
-            options.put(MongoDumpOptions.OPLOG, "");
-        }
-        if (repairCheckBox.isSelected()) {
-            options.put(MongoDumpOptions.REPAIR, "");
-        }
-        if (forceTableScanCheckBox.isSelected()) {
-            options.put(MongoDumpOptions.FORCE_TABLE_SCAN, "");
-        }
-        final String output = outputField.getText().trim();
-        if (output.isEmpty() == false) {
-            options.put(MongoDumpOptions.OUTPUT, output);
-            prefs().put("dump-restore-path", output);
+        if (locksCheckBox.isSelected()) {
+            options.put(MongoTopOptions.LOCKS, "");
         }
         return options;
     }
 
     @Override
     public void setOptions(Map<String, String> options) {
-        populateOption(options, MongoDumpOptions.HOST, hostField);
-        populateOption(options, MongoDumpOptions.PORT, portField);
-        populateOption(options, MongoDumpOptions.USERNAME, usernameField);
-        populateOption(options, MongoDumpOptions.PASSWORD, passwordField);
-        populateOption(options, MongoDumpOptions.AUTH_DATABASE, authDatabaseField);
-        populateOption(options, MongoDumpOptions.AUTH_MECHANISM, authMechanismField);
-        populateOption(options, MongoDumpOptions.DB, dbField);
-        populateOption(options, MongoDumpOptions.COLLECTION, collectionField);
-        populateOption(options, MongoDumpOptions.IPV6, ipv6CheckBox);
-        populateOption(options, MongoDumpOptions.SSL, sslCheckBox);
-        populateOption(options, MongoDumpOptions.DIRECTORY_PER_DB, directoryPerDbCheckBox);
-        populateOption(options, MongoDumpOptions.JOURNAL, journalCheckBox);
-        populateOption(options, MongoDumpOptions.OPLOG, oplogCheckBox);
-        populateOption(options, MongoDumpOptions.REPAIR, repairCheckBox);
-        populateOption(options, MongoDumpOptions.FORCE_TABLE_SCAN, forceTableScanCheckBox);
-        final String defaultPath = prefs().get("dump-restore-path", Paths.get("dump").toAbsolutePath().toString());
-        populateOption(options, MongoDumpOptions.OUTPUT, outputField, defaultPath);
+        populateOption(options, MongoTopOptions.HOST, hostField);
+        populateOption(options, MongoTopOptions.PORT, portField);
+        populateOption(options, MongoTopOptions.USERNAME, usernameField);
+        populateOption(options, MongoTopOptions.PASSWORD, passwordField);
+        populateOption(options, MongoTopOptions.AUTH_DATABASE, authDatabaseField);
+        populateOption(options, MongoTopOptions.AUTH_MECHANISM, authMechanismField);
+        populateOption(options, MongoTopOptions.IPV6, ipv6CheckBox);
+        populateOption(options, MongoTopOptions.LOCKS, locksCheckBox);
     }
 
     private void populateOption(Map<String, String> options, String optionKey, JTextField textField, String defaultValue) {
@@ -199,16 +164,23 @@ public final class MongoDumpOptionsPanel extends javax.swing.JPanel implements N
         if (verbosityEditor.isVerboseSelected()) {
             args.add(verbosityEditor.getVerboseArg());
         }
+        final String sleepTime = sleepTimeField.getText().trim();
+        if(sleepTime.isEmpty() == false) {
+            args.add(sleepTime);
+        }
         return args;
     }
 
     @Override
     public void setArgs(List<String> args) {
         verbosityEditor.setVerboseSelected(false);
+        sleepTimeField.setText("");
         for (String arg : args) {
             if (arg.matches("-v{1,5}")) {
                 verbosityEditor.setVerboseArg(arg);
                 verbosityEditor.setVerboseSelected(true);
+            } else if (arg.matches("\\d+")) {
+                sleepTimeField.setText(arg);
             }
         }
     }
@@ -232,75 +204,45 @@ public final class MongoDumpOptionsPanel extends javax.swing.JPanel implements N
         passwordField = new javax.swing.JPasswordField();
         displayPasswordCheckBox = new javax.swing.JCheckBox();
         ipv6CheckBox = new javax.swing.JCheckBox();
-        sslCheckBox = new javax.swing.JCheckBox();
-        directoryPerDbCheckBox = new javax.swing.JCheckBox();
-        journalCheckBox = new javax.swing.JCheckBox();
-        oplogCheckBox = new javax.swing.JCheckBox();
-        repairCheckBox = new javax.swing.JCheckBox();
-        forceTableScanCheckBox = new javax.swing.JCheckBox();
-        outputLabel = new javax.swing.JLabel();
-        outputField = new javax.swing.JTextField();
-        browseOutputButton = new javax.swing.JButton();
-        dbLabel = new javax.swing.JLabel();
-        collectionLabel = new javax.swing.JLabel();
-        dbField = new javax.swing.JTextField();
-        collectionField = new javax.swing.JTextField();
+        locksCheckBox = new javax.swing.JCheckBox();
+        sleepTimeLabel = new javax.swing.JLabel();
+        sleepTimeField = new javax.swing.JTextField();
         verbosityEditor = new org.netbeans.modules.mongodb.ui.native_tools.VerbosityEditor();
         authDatabaseLabel = new javax.swing.JLabel();
         authMechanismLabel = new javax.swing.JLabel();
         authDatabaseField = new javax.swing.JTextField();
         authMechanismField = new javax.swing.JTextField();
         authLabel = new javax.swing.JLabel();
+        defaultSleepTimeLabel = new javax.swing.JLabel();
 
-        org.openide.awt.Mnemonics.setLocalizedText(hostLabel, org.openide.util.NbBundle.getMessage(MongoDumpOptionsPanel.class, "MongoDumpOptionsPanel.hostLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(hostLabel, org.openide.util.NbBundle.getMessage(MongoTopOptionsPanel.class, "MongoDumpOptionsPanel.hostLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(portLabel, org.openide.util.NbBundle.getMessage(MongoDumpOptionsPanel.class, "MongoDumpOptionsPanel.portLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(portLabel, org.openide.util.NbBundle.getMessage(MongoTopOptionsPanel.class, "MongoDumpOptionsPanel.portLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(usernameLabel, org.openide.util.NbBundle.getMessage(MongoDumpOptionsPanel.class, "MongoDumpOptionsPanel.usernameLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(usernameLabel, org.openide.util.NbBundle.getMessage(MongoTopOptionsPanel.class, "MongoDumpOptionsPanel.usernameLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, org.openide.util.NbBundle.getMessage(MongoDumpOptionsPanel.class, "MongoDumpOptionsPanel.passwordLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, org.openide.util.NbBundle.getMessage(MongoTopOptionsPanel.class, "MongoDumpOptionsPanel.passwordLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(displayPasswordCheckBox, org.openide.util.NbBundle.getMessage(MongoDumpOptionsPanel.class, "MongoDumpOptionsPanel.displayPasswordCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(displayPasswordCheckBox, org.openide.util.NbBundle.getMessage(MongoTopOptionsPanel.class, "MongoDumpOptionsPanel.displayPasswordCheckBox.text")); // NOI18N
         displayPasswordCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 displayPasswordCheckBoxActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(ipv6CheckBox, org.openide.util.NbBundle.getMessage(MongoDumpOptionsPanel.class, "MongoDumpOptionsPanel.ipv6CheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(ipv6CheckBox, org.openide.util.NbBundle.getMessage(MongoTopOptionsPanel.class, "MongoDumpOptionsPanel.ipv6CheckBox.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(sslCheckBox, org.openide.util.NbBundle.getMessage(MongoDumpOptionsPanel.class, "MongoDumpOptionsPanel.sslCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(locksCheckBox, org.openide.util.NbBundle.getMessage(MongoTopOptionsPanel.class, "MongoDumpOptionsPanel.sslCheckBox.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(directoryPerDbCheckBox, org.openide.util.NbBundle.getMessage(MongoDumpOptionsPanel.class, "MongoDumpOptionsPanel.directoryPerDbCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(sleepTimeLabel, org.openide.util.NbBundle.getMessage(MongoTopOptionsPanel.class, "MongoDumpOptionsPanel.outputLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(journalCheckBox, org.openide.util.NbBundle.getMessage(MongoDumpOptionsPanel.class, "MongoDumpOptionsPanel.journalCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(authDatabaseLabel, org.openide.util.NbBundle.getMessage(MongoTopOptionsPanel.class, "MongoDumpOptionsPanel.authDatabaseLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(oplogCheckBox, org.openide.util.NbBundle.getMessage(MongoDumpOptionsPanel.class, "MongoDumpOptionsPanel.oplogCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(authMechanismLabel, org.openide.util.NbBundle.getMessage(MongoTopOptionsPanel.class, "MongoDumpOptionsPanel.authMechanismLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(repairCheckBox, org.openide.util.NbBundle.getMessage(MongoDumpOptionsPanel.class, "MongoDumpOptionsPanel.repairCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(authLabel, org.openide.util.NbBundle.getMessage(MongoTopOptionsPanel.class, "MongoDumpOptionsPanel.authLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(forceTableScanCheckBox, org.openide.util.NbBundle.getMessage(MongoDumpOptionsPanel.class, "MongoDumpOptionsPanel.forceTableScanCheckBox.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(outputLabel, org.openide.util.NbBundle.getMessage(MongoDumpOptionsPanel.class, "MongoDumpOptionsPanel.outputLabel.text")); // NOI18N
-
-        outputField.setEditable(false);
-
-        org.openide.awt.Mnemonics.setLocalizedText(browseOutputButton, org.openide.util.NbBundle.getMessage(MongoDumpOptionsPanel.class, "MongoDumpOptionsPanel.browseOutputButton.text")); // NOI18N
-        browseOutputButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                browseOutputButtonActionPerformed(evt);
-            }
-        });
-
-        org.openide.awt.Mnemonics.setLocalizedText(dbLabel, org.openide.util.NbBundle.getMessage(MongoDumpOptionsPanel.class, "MongoDumpOptionsPanel.dbLabel.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(collectionLabel, org.openide.util.NbBundle.getMessage(MongoDumpOptionsPanel.class, "MongoDumpOptionsPanel.collectionLabel.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(authDatabaseLabel, org.openide.util.NbBundle.getMessage(MongoDumpOptionsPanel.class, "MongoDumpOptionsPanel.authDatabaseLabel.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(authMechanismLabel, org.openide.util.NbBundle.getMessage(MongoDumpOptionsPanel.class, "MongoDumpOptionsPanel.authMechanismLabel.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(authLabel, org.openide.util.NbBundle.getMessage(MongoDumpOptionsPanel.class, "MongoDumpOptionsPanel.authLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(defaultSleepTimeLabel, org.openide.util.NbBundle.getMessage(MongoTopOptionsPanel.class, "MongoTopOptionsPanel.defaultSleepTimeLabel.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -323,7 +265,7 @@ public final class MongoDumpOptionsPanel extends javax.swing.JPanel implements N
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(passwordLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(passwordField, javax.swing.GroupLayout.DEFAULT_SIZE, 326, Short.MAX_VALUE)
+                        .addComponent(passwordField, javax.swing.GroupLayout.DEFAULT_SIZE, 331, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(displayPasswordCheckBox))
                     .addGroup(layout.createSequentialGroup()
@@ -338,38 +280,25 @@ public final class MongoDumpOptionsPanel extends javax.swing.JPanel implements N
                         .addComponent(portLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(portField))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(dbLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(dbField))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(collectionLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(collectionField))
                     .addComponent(ipv6CheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(sslCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(directoryPerDbCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(journalCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(oplogCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(repairCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(forceTableScanCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(outputLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(outputField, javax.swing.GroupLayout.DEFAULT_SIZE, 316, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(browseOutputButton))
+                    .addComponent(locksCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(authLabel)
                             .addComponent(verbosityEditor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(sleepTimeLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(sleepTimeField)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(defaultSleepTimeLabel)))
                 .addContainerGap())
         );
 
         layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {authDatabaseLabel, authMechanismLabel});
 
-        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {collectionLabel, dbLabel, hostLabel, passwordLabel, portLabel, usernameLabel});
+        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {hostLabel, passwordLabel, portLabel, usernameLabel});
 
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -402,34 +331,16 @@ public final class MongoDumpOptionsPanel extends javax.swing.JPanel implements N
                     .addComponent(authMechanismLabel)
                     .addComponent(authMechanismField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(dbLabel)
-                    .addComponent(dbField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(collectionLabel)
-                    .addComponent(collectionField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
                 .addComponent(ipv6CheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(sslCheckBox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(directoryPerDbCheckBox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(journalCheckBox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(oplogCheckBox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(repairCheckBox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(forceTableScanCheckBox)
+                .addComponent(locksCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(verbosityEditor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
+                .addGap(19, 19, 19)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(outputLabel)
-                    .addComponent(outputField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(browseOutputButton))
+                    .addComponent(sleepTimeLabel)
+                    .addComponent(sleepTimeField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(defaultSleepTimeLabel))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -441,19 +352,6 @@ public final class MongoDumpOptionsPanel extends javax.swing.JPanel implements N
         passwordField.setEchoChar(echoChar);
     }//GEN-LAST:event_displayPasswordCheckBoxActionPerformed
 
-    private void browseOutputButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseOutputButtonActionPerformed
-        final FileChooserBuilder fcb = new FileChooserBuilder("dump-restore-path");
-        fcb.setDirectoriesOnly(true);
-        final String output = outputField.getText().trim();
-        if (output.isEmpty() == false) {
-            fcb.setDefaultWorkingDirectory(new File(output));
-        }
-        final File file = fcb.showSaveDialog();
-        if (file != null) {
-            outputField.setText(file.getAbsolutePath());
-        }
-    }//GEN-LAST:event_browseOutputButtonActionPerformed
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField authDatabaseField;
@@ -461,27 +359,18 @@ public final class MongoDumpOptionsPanel extends javax.swing.JPanel implements N
     private javax.swing.JLabel authLabel;
     private javax.swing.JTextField authMechanismField;
     private javax.swing.JLabel authMechanismLabel;
-    private javax.swing.JButton browseOutputButton;
-    private javax.swing.JTextField collectionField;
-    private javax.swing.JLabel collectionLabel;
-    private javax.swing.JTextField dbField;
-    private javax.swing.JLabel dbLabel;
-    private javax.swing.JCheckBox directoryPerDbCheckBox;
+    private javax.swing.JLabel defaultSleepTimeLabel;
     private javax.swing.JCheckBox displayPasswordCheckBox;
-    private javax.swing.JCheckBox forceTableScanCheckBox;
     private javax.swing.JTextField hostField;
     private javax.swing.JLabel hostLabel;
     private javax.swing.JCheckBox ipv6CheckBox;
-    private javax.swing.JCheckBox journalCheckBox;
-    private javax.swing.JCheckBox oplogCheckBox;
-    private javax.swing.JTextField outputField;
-    private javax.swing.JLabel outputLabel;
+    private javax.swing.JCheckBox locksCheckBox;
     private javax.swing.JPasswordField passwordField;
     private javax.swing.JLabel passwordLabel;
     private javax.swing.JTextField portField;
     private javax.swing.JLabel portLabel;
-    private javax.swing.JCheckBox repairCheckBox;
-    private javax.swing.JCheckBox sslCheckBox;
+    private javax.swing.JTextField sleepTimeField;
+    private javax.swing.JLabel sleepTimeLabel;
     private javax.swing.JTextField usernameField;
     private javax.swing.JLabel usernameLabel;
     private org.netbeans.modules.mongodb.ui.native_tools.VerbosityEditor verbosityEditor;

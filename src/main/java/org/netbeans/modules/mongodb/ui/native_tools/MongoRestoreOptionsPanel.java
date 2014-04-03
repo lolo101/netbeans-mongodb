@@ -30,25 +30,26 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.prefs.Preferences;
+import javax.swing.JCheckBox;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import javax.swing.text.PlainDocument;
 import org.netbeans.modules.mongodb.native_tools.MongoDumpOptions;
+import org.netbeans.modules.mongodb.native_tools.MongoNativeTool;
 import org.netbeans.modules.mongodb.native_tools.MongoRestoreOptions;
 import org.netbeans.modules.mongodb.options.MongoNativeToolsOptions;
 import org.netbeans.modules.mongodb.ui.util.IntegerDocumentFilter;
 import org.netbeans.modules.mongodb.util.Version;
 import org.openide.filesystems.FileChooserBuilder;
-import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbPreferences;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Yann D'Isanto
  */
-@Messages({
-    "# {0} - version",
-    "restoreDialogTitle=mongorestore {0}"
-})
+
+@ServiceProvider(service = NativeToolOptionsDialog.OptionsPanel.class)
 public final class MongoRestoreOptionsPanel extends javax.swing.JPanel implements NativeToolOptionsDialog.OptionsPanel {
 
     private final char defaultPasswordEchoChar;
@@ -64,6 +65,11 @@ public final class MongoRestoreOptionsPanel extends javax.swing.JPanel implement
         defaultPasswordEchoChar = passwordField.getEchoChar();
         final String defaultPath = prefs().get("dump-restore-path", Paths.get("dump").toAbsolutePath().toString());
         dumpPathField.setText(defaultPath);
+    }
+
+    @Override
+    public MongoNativeTool getNativeTool() {
+        return MongoNativeTool.MONGO_RESTORE;
     }
 
     public Preferences prefs() {
@@ -146,45 +152,31 @@ public final class MongoRestoreOptionsPanel extends javax.swing.JPanel implement
 
     @Override
     public void setOptions(Map<String, String> options) {
-        final String host = options.get(MongoRestoreOptions.HOST);
-        if (host != null) {
-            hostField.setText(host);
-        }
-        final String port = options.get(MongoRestoreOptions.PORT);
-        if (port != null) {
-            portField.setText(port);
-        }
-        final String username = options.get(MongoRestoreOptions.USERNAME);
-        if (username != null) {
-            usernameField.setText(username);
-        }
-        final String password = options.get(MongoRestoreOptions.PASSWORD);
-        if (password != null) {
-            passwordField.setText(password);
-        }
-        final String authDatabase = options.get(MongoDumpOptions.AUTH_DATABASE);
-        if (authDatabase != null) {
-            authDatabaseField.setText(authDatabase);
-        }
-        final String authMechanism = options.get(MongoDumpOptions.AUTH_MECHANISM);
-        if (authMechanism != null) {
-            authMechanismField.setText(authMechanism);
-        }
-        final String db = options.get(MongoRestoreOptions.DB);
-        if (db != null) {
-            dbField.setText(db);
-        }
-        final String collection = options.get(MongoRestoreOptions.COLLECTION);
-        if (collection != null) {
-            collectionField.setText(collection);
-        }
-        ipv6CheckBox.setSelected(options.containsKey(MongoRestoreOptions.IPV6));
-        sslCheckBox.setSelected(options.containsKey(MongoRestoreOptions.SSL));
-        directoryPerDbCheckBox.setSelected(options.containsKey(MongoRestoreOptions.DIRECTORY_PER_DB));
-        journalCheckBox.setSelected(options.containsKey(MongoRestoreOptions.JOURNAL));
-        oplogReplayCheckBox.setSelected(options.containsKey(MongoRestoreOptions.OPLOG_REPLAY));
+        populateOption(options, MongoRestoreOptions.HOST, hostField);
+        populateOption(options, MongoRestoreOptions.PORT, portField);
+        populateOption(options, MongoRestoreOptions.USERNAME, usernameField);
+        populateOption(options, MongoRestoreOptions.PASSWORD, passwordField);
+        populateOption(options, MongoRestoreOptions.AUTH_DATABASE, authDatabaseField);
+        populateOption(options, MongoRestoreOptions.AUTH_MECHANISM, authMechanismField);
+        populateOption(options, MongoRestoreOptions.DB, dbField);
+        populateOption(options, MongoRestoreOptions.COLLECTION, collectionField);
+        
+        populateOption(options, MongoRestoreOptions.IPV6, ipv6CheckBox);
+        populateOption(options, MongoRestoreOptions.SSL, sslCheckBox);
+        populateOption(options, MongoRestoreOptions.DIRECTORY_PER_DB, directoryPerDbCheckBox);
+        populateOption(options, MongoRestoreOptions.JOURNAL, journalCheckBox);
+        populateOption(options, MongoRestoreOptions.OPLOG_REPLAY, oplogReplayCheckBox);
     }
 
+    private void populateOption(Map<String, String> options, String optionKey, JTextField textField) {
+        final String optionValue = options.get(optionKey);
+        textField.setText(optionValue != null ? optionValue : "");
+    }
+    
+    private void populateOption(Map<String, String> options, String optionKey, JCheckBox checkbox) {
+        checkbox.setSelected(options.containsKey(optionKey));
+    }
+    
     @Override
     public List<String> getArgs() {
         final List<String> args = new ArrayList<>();
@@ -201,6 +193,9 @@ public final class MongoRestoreOptionsPanel extends javax.swing.JPanel implement
 
     @Override
     public void setArgs(List<String> args) {
+        verbosityEditor.setVerboseSelected(false);
+        final String defaultPath = prefs().get("dump-restore-path", Paths.get("dump").toAbsolutePath().toString());
+        dumpPathField.setText(defaultPath);
         for (String arg : args) {
             if (arg.matches("-v{1,5}")) {
                 verbosityEditor.setVerboseArg(arg);
