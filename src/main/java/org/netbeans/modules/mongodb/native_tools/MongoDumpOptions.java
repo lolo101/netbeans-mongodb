@@ -45,6 +45,10 @@ public interface MongoDumpOptions {
 
     String COLLECTION = "--collection";
 
+    String QUERY = "--query";
+
+    String DB_PATH = "--dbpath";
+
     String IPV6 = "--ipv6";
 
     String SSL = "--ssl";

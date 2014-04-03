@@ -30,6 +30,7 @@ import com.mongodb.util.JSON;
 import java.awt.event.ActionEvent;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.mongodb.resources.Images;
+import org.netbeans.modules.mongodb.ui.util.JsonUI;
 import org.netbeans.modules.mongodb.ui.windows.CollectionView;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -56,7 +57,7 @@ public final class EditSelectedDocumentAction extends CollectionViewAction {
     @Override
     public void actionPerformed(ActionEvent e) {
         final DBObject document = getView().getResultTableSelectedDocument();
-        final DBObject modifiedDocument = getView().showJsonEditor(
+        final DBObject modifiedDocument = JsonUI.showEditor(
             Bundle.editDocumentTitle(),
             JSON.serialize(document));
         if (modifiedDocument != null) {

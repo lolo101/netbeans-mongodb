@@ -37,7 +37,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="passwordLabel" linkSize="3" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="passwordField" pref="326" max="32767" attributes="0"/>
+                      <Component id="passwordField" pref="303" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="displayPasswordCheckBox" min="-2" max="-2" attributes="0"/>
                   </Group>
@@ -66,6 +66,13 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="collectionField" max="32767" attributes="0"/>
                   </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="queryLabel" linkSize="3" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="queryField" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="editQueryButton" min="-2" max="-2" attributes="0"/>
+                  </Group>
                   <Component id="ipv6CheckBox" alignment="0" max="32767" attributes="0"/>
                   <Component id="sslCheckBox" alignment="0" max="32767" attributes="0"/>
                   <Component id="directoryPerDbCheckBox" alignment="0" max="32767" attributes="0"/>
@@ -76,9 +83,16 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="outputLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="outputField" pref="316" max="32767" attributes="0"/>
+                      <Component id="outputField" pref="293" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="browseOutputButton" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="dbPathLabel" linkSize="3" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="dbPathField" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="browseDBPathButton" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
@@ -137,6 +151,18 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="collectionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="collectionField" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="queryLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="queryField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="editQueryButton" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace type="separate" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="dbPathLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="dbPathField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="browseDBPathButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace type="separate" max="-2" attributes="0"/>
               <Component id="ipv6CheckBox" min="-2" max="-2" attributes="0"/>
@@ -327,6 +353,50 @@
           <ResourceString bundle="org/netbeans/modules/mongodb/ui/native_tools/Bundle.properties" key="MongoDumpOptionsPanel.authLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="dbPathLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/mongodb/ui/native_tools/Bundle.properties" key="MongoDumpOptionsPanel.dbPathLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="dbPathField">
+      <Properties>
+        <Property name="editable" type="boolean" value="false"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JButton" name="browseDBPathButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/mongodb/ui/native_tools/Bundle.properties" key="MongoDumpOptionsPanel.browseDBPathButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="browseDBPathButtonActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JLabel" name="queryLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/mongodb/ui/native_tools/Bundle.properties" key="MongoDumpOptionsPanel.queryLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="queryField">
+      <Properties>
+        <Property name="editable" type="boolean" value="false"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JButton" name="editQueryButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/mongodb/ui/native_tools/Bundle.properties" key="MongoDumpOptionsPanel.editQueryButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="editQueryButtonActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>

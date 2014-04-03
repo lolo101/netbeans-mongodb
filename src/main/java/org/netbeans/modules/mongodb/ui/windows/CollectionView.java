@@ -27,11 +27,8 @@ import org.netbeans.modules.mongodb.ui.windows.collectionview.actions.AddDocumen
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
-import com.mongodb.util.JSONParseException;
 import java.awt.CardLayout;
 import org.netbeans.modules.mongodb.CollectionInfo;
-import org.netbeans.modules.mongodb.util.Json;
-import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -40,7 +37,6 @@ import java.util.Map;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.Action;
-import javax.swing.JEditorPane;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
@@ -54,12 +50,10 @@ import javax.swing.event.TableColumnModelEvent;
 import javax.swing.event.TableColumnModelListener;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
-import javax.swing.text.EditorKit;
 import javax.swing.text.PlainDocument;
 import javax.swing.tree.TreePath;
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.treetable.TreeTableNode;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.modules.mongodb.ConnectionInfo;
 import org.netbeans.modules.mongodb.DbInfo;
 import org.netbeans.modules.mongodb.resources.Images;
@@ -96,9 +90,6 @@ import org.netbeans.modules.mongodb.ui.windows.collectionview.treetable.JsonTree
 import org.netbeans.modules.mongodb.ui.windows.collectionview.treetable.DocumentsTreeTableModel;
 import org.netbeans.modules.mongodb.util.JsonProperty;
 import org.netbeans.modules.mongodb.util.SystemCollectionPredicate;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
@@ -130,8 +121,6 @@ public final class CollectionView extends TopComponent {
     private static final ResultView DEFAULT_RESULT_VIEW = ResultView.TREE_TABLE;
 
     private final boolean isSystemCollection;
-
-    private final EditorKit jsonEditorKit = MimeLookup.getLookup("text/x-json").lookup(EditorKit.class);
 
     private final QueryEditor queryEditor = new QueryEditor();
 
@@ -431,33 +420,6 @@ public final class CollectionView extends TopComponent {
         collectionQueryResult.setProjection(projection);
         collectionQueryResult.setSort(sort);
         refreshResults();
-    }
-
-    public DBObject showJsonEditor(String title, String defaultJson) {
-        final JEditorPane editor = new JEditorPane();
-        if (jsonEditorKit != null) {
-            editor.setEditorKit(jsonEditorKit);
-        }
-        editor.setPreferredSize(new Dimension(450, 300));
-        String json = defaultJson.trim().isEmpty() ? "{}" : Json.prettify(defaultJson);
-        boolean doLoop = true;
-        while (doLoop) {
-            doLoop = false;
-            editor.setText(json);
-            final DialogDescriptor desc = new DialogDescriptor(editor, title);
-            final Object dlgResult = DialogDisplayer.getDefault().notify(desc);
-            if (dlgResult.equals(NotifyDescriptor.OK_OPTION)) {
-                try {
-                    json = editor.getText().trim();
-                    return (DBObject) JSON.parse(json);
-                } catch (JSONParseException ex) {
-                    DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(Bundle.invalidJson(), NotifyDescriptor.ERROR_MESSAGE));
-                    doLoop = true;
-                }
-            }
-        }
-        return null;
     }
 
     private void changePageSize(int pageSize) {
