@@ -27,26 +27,21 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.prefs.Preferences;
-import javax.swing.JCheckBox;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
 import javax.swing.text.PlainDocument;
-import org.netbeans.modules.mongodb.native_tools.MongoDumpOptions;
 import org.netbeans.modules.mongodb.native_tools.MongoNativeTool;
+import org.netbeans.modules.mongodb.native_tools.MongoRestoreOptions;
 import org.netbeans.modules.mongodb.native_tools.MongoTopOptions;
 import org.netbeans.modules.mongodb.options.MongoNativeToolsOptions;
 import org.netbeans.modules.mongodb.ui.util.IntegerDocumentFilter;
 import org.netbeans.modules.mongodb.util.Version;
-import org.openide.util.NbPreferences;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Yann D'Isanto
  */
-@ServiceProvider(service = NativeToolOptionsDialog.OptionsPanel.class)
-public final class MongoTopOptionsPanel extends javax.swing.JPanel implements NativeToolOptionsDialog.OptionsPanel {
+@ServiceProvider(service = NativeToolOptionsDialog.OptionsAndArgsPanel.class)
+public final class MongoTopOptionsPanel extends AbstractOptionsAndArgsPanel implements NativeToolOptionsDialog.OptionsAndArgsPanel {
 
     private final char defaultPasswordEchoChar;
 
@@ -54,6 +49,7 @@ public final class MongoTopOptionsPanel extends javax.swing.JPanel implements Na
      * Creates new form MongoTopOptionsOptionsPanel
      */
     public MongoTopOptionsPanel() {
+        super(MongoNativeTool.MONGO_TOP);
         initComponents();
         disableOptionsAccordingToVersion();
         PlainDocument document = (PlainDocument) portField.getDocument();
@@ -61,15 +57,6 @@ public final class MongoTopOptionsPanel extends javax.swing.JPanel implements Na
         document = (PlainDocument) sleepTimeField.getDocument();
         document.setDocumentFilter(new IntegerDocumentFilter());
         defaultPasswordEchoChar = passwordField.getEchoChar();
-    }
-
-    @Override
-    public MongoNativeTool getNativeTool() {
-        return MongoNativeTool.MONGO_TOP;
-    }
-
-    public Preferences prefs() {
-        return NbPreferences.forModule(MongoTopOptionsPanel.class).node("native_tools");
     }
 
     private void disableOptionsAccordingToVersion() {
@@ -93,71 +80,31 @@ public final class MongoTopOptionsPanel extends javax.swing.JPanel implements Na
     }
 
     @Override
-    public JPanel getPanel() {
-        return this;
-    }
-
-    @Override
     public Map<String, String> getOptions() {
         final Map<String, String> options = new HashMap<>();
-        final String host = hostField.getText().trim();
-        if (host.isEmpty() == false) {
-            options.put(MongoTopOptions.HOST, host);
-        }
-        final String port = portField.getText().trim();
-        if (port.isEmpty() == false) {
-            options.put(MongoTopOptions.PORT, port);
-        }
-        final String username = usernameField.getText().trim();
-        if (username.isEmpty() == false) {
-            options.put(MongoTopOptions.USERNAME, username);
-        }
-        final String password = new String(passwordField.getPassword());
-        if (password.isEmpty() == false) {
-            options.put(MongoTopOptions.PASSWORD, password);
-        }
-        final String authDatabase = authDatabaseField.getText().trim();
-        if (authDatabase.isEmpty() == false) {
-            options.put(MongoTopOptions.AUTH_DATABASE, authDatabase);
-        }
-        final String authMechanism = authMechanismField.getText().trim();
-        if (authMechanism.isEmpty() == false) {
-            options.put(MongoTopOptions.AUTH_MECHANISM, authMechanism);
-        }
-        if (ipv6CheckBox.isSelected()) {
-            options.put(MongoTopOptions.IPV6, "");
-        }
-        if (locksCheckBox.isSelected()) {
-            options.put(MongoTopOptions.LOCKS, "");
-        }
+        readOptionFromUI(options, MongoTopOptions.HOST, hostField);
+        readOptionFromUI(options, MongoTopOptions.PORT, portField);
+        readOptionFromUI(options, MongoTopOptions.USERNAME, usernameField);
+        readOptionFromUI(options, MongoTopOptions.PASSWORD, passwordField);
+        readOptionFromUI(options, MongoTopOptions.AUTH_DATABASE, authDatabaseField);
+        readOptionFromUI(options, MongoTopOptions.AUTH_MECHANISM, authMechanismField);
+        readOptionFromUI(options, MongoTopOptions.IPV6, ipv6CheckBox);
+        readOptionFromUI(options, MongoTopOptions.LOCKS, locksCheckBox);
         return options;
     }
 
     @Override
     public void setOptions(Map<String, String> options) {
-        populateOption(options, MongoTopOptions.HOST, hostField);
-        populateOption(options, MongoTopOptions.PORT, portField);
-        populateOption(options, MongoTopOptions.USERNAME, usernameField);
-        populateOption(options, MongoTopOptions.PASSWORD, passwordField);
-        populateOption(options, MongoTopOptions.AUTH_DATABASE, authDatabaseField);
-        populateOption(options, MongoTopOptions.AUTH_MECHANISM, authMechanismField);
-        populateOption(options, MongoTopOptions.IPV6, ipv6CheckBox);
-        populateOption(options, MongoTopOptions.LOCKS, locksCheckBox);
+        populateUIWithOption(options, MongoTopOptions.HOST, hostField);
+        populateUIWithOption(options, MongoTopOptions.PORT, portField);
+        populateUIWithOption(options, MongoTopOptions.USERNAME, usernameField);
+        populateUIWithOption(options, MongoTopOptions.PASSWORD, passwordField);
+        populateUIWithOption(options, MongoTopOptions.AUTH_DATABASE, authDatabaseField);
+        populateUIWithOption(options, MongoTopOptions.AUTH_MECHANISM, authMechanismField);
+        populateUIWithOption(options, MongoTopOptions.IPV6, ipv6CheckBox);
+        populateUIWithOption(options, MongoTopOptions.LOCKS, locksCheckBox);
     }
 
-    private void populateOption(Map<String, String> options, String optionKey, JTextField textField, String defaultValue) {
-        final String optionValue = options.get(optionKey);
-        textField.setText(optionValue != null ? optionValue : defaultValue);
-    }
-    
-    private void populateOption(Map<String, String> options, String optionKey, JTextField textField) {
-        populateOption(options, optionKey, textField, "");
-    }
-    
-    private void populateOption(Map<String, String> options, String optionKey, JCheckBox checkbox) {
-        checkbox.setSelected(options.containsKey(optionKey));
-    }
-    
     @Override
     public List<String> getArgs() {
         final List<String> args = new ArrayList<>();

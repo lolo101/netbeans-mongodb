@@ -31,10 +31,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.prefs.Preferences;
-import javax.swing.JCheckBox;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
 import javax.swing.text.PlainDocument;
 import org.netbeans.modules.mongodb.native_tools.MongoDumpOptions;
 import org.netbeans.modules.mongodb.native_tools.MongoNativeTool;
@@ -43,15 +39,14 @@ import org.netbeans.modules.mongodb.ui.util.IntegerDocumentFilter;
 import org.netbeans.modules.mongodb.ui.util.JsonUI;
 import org.netbeans.modules.mongodb.util.Version;
 import org.openide.filesystems.FileChooserBuilder;
-import org.openide.util.NbPreferences;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Yann D'Isanto
  */
-@ServiceProvider(service = NativeToolOptionsDialog.OptionsPanel.class)
-public final class MongoDumpOptionsPanel extends javax.swing.JPanel implements NativeToolOptionsDialog.OptionsPanel {
+@ServiceProvider(service = NativeToolOptionsDialog.OptionsAndArgsPanel.class)
+public final class MongoDumpOptionsPanel extends AbstractOptionsAndArgsPanel implements NativeToolOptionsDialog.OptionsAndArgsPanel {
 
     private final char defaultPasswordEchoChar;
 
@@ -59,6 +54,7 @@ public final class MongoDumpOptionsPanel extends javax.swing.JPanel implements N
      * Creates new form MongoDumpOptionsOptionsPanel
      */
     public MongoDumpOptionsPanel() {
+        super(MongoNativeTool.MONGO_DUMP);
         initComponents();
         disableOptionsAccordingToVersion();
         final PlainDocument document = (PlainDocument) portField.getDocument();
@@ -66,15 +62,6 @@ public final class MongoDumpOptionsPanel extends javax.swing.JPanel implements N
         defaultPasswordEchoChar = passwordField.getEchoChar();
         final String defaultPath = prefs().get("dump-restore-path", Paths.get("dump").toAbsolutePath().toString());
         outputField.setText(defaultPath);
-    }
-
-    @Override
-    public MongoNativeTool getNativeTool() {
-        return MongoNativeTool.MONGO_DUMP;
-    }
-
-    public Preferences prefs() {
-        return NbPreferences.forModule(MongoDumpOptionsPanel.class).node("native_tools");
     }
 
     private void disableOptionsAccordingToVersion() {
@@ -91,11 +78,6 @@ public final class MongoDumpOptionsPanel extends javax.swing.JPanel implements N
             authMechanismField.setEnabled(false);
             authMechanismField.setToolTipText(toolTipText);
         }
-    }
-
-    @Override
-    public JPanel getPanel() {
-        return this;
     }
 
     @Override
@@ -126,53 +108,27 @@ public final class MongoDumpOptionsPanel extends javax.swing.JPanel implements N
         return options;
     }
 
-    private void readOptionFromUI(Map<String, String> options, String optionKey, JTextField textField) {
-        final String value = textField.getText().trim();
-        if (value.isEmpty() == false) {
-            options.put(optionKey, value);
-        }
-    }
-
-    private void readOptionFromUI(Map<String, String> options, String optionKey, JCheckBox checkbox) {
-        if (checkbox.isSelected()) {
-            options.put(optionKey, "");
-        }
-    }
-
     @Override
     public void setOptions(Map<String, String> options) {
-        populateOption(options, MongoDumpOptions.HOST, hostField);
-        populateOption(options, MongoDumpOptions.PORT, portField);
-        populateOption(options, MongoDumpOptions.USERNAME, usernameField);
-        populateOption(options, MongoDumpOptions.PASSWORD, passwordField);
-        populateOption(options, MongoDumpOptions.AUTH_DATABASE, authDatabaseField);
-        populateOption(options, MongoDumpOptions.AUTH_MECHANISM, authMechanismField);
-        populateOption(options, MongoDumpOptions.DB, dbField);
-        populateOption(options, MongoDumpOptions.COLLECTION, collectionField);
-        populateOption(options, MongoDumpOptions.QUERY, queryField);
-        populateOption(options, MongoDumpOptions.DB_PATH, dbPathField);
-        populateOption(options, MongoDumpOptions.IPV6, ipv6CheckBox);
-        populateOption(options, MongoDumpOptions.SSL, sslCheckBox);
-        populateOption(options, MongoDumpOptions.DIRECTORY_PER_DB, directoryPerDbCheckBox);
-        populateOption(options, MongoDumpOptions.JOURNAL, journalCheckBox);
-        populateOption(options, MongoDumpOptions.OPLOG, oplogCheckBox);
-        populateOption(options, MongoDumpOptions.REPAIR, repairCheckBox);
-        populateOption(options, MongoDumpOptions.FORCE_TABLE_SCAN, forceTableScanCheckBox);
+        populateUIWithOption(options, MongoDumpOptions.HOST, hostField);
+        populateUIWithOption(options, MongoDumpOptions.PORT, portField);
+        populateUIWithOption(options, MongoDumpOptions.USERNAME, usernameField);
+        populateUIWithOption(options, MongoDumpOptions.PASSWORD, passwordField);
+        populateUIWithOption(options, MongoDumpOptions.AUTH_DATABASE, authDatabaseField);
+        populateUIWithOption(options, MongoDumpOptions.AUTH_MECHANISM, authMechanismField);
+        populateUIWithOption(options, MongoDumpOptions.DB, dbField);
+        populateUIWithOption(options, MongoDumpOptions.COLLECTION, collectionField);
+        populateUIWithOption(options, MongoDumpOptions.QUERY, queryField);
+        populateUIWithOption(options, MongoDumpOptions.DB_PATH, dbPathField);
+        populateUIWithOption(options, MongoDumpOptions.IPV6, ipv6CheckBox);
+        populateUIWithOption(options, MongoDumpOptions.SSL, sslCheckBox);
+        populateUIWithOption(options, MongoDumpOptions.DIRECTORY_PER_DB, directoryPerDbCheckBox);
+        populateUIWithOption(options, MongoDumpOptions.JOURNAL, journalCheckBox);
+        populateUIWithOption(options, MongoDumpOptions.OPLOG, oplogCheckBox);
+        populateUIWithOption(options, MongoDumpOptions.REPAIR, repairCheckBox);
+        populateUIWithOption(options, MongoDumpOptions.FORCE_TABLE_SCAN, forceTableScanCheckBox);
         final String defaultPath = prefs().get("dump-restore-path", Paths.get("dump").toAbsolutePath().toString());
-        populateOption(options, MongoDumpOptions.OUTPUT, outputField, defaultPath);
-    }
-
-    private void populateOption(Map<String, String> options, String optionKey, JTextField textField, String defaultValue) {
-        final String optionValue = options.get(optionKey);
-        textField.setText(optionValue != null ? optionValue : defaultValue);
-    }
-
-    private void populateOption(Map<String, String> options, String optionKey, JTextField textField) {
-        populateOption(options, optionKey, textField, "");
-    }
-
-    private void populateOption(Map<String, String> options, String optionKey, JCheckBox checkbox) {
-        checkbox.setSelected(options.containsKey(optionKey));
+        populateUIWithOption(options, MongoDumpOptions.OUTPUT, outputField, defaultPath);
     }
 
     @Override
