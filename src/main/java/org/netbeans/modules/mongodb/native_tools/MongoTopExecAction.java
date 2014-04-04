@@ -38,7 +38,7 @@ import org.openide.util.NbBundle.Messages;
  * @author Yann D'Isanto
  */
 @Messages({
-    "ACTION_MongoTop=Top"
+    "ACTION_MongoTop=mongotop"
 })
 public final class MongoTopExecAction extends NativeToolExecAction {
 

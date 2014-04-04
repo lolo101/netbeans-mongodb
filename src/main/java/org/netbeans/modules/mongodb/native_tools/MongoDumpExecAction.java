@@ -40,7 +40,7 @@ import org.openide.util.NbBundle.Messages;
  * @author Yann D'Isanto
  */
 @Messages({
-    "ACTION_MongoDump=Dump"
+    "ACTION_MongoDump=mongodump"
 })
 public final class MongoDumpExecAction extends NativeToolExecAction {
 

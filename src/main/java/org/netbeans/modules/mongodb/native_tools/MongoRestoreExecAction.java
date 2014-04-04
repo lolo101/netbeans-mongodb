@@ -41,7 +41,7 @@ import org.openide.util.NbBundle;
  * @author Yann D'Isanto
  */
 @NbBundle.Messages({
-    "ACTION_MongoRestore=Restore"
+    "ACTION_MongoRestore=mongorestore"
 })
 public final class MongoRestoreExecAction extends NativeToolExecAction {
 
