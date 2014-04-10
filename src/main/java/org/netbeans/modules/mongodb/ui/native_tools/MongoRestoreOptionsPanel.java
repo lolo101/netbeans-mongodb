@@ -23,6 +23,8 @@
  */
 package org.netbeans.modules.mongodb.ui.native_tools;
 
+import com.mongodb.DBObject;
+import com.mongodb.util.JSON;
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -35,8 +37,10 @@ import org.netbeans.modules.mongodb.native_tools.MongoNativeTool;
 import org.netbeans.modules.mongodb.native_tools.MongoRestoreOptions;
 import org.netbeans.modules.mongodb.options.MongoNativeToolsOptions;
 import org.netbeans.modules.mongodb.ui.util.IntegerDocumentFilter;
+import org.netbeans.modules.mongodb.ui.util.JsonUI;
 import org.netbeans.modules.mongodb.util.Version;
 import org.openide.filesystems.FileChooserBuilder;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -45,6 +49,9 @@ import org.openide.util.lookup.ServiceProvider;
  */
 
 @ServiceProvider(service = NativeToolOptionsDialog.OptionsAndArgsPanel.class)
+@Messages({
+    "filterEditorTitle=Edit filter"
+})
 public final class MongoRestoreOptionsPanel extends AbstractOptionsAndArgsPanel implements NativeToolOptionsDialog.OptionsAndArgsPanel {
 
     private final char defaultPasswordEchoChar;
@@ -66,6 +73,7 @@ public final class MongoRestoreOptionsPanel extends AbstractOptionsAndArgsPanel 
     private void disableOptionsAccordingToVersion() {
         final Version version = MongoNativeToolsOptions.INSTANCE.getToolsVersion();
         final Version v2_4 = new Version("2.4");
+        final Version v2_2 = new Version("2.2");
         if (version.compareTo(v2_4) < 0) {
             final String toolTipText = Bundle.requiresVersion(v2_4);
             sslCheckBox.setEnabled(false);
@@ -76,6 +84,16 @@ public final class MongoRestoreOptionsPanel extends AbstractOptionsAndArgsPanel 
             authMechanismLabel.setEnabled(false);
             authMechanismField.setEnabled(false);
             authMechanismField.setToolTipText(toolTipText);
+            noobjcheckCheckBox.setVisible(false);
+        } else {
+            objcheckCheckBox.setVisible(false);
+        }
+        if (version.compareTo(v2_2) < 0) {
+            final String toolTipText = Bundle.requiresVersion(v2_2);
+            noOptionsRestoreCheckBox.setEnabled(false);
+            noOptionsRestoreCheckBox.setToolTipText(toolTipText);
+            noIndexRestoreCheckBox.setEnabled(false);
+            noIndexRestoreCheckBox.setToolTipText(toolTipText);
         }
     }
 
@@ -90,10 +108,15 @@ public final class MongoRestoreOptionsPanel extends AbstractOptionsAndArgsPanel 
         readOptionFromUI(options, MongoRestoreOptions.AUTH_MECHANISM, authMechanismField);
         readOptionFromUI(options, MongoRestoreOptions.DB, dbField);
         readOptionFromUI(options, MongoRestoreOptions.COLLECTION, collectionField);
+        readOptionFromUI(options, MongoRestoreOptions.FILTER, filterField);
+        readOptionFromUI(options, MongoRestoreOptions.DB_PATH, dbPathField);
         readOptionFromUI(options, MongoRestoreOptions.IPV6, ipv6CheckBox);
         readOptionFromUI(options, MongoRestoreOptions.SSL, sslCheckBox);
         readOptionFromUI(options, MongoRestoreOptions.DIRECTORY_PER_DB, directoryPerDbCheckBox);
         readOptionFromUI(options, MongoRestoreOptions.JOURNAL, journalCheckBox);
+        readOptionFromUI(options, MongoRestoreOptions.OBJCHECK, objcheckCheckBox);
+        readOptionFromUI(options, MongoRestoreOptions.NO_OBJCHECK, noobjcheckCheckBox);
+        readOptionFromUI(options, MongoRestoreOptions.DROP, dropCheckBox);
         readOptionFromUI(options, MongoRestoreOptions.OPLOG_REPLAY, oplogReplayCheckBox);
         return options;
     }
@@ -108,10 +131,15 @@ public final class MongoRestoreOptionsPanel extends AbstractOptionsAndArgsPanel 
         populateUIWithOption(options, MongoRestoreOptions.AUTH_MECHANISM, authMechanismField);
         populateUIWithOption(options, MongoRestoreOptions.DB, dbField);
         populateUIWithOption(options, MongoRestoreOptions.COLLECTION, collectionField);
+        populateUIWithOption(options, MongoRestoreOptions.FILTER, filterField);
+        populateUIWithOption(options, MongoRestoreOptions.DB_PATH, dbPathField);
         populateUIWithOption(options, MongoRestoreOptions.IPV6, ipv6CheckBox);
         populateUIWithOption(options, MongoRestoreOptions.SSL, sslCheckBox);
         populateUIWithOption(options, MongoRestoreOptions.DIRECTORY_PER_DB, directoryPerDbCheckBox);
         populateUIWithOption(options, MongoRestoreOptions.JOURNAL, journalCheckBox);
+        populateUIWithOption(options, MongoRestoreOptions.OBJCHECK, objcheckCheckBox);
+        populateUIWithOption(options, MongoRestoreOptions.NO_OBJCHECK, noobjcheckCheckBox);
+        populateUIWithOption(options, MongoRestoreOptions.DROP, dropCheckBox);
         populateUIWithOption(options, MongoRestoreOptions.OPLOG_REPLAY, oplogReplayCheckBox);
     }
 
@@ -180,6 +208,18 @@ public final class MongoRestoreOptionsPanel extends AbstractOptionsAndArgsPanel 
         authDatabaseField = new javax.swing.JTextField();
         authMechanismField = new javax.swing.JTextField();
         authLabel = new javax.swing.JLabel();
+        objcheckCheckBox = new javax.swing.JCheckBox();
+        noobjcheckCheckBox = new javax.swing.JCheckBox();
+        dropCheckBox = new javax.swing.JCheckBox();
+        keepIndexVersionCheckBox = new javax.swing.JCheckBox();
+        noOptionsRestoreCheckBox = new javax.swing.JCheckBox();
+        noIndexRestoreCheckBox = new javax.swing.JCheckBox();
+        dbPathLabel = new javax.swing.JLabel();
+        dbPathField = new javax.swing.JTextField();
+        browseDBPathButton = new javax.swing.JButton();
+        filterLabel = new javax.swing.JLabel();
+        filterField = new javax.swing.JTextField();
+        editFilterButton = new javax.swing.JButton();
 
         org.openide.awt.Mnemonics.setLocalizedText(hostLabel, org.openide.util.NbBundle.getMessage(MongoRestoreOptionsPanel.class, "MongoRestoreOptionsPanel.hostLabel.text")); // NOI18N
 
@@ -227,6 +267,40 @@ public final class MongoRestoreOptionsPanel extends AbstractOptionsAndArgsPanel 
 
         org.openide.awt.Mnemonics.setLocalizedText(authLabel, org.openide.util.NbBundle.getMessage(MongoRestoreOptionsPanel.class, "MongoRestoreOptionsPanel.authLabel.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(objcheckCheckBox, org.openide.util.NbBundle.getMessage(MongoRestoreOptionsPanel.class, "MongoRestoreOptionsPanel.objcheckCheckBox.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(noobjcheckCheckBox, org.openide.util.NbBundle.getMessage(MongoRestoreOptionsPanel.class, "MongoRestoreOptionsPanel.noobjcheckCheckBox.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(dropCheckBox, org.openide.util.NbBundle.getMessage(MongoRestoreOptionsPanel.class, "MongoRestoreOptionsPanel.dropCheckBox.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(keepIndexVersionCheckBox, org.openide.util.NbBundle.getMessage(MongoRestoreOptionsPanel.class, "MongoRestoreOptionsPanel.keepIndexVersionCheckBox.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(noOptionsRestoreCheckBox, org.openide.util.NbBundle.getMessage(MongoRestoreOptionsPanel.class, "MongoRestoreOptionsPanel.noOptionsRestoreCheckBox.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(noIndexRestoreCheckBox, org.openide.util.NbBundle.getMessage(MongoRestoreOptionsPanel.class, "MongoRestoreOptionsPanel.noIndexRestoreCheckBox.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(dbPathLabel, org.openide.util.NbBundle.getMessage(MongoRestoreOptionsPanel.class, "MongoRestoreOptionsPanel.dbPathLabel.text")); // NOI18N
+
+        dbPathField.setEditable(false);
+
+        org.openide.awt.Mnemonics.setLocalizedText(browseDBPathButton, org.openide.util.NbBundle.getMessage(MongoRestoreOptionsPanel.class, "MongoRestoreOptionsPanel.browseDBPathButton.text")); // NOI18N
+        browseDBPathButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                browseDBPathButtonActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(filterLabel, org.openide.util.NbBundle.getMessage(MongoRestoreOptionsPanel.class, "MongoRestoreOptionsPanel.filterLabel.text")); // NOI18N
+
+        filterField.setEditable(false);
+
+        org.openide.awt.Mnemonics.setLocalizedText(editFilterButton, org.openide.util.NbBundle.getMessage(MongoRestoreOptionsPanel.class, "MongoRestoreOptionsPanel.editFilterButton.text")); // NOI18N
+        editFilterButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editFilterButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -237,7 +311,7 @@ public final class MongoRestoreOptionsPanel extends AbstractOptionsAndArgsPanel 
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(passwordLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(passwordField, javax.swing.GroupLayout.DEFAULT_SIZE, 381, Short.MAX_VALUE)
+                        .addComponent(passwordField, javax.swing.GroupLayout.DEFAULT_SIZE, 416, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(displayPasswordCheckBox))
                     .addGroup(layout.createSequentialGroup()
@@ -271,28 +345,46 @@ public final class MongoRestoreOptionsPanel extends AbstractOptionsAndArgsPanel 
                         .addComponent(collectionLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(collectionField))
-                    .addComponent(ipv6CheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(sslCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(directoryPerDbCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(journalCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(oplogReplayCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(filterLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(filterField)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(editFilterButton))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(dbPathLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(dbPathField)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(browseDBPathButton))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(inputLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(dumpPathField, javax.swing.GroupLayout.DEFAULT_SIZE, 302, Short.MAX_VALUE)
+                        .addComponent(dumpPathField, javax.swing.GroupLayout.DEFAULT_SIZE, 337, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(browseOutputButton))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(authLabel)
-                            .addComponent(verbosityEditor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(noIndexRestoreCheckBox)
+                            .addComponent(noOptionsRestoreCheckBox)
+                            .addComponent(keepIndexVersionCheckBox)
+                            .addComponent(dropCheckBox)
+                            .addComponent(noobjcheckCheckBox)
+                            .addComponent(objcheckCheckBox)
+                            .addComponent(verbosityEditor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(oplogReplayCheckBox)
+                            .addComponent(journalCheckBox)
+                            .addComponent(directoryPerDbCheckBox)
+                            .addComponent(sslCheckBox)
+                            .addComponent(ipv6CheckBox))
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
 
-        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {collectionLabel, dbLabel, hostLabel, passwordLabel, portLabel, usernameLabel});
-
         layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {authDatabaseLabel, authMechanismLabel});
+
+        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {collectionLabel, dbLabel, dbPathLabel, filterLabel, hostLabel, passwordLabel, portLabel, usernameLabel});
 
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -332,6 +424,16 @@ public final class MongoRestoreOptionsPanel extends AbstractOptionsAndArgsPanel 
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(collectionLabel)
                     .addComponent(collectionField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(filterLabel)
+                    .addComponent(filterField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(editFilterButton))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(dbPathLabel)
+                    .addComponent(dbPathField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(browseDBPathButton))
                 .addGap(18, 18, 18)
                 .addComponent(ipv6CheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -341,7 +443,19 @@ public final class MongoRestoreOptionsPanel extends AbstractOptionsAndArgsPanel 
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(journalCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(objcheckCheckBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(noobjcheckCheckBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(dropCheckBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(oplogReplayCheckBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(keepIndexVersionCheckBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(noOptionsRestoreCheckBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(noIndexRestoreCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(verbosityEditor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
@@ -373,6 +487,26 @@ public final class MongoRestoreOptionsPanel extends AbstractOptionsAndArgsPanel 
         }
     }//GEN-LAST:event_browseOutputButtonActionPerformed
 
+    private void browseDBPathButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseDBPathButtonActionPerformed
+        final FileChooserBuilder fcb = new FileChooserBuilder("dump-restore-db-path");
+        fcb.setDirectoriesOnly(true);
+        final String output = dbPathField.getText().trim();
+        if (output.isEmpty() == false) {
+            fcb.setDefaultWorkingDirectory(new File(output));
+        }
+        final File file = fcb.showSaveDialog();
+        if (file != null) {
+            dbPathField.setText(file.getAbsolutePath());
+        }
+    }//GEN-LAST:event_browseDBPathButtonActionPerformed
+
+    private void editFilterButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editFilterButtonActionPerformed
+        final DBObject dbObject = JsonUI.showEditor(Bundle.filterEditorTitle(), filterField.getText());
+        if (dbObject != null) {
+            filterField.setText(JSON.serialize(dbObject));
+        }
+    }//GEN-LAST:event_editFilterButtonActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField authDatabaseField;
@@ -380,19 +514,31 @@ public final class MongoRestoreOptionsPanel extends AbstractOptionsAndArgsPanel 
     private javax.swing.JLabel authLabel;
     private javax.swing.JTextField authMechanismField;
     private javax.swing.JLabel authMechanismLabel;
+    private javax.swing.JButton browseDBPathButton;
     private javax.swing.JButton browseOutputButton;
     private javax.swing.JTextField collectionField;
     private javax.swing.JLabel collectionLabel;
     private javax.swing.JTextField dbField;
     private javax.swing.JLabel dbLabel;
+    private javax.swing.JTextField dbPathField;
+    private javax.swing.JLabel dbPathLabel;
     private javax.swing.JCheckBox directoryPerDbCheckBox;
     private javax.swing.JCheckBox displayPasswordCheckBox;
+    private javax.swing.JCheckBox dropCheckBox;
     private javax.swing.JTextField dumpPathField;
+    private javax.swing.JButton editFilterButton;
+    private javax.swing.JTextField filterField;
+    private javax.swing.JLabel filterLabel;
     private javax.swing.JTextField hostField;
     private javax.swing.JLabel hostLabel;
     private javax.swing.JLabel inputLabel;
     private javax.swing.JCheckBox ipv6CheckBox;
     private javax.swing.JCheckBox journalCheckBox;
+    private javax.swing.JCheckBox keepIndexVersionCheckBox;
+    private javax.swing.JCheckBox noIndexRestoreCheckBox;
+    private javax.swing.JCheckBox noOptionsRestoreCheckBox;
+    private javax.swing.JCheckBox noobjcheckCheckBox;
+    private javax.swing.JCheckBox objcheckCheckBox;
     private javax.swing.JCheckBox oplogReplayCheckBox;
     private javax.swing.JPasswordField passwordField;
     private javax.swing.JLabel passwordLabel;

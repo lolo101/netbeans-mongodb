@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.text.PlainDocument;
 import org.netbeans.modules.mongodb.native_tools.MongoNativeTool;
-import org.netbeans.modules.mongodb.native_tools.MongoRestoreOptions;
 import org.netbeans.modules.mongodb.native_tools.MongoTopOptions;
 import org.netbeans.modules.mongodb.options.MongoNativeToolsOptions;
 import org.netbeans.modules.mongodb.ui.util.IntegerDocumentFilter;

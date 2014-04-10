@@ -39,6 +39,7 @@ import org.netbeans.modules.mongodb.ui.util.IntegerDocumentFilter;
 import org.netbeans.modules.mongodb.ui.util.JsonUI;
 import org.netbeans.modules.mongodb.util.Version;
 import org.openide.filesystems.FileChooserBuilder;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -46,6 +47,9 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Yann D'Isanto
  */
 @ServiceProvider(service = NativeToolOptionsDialog.OptionsAndArgsPanel.class)
+@Messages({
+    "queryEditorTitle=Edit query"
+})
 public final class MongoDumpOptionsPanel extends AbstractOptionsAndArgsPanel implements NativeToolOptionsDialog.OptionsAndArgsPanel {
 
     private final char defaultPasswordEchoChar;
@@ -318,13 +322,6 @@ public final class MongoDumpOptionsPanel extends AbstractOptionsAndArgsPanel imp
                         .addComponent(queryField)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(editQueryButton))
-                    .addComponent(ipv6CheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(sslCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(directoryPerDbCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(journalCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(oplogCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(repairCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(forceTableScanCheckBox, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(outputLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -340,7 +337,14 @@ public final class MongoDumpOptionsPanel extends AbstractOptionsAndArgsPanel imp
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(authLabel)
-                            .addComponent(verbosityEditor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(verbosityEditor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(ipv6CheckBox)
+                            .addComponent(sslCheckBox)
+                            .addComponent(directoryPerDbCheckBox)
+                            .addComponent(journalCheckBox)
+                            .addComponent(oplogCheckBox)
+                            .addComponent(repairCheckBox)
+                            .addComponent(forceTableScanCheckBox))
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -456,7 +460,7 @@ public final class MongoDumpOptionsPanel extends AbstractOptionsAndArgsPanel imp
     }//GEN-LAST:event_browseDBPathButtonActionPerformed
 
     private void editQueryButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editQueryButtonActionPerformed
-        final DBObject dbObject = JsonUI.showEditor("title", queryField.getText());
+        final DBObject dbObject = JsonUI.showEditor(Bundle.queryEditorTitle(), queryField.getText());
         if (dbObject != null) {
             queryField.setText(JSON.serialize(dbObject));
         }

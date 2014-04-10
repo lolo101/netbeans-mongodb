@@ -45,6 +45,10 @@ public interface MongoRestoreOptions {
 
     String COLLECTION = "--collection";
 
+    String FILTER = "--filter";
+
+    String DB_PATH = "--dbpath";
+
     String IPV6 = "--ipv6";
 
     String SSL = "--ssl";
@@ -53,5 +57,17 @@ public interface MongoRestoreOptions {
 
     String JOURNAL = "--journal";
 
+    String OBJCHECK = "--objcheck";
+
+    String NO_OBJCHECK = "--noobjcheck";
+
+    String DROP = "--drop";
+
     String OPLOG_REPLAY = "--oplogReplay";
+
+    String KEEP_INDEX_VERSION = "--keepIndexVersion";
+
+    String NO_OPTIONS_RESTORE = "--noOptionsRestore";
+
+    String NO_INDEX_RESTORE = "--noIndexRestore";
 }

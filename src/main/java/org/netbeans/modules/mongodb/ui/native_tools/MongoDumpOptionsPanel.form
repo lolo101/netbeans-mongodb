@@ -73,13 +73,6 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="editQueryButton" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="ipv6CheckBox" alignment="0" max="32767" attributes="0"/>
-                  <Component id="sslCheckBox" alignment="0" max="32767" attributes="0"/>
-                  <Component id="directoryPerDbCheckBox" alignment="0" max="32767" attributes="0"/>
-                  <Component id="journalCheckBox" alignment="0" max="32767" attributes="0"/>
-                  <Component id="oplogCheckBox" alignment="0" max="32767" attributes="0"/>
-                  <Component id="repairCheckBox" max="32767" attributes="0"/>
-                  <Component id="forceTableScanCheckBox" alignment="0" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="outputLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -98,6 +91,13 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="authLabel" min="-2" max="-2" attributes="0"/>
                           <Component id="verbosityEditor" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="ipv6CheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="sslCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="directoryPerDbCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="journalCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="oplogCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="repairCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="forceTableScanCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                   </Group>
