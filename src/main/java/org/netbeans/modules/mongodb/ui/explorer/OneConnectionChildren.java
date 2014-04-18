@@ -62,10 +62,10 @@ final class OneConnectionChildren extends RefreshableChildFactory<DbInfo> {
                 public Void call() throws Exception {
                     final String connectionDBName = connectionInfo.getMongoURI().getDatabase();
                     if (connectionDBName != null) {
-                        list.add(new DbInfo(lookup, connectionDBName));
+                        list.add(new DbInfo(connectionDBName, lookup));
                     } else {
                         for (String dbName : client.getDatabaseNames()) {
-                            list.add(new DbInfo(lookup, dbName));
+                            list.add(new DbInfo(dbName, lookup));
                         }
                     }
                     return null;

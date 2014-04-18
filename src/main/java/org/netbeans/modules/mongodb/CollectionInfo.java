@@ -25,8 +25,8 @@ package org.netbeans.modules.mongodb;
 
 import java.util.Objects;
 import lombok.Getter;
+import lombok.NonNull;
 import org.openide.util.Lookup;
-import org.openide.util.Parameters;
 
 /**
  *
@@ -41,9 +41,7 @@ public final class CollectionInfo implements Comparable<CollectionInfo> {
     @Getter
     private final Lookup lookup;
 
-    public CollectionInfo(String name, Lookup lookup) {
-        Parameters.notNull("lookup", lookup);
-        Parameters.notNull("name", name);
+    public CollectionInfo(@NonNull String name, @NonNull Lookup lookup) {
         this.name = name;
         this.lookup = lookup;
     }

@@ -31,6 +31,7 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NonNull;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 
@@ -50,20 +51,19 @@ public final class ConnectionInfo implements Comparable<ConnectionInfo>, AutoClo
 
     public static final String DEFAULT_URI = "mongodb://localhost"; //NOI18N
 
-    private final Preferences node;
-
     @Getter
     private final UUID id;
 
+    private final Preferences node;
+
     private final PropertyChangeSupport supp = new PropertyChangeSupport(this);
 
-    public ConnectionInfo(UUID id, Preferences node) {
-        Parameters.notNull("node", node); //NOI18N
+    public ConnectionInfo(@NonNull UUID id, @NonNull Preferences node) {
         this.node = node;
         this.id = id;
     }
 
-    public ConnectionInfo(Preferences parent) {
+    public ConnectionInfo(@NonNull Preferences parent) {
         id = UUID.randomUUID();
         node = parent.node(id.toString());
     }

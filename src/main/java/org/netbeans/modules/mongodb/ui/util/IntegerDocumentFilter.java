@@ -23,6 +23,7 @@
  */
 package org.netbeans.modules.mongodb.ui.util;
 
+import java.util.regex.Pattern;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DocumentFilter;
@@ -33,6 +34,8 @@ import javax.swing.text.DocumentFilter;
  */
 public final class IntegerDocumentFilter extends DocumentFilter {
 
+    private static final Pattern INTEGER_PATTERN = Pattern.compile("\\d+");
+    
     @Override
     public void insertString(FilterBypass fb, int offset, String string,
             AttributeSet attr) throws BadLocationException {
@@ -42,12 +45,7 @@ public final class IntegerDocumentFilter extends DocumentFilter {
     }
 
     private boolean isInt(String text) {
-        try {
-            Integer.parseInt(text);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
-        }
+        return INTEGER_PATTERN.matcher(text).matches();
     }
 
     @Override
