@@ -81,6 +81,7 @@ import org.openide.windows.TopComponent;
     "ACTION_Connect=Connect",
     "ACTION_Disconnect=Disconnect",
     "ACTION_CreateDatabase=Create database",
+    "createDatabaseText=Database name:",
     "waitWhileConnecting=Please wait while connecting to mongo database"
 })
 final class OneConnectionNode extends AbstractNode implements PropertyChangeListener {
@@ -435,8 +436,8 @@ final class OneConnectionNode extends AbstractNode implements PropertyChangeList
         @Override
         public void actionPerformed(ActionEvent e) {
             final NotifyDescriptor.InputLine input = new ValidatingInputLine(
-                Bundle.addCollectionText(),
-                Bundle.ACTION_AddCollection(),
+                Bundle.createDatabaseText(),
+                Bundle.ACTION_CreateDatabase(),
                 new DatabaseNameValidator(getLookup()));
             final Object dlgResult = DialogDisplayer.getDefault().notify(input);
             if (dlgResult.equals(NotifyDescriptor.OK_OPTION)) {
