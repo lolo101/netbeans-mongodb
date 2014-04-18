@@ -153,6 +153,12 @@ final class OneConnectionNode extends AbstractNode implements PropertyChangeList
     }
 
     @Override
+    public String getShortDescription() {
+        final ConnectionInfo connection = getLookup().lookup(ConnectionInfo.class);
+        return connection.getMongoURI().toString();
+    }
+
+    @Override
     public Action[] getActions(boolean ignored) {
         final Action[] orig = super.getActions(ignored);
         final Action[] nue = new Action[orig.length + 9];
