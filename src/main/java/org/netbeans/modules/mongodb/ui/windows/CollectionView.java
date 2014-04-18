@@ -52,6 +52,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.text.PlainDocument;
 import javax.swing.tree.TreePath;
+import lombok.Getter;
 import org.jdesktop.swingx.JXTreeTable;
 import org.jdesktop.swingx.treetable.TreeTableNode;
 import org.netbeans.modules.mongodb.ConnectionInfo;
@@ -62,8 +63,8 @@ import org.netbeans.modules.mongodb.options.LabelCategory;
 import org.netbeans.modules.mongodb.ui.components.QueryEditor;
 import org.netbeans.modules.mongodb.ui.util.IntegerDocumentFilter;
 import org.netbeans.modules.mongodb.ui.windows.collectionview.CollectionQueryResult;
-import org.netbeans.modules.mongodb.ui.windows.collectionview.CollectionQueryResultProvider;
 import org.netbeans.modules.mongodb.ui.windows.collectionview.CollectionQueryResultView;
+import org.netbeans.modules.mongodb.ui.windows.collectionview.CollectionQueryResultUpdateListener;
 import org.netbeans.modules.mongodb.ui.windows.collectionview.flattable.JsonFlatTableCellRenderer;
 import org.netbeans.modules.mongodb.ui.windows.collectionview.actions.ChangeResultViewAction;
 import org.netbeans.modules.mongodb.ui.windows.collectionview.actions.ClearQueryAction;
@@ -122,15 +123,17 @@ public final class CollectionView extends TopComponent {
 
     private final boolean isSystemCollection;
 
+    @Getter
     private final QueryEditor queryEditor = new QueryEditor();
 
+    @Getter
     private final CollectionQueryResult collectionQueryResult;
 
     private final Map<ResultView, JToggleButton> resultViewButtons;
 
     private ResultView resultView = DEFAULT_RESULT_VIEW;
 
-    private final Map<ResultView, CollectionQueryResultView> resultViews = new EnumMap<>(ResultView.class);
+    private final Map<ResultView, CollectionQueryResultUpdateListener> resultViews = new EnumMap<>(ResultView.class);
 
     private Lookup lookup;
     
@@ -165,11 +168,11 @@ public final class CollectionView extends TopComponent {
             }
         };
 
-        documentsFlatTable.setModel(flatTableModel);
-        documentsFlatTable.setDefaultRenderer(DBObject.class, new JsonFlatTableCellRenderer());
-        documentsFlatTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        documentsFlatTable.getSelectionModel().addListSelectionListener(tableSelectionListener);
-        documentsFlatTable.getColumnModel().addColumnModelListener(new TableColumnModelListener() {
+        resultFlatTable.setModel(flatTableModel);
+        resultFlatTable.setDefaultRenderer(DBObject.class, new JsonFlatTableCellRenderer());
+        resultFlatTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        resultFlatTable.getSelectionModel().addListSelectionListener(tableSelectionListener);
+        resultFlatTable.getColumnModel().addColumnModelListener(new TableColumnModelListener() {
 
             @Override
             public void columnAdded(TableColumnModelEvent e) {
@@ -201,29 +204,29 @@ public final class CollectionView extends TopComponent {
             }
         });
 
-        documentsTreeTable.setTreeTableModel(treeTableModel);
-        documentsTreeTable.setTreeCellRenderer(new JsonTreeTableCellRenderer());
-        documentsTreeTable.addHighlighter(new DocumentTreeTableHighlighter());
-        documentsTreeTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        documentsTreeTable.getSelectionModel().addListSelectionListener(tableSelectionListener);
+        resultTreeTable.setTreeTableModel(treeTableModel);
+        resultTreeTable.setTreeCellRenderer(new JsonTreeTableCellRenderer());
+        resultTreeTable.addHighlighter(new DocumentTreeTableHighlighter());
+        resultTreeTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        resultTreeTable.getSelectionModel().addListSelectionListener(tableSelectionListener);
 
         final PlainDocument document = (PlainDocument) pageSizeField.getDocument();
         document.setDocumentFilter(new IntegerDocumentFilter());
 
-        documentsTreeTable.addMouseListener(new MouseAdapter() {
+        resultTreeTable.addMouseListener(new MouseAdapter() {
 
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2 && SwingUtilities.isLeftMouseButton(e)) {
-                    final TreePath path = documentsTreeTable.getPathForLocation(e.getX(), e.getY());
+                    final TreePath path = resultTreeTable.getPathForLocation(e.getX(), e.getY());
                     final TreeTableNode node = (TreeTableNode) path.getLastPathComponent();
                     if (node.isLeaf()) {
                         editSelectedDocumentAction.actionPerformed(null);
                     } else {
-                        if (documentsTreeTable.isCollapsed(path)) {
-                            documentsTreeTable.expandPath(path);
+                        if (resultTreeTable.isCollapsed(path)) {
+                            resultTreeTable.expandPath(path);
                         } else {
-                            documentsTreeTable.collapsePath(path);
+                            resultTreeTable.collapsePath(path);
                         }
                     }
                 }
@@ -232,10 +235,10 @@ public final class CollectionView extends TopComponent {
             @Override
             public void mouseReleased(MouseEvent e) {
                 if (e.isPopupTrigger()) {
-                    final TreePath path = documentsTreeTable.getPathForLocation(e.getX(), e.getY());
+                    final TreePath path = resultTreeTable.getPathForLocation(e.getX(), e.getY());
                     if (path != null) {
-                        final int row = documentsTreeTable.getRowForPath(path);
-                        documentsTreeTable.setRowSelectionInterval(row, row);
+                        final int row = resultTreeTable.getRowForPath(path);
+                        resultTreeTable.setRowSelectionInterval(row, row);
                     }
                     final JPopupMenu menu = createTreeTableContextMenu(path);
                     menu.show(e.getComponent(), e.getX(), e.getY());
@@ -243,7 +246,7 @@ public final class CollectionView extends TopComponent {
             }
 
         });
-        documentsFlatTable.addMouseListener(new MouseAdapter() {
+        resultFlatTable.addMouseListener(new MouseAdapter() {
 
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -255,10 +258,10 @@ public final class CollectionView extends TopComponent {
             @Override
             public void mouseReleased(MouseEvent e) {
                 if (e.isPopupTrigger()) {
-                    final int row = documentsFlatTable.rowAtPoint(e.getPoint());
+                    final int row = resultFlatTable.rowAtPoint(e.getPoint());
                     if (row > -1) {
-                        final int column = documentsFlatTable.columnAtPoint(e.getPoint());
-                        documentsFlatTable.setRowSelectionInterval(row, row);
+                        final int column = resultFlatTable.columnAtPoint(e.getPoint());
+                        resultFlatTable.setRowSelectionInterval(row, row);
                         final JPopupMenu menu = createFlatTableContextMenu(row, column);
                         menu.show(e.getComponent(), e.getX(), e.getY());
                     }
@@ -299,31 +302,15 @@ public final class CollectionView extends TopComponent {
         writePreferences();
     }
 
-    public QueryEditor getQueryEditor() {
-        return queryEditor;
-    }
-
     private JTable getResultTable() {
         switch (resultView) {
             case FLAT_TABLE:
-                return documentsFlatTable;
+                return resultFlatTable;
             case TREE_TABLE:
-                return documentsTreeTable;
+                return resultTreeTable;
             default:
                 throw new AssertionError();
         }
-    }
-
-    public JTable getResultFlatTable() {
-        return documentsFlatTable;
-    }
-
-    public JXTreeTable getResultTreeTable() {
-        return documentsTreeTable;
-    }
-
-    public CollectionQueryResult getCollectionQueryResult() {
-        return collectionQueryResult;
     }
 
     public DBObject getResultTableSelectedDocument() {
@@ -334,11 +321,11 @@ public final class CollectionView extends TopComponent {
         }
         switch (resultView) {
             case FLAT_TABLE:
-                return ((DocumentsFlatTableModel) documentsFlatTable.getModel()).getRowValue(row);
+                return ((DocumentsFlatTableModel) resultFlatTable.getModel()).getRowValue(row);
             case TREE_TABLE:
-                final TreePath selectionPath = documentsTreeTable.getPathForRow(row);
+                final TreePath selectionPath = resultTreeTable.getPathForRow(row);
                 final DocumentNode documentNode = (DocumentNode) selectionPath.getPathComponent(1);
-                return (DBObject) documentsTreeTable.getTreeTableModel().getValueAt(documentNode, 0);
+                return (DBObject) resultTreeTable.getTreeTableModel().getValueAt(documentNode, 0);
             default:
                 throw new AssertionError();
         }
@@ -426,9 +413,9 @@ public final class CollectionView extends TopComponent {
     }
 
     private void changePageSize(int pageSize) {
-        ((CollectionQueryResultProvider) documentsFlatTable.getModel())
+        ((CollectionQueryResultView) resultFlatTable.getModel())
             .getCollectionQueryResult().setPageSize(pageSize);
-        ((CollectionQueryResultProvider) documentsTreeTable.getTreeTableModel())
+        ((CollectionQueryResultView) resultTreeTable.getTreeTableModel())
             .getCollectionQueryResult().setPageSize(pageSize);
         refreshResults();
     }
@@ -476,9 +463,9 @@ public final class CollectionView extends TopComponent {
         pageCountLabel = new javax.swing.JLabel();
         resultPanel = new javax.swing.JPanel();
         treeTableScrollPane = new javax.swing.JScrollPane();
-        documentsTreeTable = new org.jdesktop.swingx.JXTreeTable();
+        resultTreeTable = new org.jdesktop.swingx.JXTreeTable();
         flatTableScrollPane = new javax.swing.JScrollPane();
-        documentsFlatTable = new javax.swing.JTable();
+        resultFlatTable = new javax.swing.JTable();
 
         queryPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(CollectionView.class, "CollectionView.queryPanel.border.title"))); // NOI18N
 
@@ -663,11 +650,11 @@ public final class CollectionView extends TopComponent {
 
         resultPanel.setLayout(new java.awt.CardLayout());
 
-        treeTableScrollPane.setViewportView(documentsTreeTable);
+        treeTableScrollPane.setViewportView(resultTreeTable);
 
         resultPanel.add(treeTableScrollPane, "TREE_TABLE");
 
-        flatTableScrollPane.setViewportView(documentsFlatTable);
+        flatTableScrollPane.setViewportView(resultFlatTable);
 
         resultPanel.add(flatTableScrollPane, "FLAT_TABLE");
 
@@ -709,9 +696,7 @@ public final class CollectionView extends TopComponent {
     private javax.swing.JTextField criteriaField;
     private javax.swing.JLabel criteriaLabel;
     private javax.swing.JButton deleteButton;
-    private javax.swing.JTable documentsFlatTable;
     private javax.swing.JToolBar documentsToolBar;
-    private org.jdesktop.swingx.JXTreeTable documentsTreeTable;
     private javax.swing.JButton editButton;
     private javax.swing.JButton editQueryButton;
     private javax.swing.JButton expandTreeButton;
@@ -734,7 +719,11 @@ public final class CollectionView extends TopComponent {
     private javax.swing.JLabel projectionLabel;
     private javax.swing.JPanel queryPanel;
     private javax.swing.JButton refreshDocumentsButton;
+    @Getter
+    private javax.swing.JTable resultFlatTable;
     private javax.swing.JPanel resultPanel;
+    @Getter
+    private org.jdesktop.swingx.JXTreeTable resultTreeTable;
     private javax.swing.ButtonGroup resultsViewButtonGroup;
     private javax.swing.JTextField sortField;
     private javax.swing.JLabel sortLabel;
@@ -772,96 +761,51 @@ public final class CollectionView extends TopComponent {
         }
     }
 
+    @Getter
     private final Action editQueryAction = new EditQueryAction(this);
 
+    @Getter
     private final Action clearQueryAction = new ClearQueryAction(this);
 
+    @Getter
     private final Action addDocumentAction = new AddDocumentAction(this);
 
+    @Getter
     private final Action deleteSelectedDocumentAction = new DeleteSelectedDocumentAction(this);
 
+    @Getter
     private final Action editSelectedDocumentAction = new EditSelectedDocumentAction(this);
 
+    @Getter
     private final Action refreshDocumentsAction = new RefreshDocumentsAction(this);
 
+    @Getter
     private final Action navFirstAction = new NavFirstAction(this);
 
+    @Getter
     private final Action navLeftAction = new NavLeftAction(this);
 
+    @Getter
     private final Action navRightAction = new NavRightAction(this);
 
+    @Getter
     private final Action navLastAction = new NavLastAction(this);
 
+    @Getter
     private final Action exportQueryResultAction = new ExportQueryResultAction(this);
 
+    @Getter
     private final Action treeTableViewAction = ChangeResultViewAction.create(this, ResultView.TREE_TABLE);
 
+    @Getter
     private final Action flatTableViewAction = ChangeResultViewAction.create(this, ResultView.FLAT_TABLE);
 
+    @Getter
     private final Action collapseTreeAction = new CollapseAllDocumentsAction(this);
 
+    @Getter
     private final Action expandTreeAction = new ExpandAllDocumentsAction(this);
     
-    public Action getEditQueryAction() {
-        return editQueryAction;
-    }
-
-    public Action getClearQueryAction() {
-        return clearQueryAction;
-    }
-
-    public Action getAddDocumentAction() {
-        return addDocumentAction;
-    }
-
-    public Action getDeleteSelectedDocumentAction() {
-        return deleteSelectedDocumentAction;
-    }
-
-    public Action getEditSelectedDocumentAction() {
-        return editSelectedDocumentAction;
-    }
-
-    public Action getRefreshDocumentsAction() {
-        return refreshDocumentsAction;
-    }
-
-    public Action getNavFirstAction() {
-        return navFirstAction;
-    }
-
-    public Action getNavLeftAction() {
-        return navLeftAction;
-    }
-
-    public Action getNavRightAction() {
-        return navRightAction;
-    }
-
-    public Action getNavLastAction() {
-        return navLastAction;
-    }
-
-    public Action getExportQueryResultAction() {
-        return exportQueryResultAction;
-    }
-
-    public Action getFlatTableViewAction() {
-        return flatTableViewAction;
-    }
-
-    public Action getTreeTableViewAction() {
-        return treeTableViewAction;
-    }
-
-    public Action getCollapseTreeAction() {
-        return collapseTreeAction;
-    }
-
-    public Action getExpandTreeAction() {
-        return expandTreeAction;
-    }
-
     public enum ResultView {
 
         FLAT_TABLE, TREE_TABLE
@@ -897,7 +841,7 @@ public final class CollectionView extends TopComponent {
         final JPopupMenu menu = new JPopupMenu();
         final DBObject document = collectionQueryResult.getDocuments().get(row);
         menu.add(new JMenuItem(new CopyDocumentToClipboardAction(document)));
-        final DocumentsFlatTableModel model = (DocumentsFlatTableModel) documentsFlatTable.getModel();
+        final DocumentsFlatTableModel model = (DocumentsFlatTableModel) resultFlatTable.getModel();
         final JsonProperty property = new JsonProperty(
             model.getColumnName(column),
             model.getValueAt(row, column));

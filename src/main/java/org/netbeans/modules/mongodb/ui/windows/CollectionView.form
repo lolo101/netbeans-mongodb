@@ -387,7 +387,10 @@
 
           <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
           <SubComponents>
-            <Component class="org.jdesktop.swingx.JXTreeTable" name="documentsTreeTable">
+            <Component class="org.jdesktop.swingx.JXTreeTable" name="resultTreeTable">
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_DeclarationPre" type="java.lang.String" value="@Getter"/>
+              </AuxValues>
             </Component>
           </SubComponents>
         </Container>
@@ -403,7 +406,10 @@
 
           <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
           <SubComponents>
-            <Component class="javax.swing.JTable" name="documentsFlatTable">
+            <Component class="javax.swing.JTable" name="resultFlatTable">
+              <AuxValues>
+                <AuxValue name="JavaCodeGenerator_DeclarationPre" type="java.lang.String" value="@Getter"/>
+              </AuxValues>
             </Component>
           </SubComponents>
         </Container>

@@ -157,8 +157,7 @@ public final class MongoURIEditorPanel extends javax.swing.JPanel {
 
     public boolean valid() {
         try {
-            new MongoClientURI(computeMongoURIString());
-            return true;
+            return new MongoClientURI(computeMongoURIString()) != null;
         } catch (IllegalArgumentException ex) {
             return false;
         }

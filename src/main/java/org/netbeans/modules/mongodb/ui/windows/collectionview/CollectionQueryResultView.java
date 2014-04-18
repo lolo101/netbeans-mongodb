@@ -24,17 +24,15 @@
 
 package org.netbeans.modules.mongodb.ui.windows.collectionview;
 
-import com.mongodb.DBObject;
-
 /**
- *
+ * A CollectionQueryResult view.
+ * 
  * @author Yann D'Isanto
  */
 public interface CollectionQueryResultView {
-    
-    void updateStarting();
-    
-    void documentAdded(DBObject document);
-    
-    void updateFinished();
+   
+    /**
+     * @return a CollectionQueryResult instance.
+     */
+    CollectionQueryResult getCollectionQueryResult();
 }

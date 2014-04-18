@@ -26,15 +26,20 @@ package org.netbeans.modules.mongodb;
 import com.mongodb.MongoClientURI;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.UUID;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 
 /**
  *
  * @author Tim Boudreau
+ * @author Yann D'Isanto
  */
+@EqualsAndHashCode(of = {"id"})
 public final class ConnectionInfo implements Comparable<ConnectionInfo>, AutoCloseable {
 
     public static final String PREFS_KEY_DISPLAY_NAME = "displayName"; //NOI18N
@@ -47,21 +52,20 @@ public final class ConnectionInfo implements Comparable<ConnectionInfo>, AutoClo
 
     private final Preferences node;
 
-    private final String id;
-
-    private static volatile int count;
+    @Getter
+    private final UUID id;
 
     private final PropertyChangeSupport supp = new PropertyChangeSupport(this);
 
-    public ConnectionInfo(String id, Preferences node) {
+    public ConnectionInfo(UUID id, Preferences node) {
         Parameters.notNull("node", node); //NOI18N
         this.node = node;
         this.id = id;
     }
 
     public ConnectionInfo(Preferences parent) {
-        id = System.currentTimeMillis() + "-" + count++; //NOI18N
-        node = parent.node(id);
+        id = UUID.randomUUID();
+        node = parent.node(id.toString());
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -122,14 +126,14 @@ public final class ConnectionInfo implements Comparable<ConnectionInfo>, AutoClo
         }
     }
 
-    public String getId() {
-        return id;
+    public void delete() {
+        try {
+            node.removeNode();
+        } catch (BackingStoreException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
-
-    public Preferences getPreferences() {
-        return node;
-    }
-
+    
     @Override
     public void close() {
         save();
@@ -144,15 +148,4 @@ public final class ConnectionInfo implements Comparable<ConnectionInfo>, AutoClo
     public int compareTo(ConnectionInfo o) {
         return id.compareTo(o.id);
     }
-
-    @Override
-    public boolean equals(Object o) {
-        return o instanceof ConnectionInfo && ((ConnectionInfo) o).id.equals(id);
-    }
-
-    @Override
-    public int hashCode() {
-        return id.hashCode();
-    }
-
 }

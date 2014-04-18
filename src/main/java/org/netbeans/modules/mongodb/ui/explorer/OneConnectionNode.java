@@ -41,7 +41,6 @@ import java.net.UnknownHostException;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.prefs.BackingStoreException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
@@ -123,7 +122,7 @@ final class OneConnectionNode extends AbstractNode implements PropertyChangeList
         content.add(problems);
         content.add(connection, converter);
         setDisplayName(connection.getDisplayName());
-        setName(connection.getId());
+        setName(connection.getId().toString());
         childFactory.setParentNode(this);
         connection.addPropertyChangeListener(WeakListeners.propertyChange(this, connection));
     }
@@ -143,8 +142,8 @@ final class OneConnectionNode extends AbstractNode implements PropertyChangeList
     @Override
     public Image getIcon(int ignored) {
         return isConnected()
-                ? Images.CONNECTION_ICON
-                : Images.CONNECTION_DISCONNECTED_ICON;
+            ? Images.CONNECTION_ICON
+            : Images.CONNECTION_DISCONNECTED_ICON;
     }
 
     @Override
@@ -211,15 +210,15 @@ final class OneConnectionNode extends AbstractNode implements PropertyChangeList
                         } catch (MongoException ex) {
                             setProblem(true);
                             DialogDisplayer.getDefault().notify(
-                                    new NotifyDescriptor.Message(
-                                            "error connectiong to mongo database: " + ex.getLocalizedMessage(),
-                                            NotifyDescriptor.ERROR_MESSAGE));
+                                new NotifyDescriptor.Message(
+                                    "error connectiong to mongo database: " + ex.getLocalizedMessage(),
+                                    NotifyDescriptor.ERROR_MESSAGE));
                         } catch (UnknownHostException ex) {
                             setProblem(true);
                             DialogDisplayer.getDefault().notify(
-                                    new NotifyDescriptor.Message(
-                                            "unknown server: " + ex.getLocalizedMessage(),
-                                            NotifyDescriptor.ERROR_MESSAGE));
+                                new NotifyDescriptor.Message(
+                                    "unknown server: " + ex.getLocalizedMessage(),
+                                    NotifyDescriptor.ERROR_MESSAGE));
                         }
 
                     }
@@ -290,7 +289,7 @@ final class OneConnectionNode extends AbstractNode implements PropertyChangeList
             final ConnectionInfo connection = getLookup().lookup(ConnectionInfo.class);
             try {
                 final PropertySupport.Reflection<MongoClientURI> uriProperty
-                        = new PropertySupport.Reflection<>(connection, MongoClientURI.class, MongoClientURIProperty.KEY);
+                    = new PropertySupport.Reflection<>(connection, MongoClientURI.class, MongoClientURIProperty.KEY);
                 uriProperty.setPropertyEditorClass(MongoClientURIPropertyEditor.class);
                 uriProperty.setDisplayName(MongoClientURIProperty.displayName());
                 set.put(uriProperty);
@@ -393,17 +392,12 @@ final class OneConnectionNode extends AbstractNode implements PropertyChangeList
         @Override
         public void actionPerformed(ActionEvent e) {
             final ConnectionInfo info = getLookup().lookup(ConnectionInfo.class);
-            try {
-                disconnecter.close();
-                info.getPreferences().removeNode();
-                for (TopComponent topComponent : TopComponentUtils.findAll(CollectionView.class, info)) {
-                    topComponent.close();
-                }
-                ((MongoServicesNode) getParentNode()).getChildrenFactory().refresh();
-            } catch (BackingStoreException ex) {
-                Exceptions.printStackTrace(ex);
+            disconnecter.close();
+            info.delete();
+            for (TopComponent topComponent : TopComponentUtils.findAll(CollectionView.class, info)) {
+                topComponent.close();
             }
-
+            ((MongoServicesNode) getParentNode()).getChildrenFactory().refresh();
         }
     }
 
@@ -432,7 +426,7 @@ final class OneConnectionNode extends AbstractNode implements PropertyChangeList
         }
 
     }
-    
+
     public final class CreateDatabaseAction extends AbstractAction {
 
         public CreateDatabaseAction() {

@@ -28,14 +28,14 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.table.AbstractTableModel;
 import org.netbeans.modules.mongodb.ui.windows.collectionview.CollectionQueryResult;
-import org.netbeans.modules.mongodb.ui.windows.collectionview.CollectionQueryResultProvider;
 import org.netbeans.modules.mongodb.ui.windows.collectionview.CollectionQueryResultView;
+import org.netbeans.modules.mongodb.ui.windows.collectionview.CollectionQueryResultUpdateListener;
 
 /**
  *
  * @author Yann D'Isanto
  */
-public final class DocumentsFlatTableModel extends AbstractTableModel implements CollectionQueryResultProvider, CollectionQueryResultView {
+public final class DocumentsFlatTableModel extends AbstractTableModel implements CollectionQueryResultView, CollectionQueryResultUpdateListener {
 
     private final List<String> columns = new ArrayList<>();
 
@@ -51,18 +51,18 @@ public final class DocumentsFlatTableModel extends AbstractTableModel implements
     }
 
     @Override
-    public void updateStarting() {
+    public void updateStarting(CollectionQueryResult source) {
         columns.clear();
         columns.add("_id");
     }
 
     @Override
-    public void documentAdded(DBObject document) {
+    public void documentAdded(CollectionQueryResult source, DBObject document) {
         updateColumns(document);
     }
 
     @Override
-    public void updateFinished() {
+    public void updateFinished(CollectionQueryResult source) {
         fireTableStructureChanged();
     }
 

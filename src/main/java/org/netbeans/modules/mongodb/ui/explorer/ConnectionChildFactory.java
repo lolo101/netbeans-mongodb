@@ -25,6 +25,7 @@ package org.netbeans.modules.mongodb.ui.explorer;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.mongodb.ConnectionInfo;
@@ -46,7 +47,7 @@ final class ConnectionChildFactory extends RefreshableChildFactory<ConnectionInf
             for (int i = 0; i < kids.length; i++) {
                 String kid = kids[i];
                 Preferences node = prefs.node(kid);
-                result[i] = new ConnectionInfo(kid, node);
+                result[i] = new ConnectionInfo(UUID.fromString(kid), node);
             }
             System.out.println("RETURNING " + result.length + " connections: " + Arrays.asList(result));
             return result;

@@ -24,17 +24,21 @@
 package org.netbeans.modules.mongodb;
 
 import java.util.Objects;
+import lombok.Getter;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
 
 /**
  *
  * @author Tim Boudreau
+ * @author Yann D'Isanto
  */
 public final class CollectionInfo implements Comparable<CollectionInfo> {
 
+    @Getter
     private final String name;
 
+    @Getter
     private final Lookup lookup;
 
     public CollectionInfo(String name, Lookup lookup) {
@@ -44,32 +48,30 @@ public final class CollectionInfo implements Comparable<CollectionInfo> {
         this.lookup = lookup;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public Lookup getLookup() {
-        return lookup;
-    }
-
     @Override
-    public boolean equals(Object o) {
-        boolean result = o instanceof CollectionInfo;
-        if (result) {
-            CollectionInfo other = (CollectionInfo) o;
-            result = name.equals(other.name);
-            if (result) {
-                DbInfo mine = lookup.lookup(DbInfo.class);
-                DbInfo info = other.lookup.lookup(DbInfo.class);
-                result = Objects.equals(mine, info);
-            }
+    public boolean equals(Object object) {
+        if (object == null) {
+            return false;
         }
-        return result;
+        if (object == this) {
+            return true;
+        }
+        if (object instanceof CollectionInfo) {
+            final CollectionInfo other = (CollectionInfo) object;
+            return name.equals(other.name)
+                && Objects.equals(
+                    lookup.lookup(DbInfo.class),
+                    other.lookup.lookup(DbInfo.class));
+        }
+        return false;
     }
 
     @Override
     public int hashCode() {
-        return name.hashCode();
+        int hash = 5;
+        hash = 71 * hash + Objects.hashCode(this.name);
+        hash = 71 * hash + Objects.hashCode(this.lookup.lookup(DbInfo.class));
+        return hash;
     }
 
     @Override

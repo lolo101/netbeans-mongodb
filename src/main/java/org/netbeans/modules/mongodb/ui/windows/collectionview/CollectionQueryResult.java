@@ -28,6 +28,8 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  *
@@ -37,23 +39,38 @@ public final class CollectionQueryResult {
 
     public static final int DEFAULT_PAGE_SIZE = 20;
 
+    @Getter
+    @Setter
     private DBCollection dbCollection;
 
+    @Getter
     private final List<DBObject> documents = new ArrayList<>();
 
+    @Getter
+    @Setter
     private int pageSize = DEFAULT_PAGE_SIZE;
 
+    @Getter
+    @Setter
     private int page = 1;
 
+    @Getter
     private int totalDocumentsCount = 0;
 
+    @Getter
+    @Setter
     private DBObject criteria;
 
+    @Getter
+    @Setter
     private DBObject projection;
 
+    @Getter
+    @Setter
     private DBObject sort;
 
-    private CollectionQueryResultView view;
+    @Setter
+    private CollectionQueryResultUpdateListener view;
 
     private boolean viewRefreshNecessary;
 
@@ -61,19 +78,11 @@ public final class CollectionQueryResult {
         this.dbCollection = dbCollection;
     }
 
-    public DBCollection getDbCollection() {
-        return dbCollection;
-    }
-
-    public void setDbCollection(DBCollection dbCollection) {
-        this.dbCollection = dbCollection;
-    }
-
     public void update() {
         documents.clear();
         fireUpdateStarting();
         if (dbCollection == null) {
-            // TODO: error message
+            // TODO: error message?
             return;
         }
         try (DBCursor cursor = dbCollection.find(criteria, projection)) {
@@ -114,44 +123,20 @@ public final class CollectionQueryResult {
 
     private void fireUpdateStarting() {
         if (view != null) {
-            view.updateStarting();
+            view.updateStarting(this);
         }
     }
 
     private void fireDocumentAdded(DBObject document) {
         if (view != null) {
-            view.documentAdded(document);
+            view.documentAdded(this, document);
         }
     }
 
     private void fireUpdateFinished() {
         if (view != null) {
-            view.updateFinished();
+            view.updateFinished(this);
         }
-    }
-
-    public void setView(CollectionQueryResultView view) {
-        this.view = view;
-    }
-
-    public List<DBObject> getDocuments() {
-        return documents;
-    }
-
-    public int getPageSize() {
-        return pageSize;
-    }
-
-    public void setPageSize(int pageSize) {
-        this.pageSize = pageSize;
-    }
-
-    public int getPage() {
-        return page;
-    }
-
-    public void setPage(int page) {
-        this.page = page;
     }
 
     public int getPageCount() {
@@ -160,33 +145,5 @@ public final class CollectionQueryResult {
             return (int) Math.ceil(pageCount);
         }
         return 1;
-    }
-
-    public int getTotalDocumentsCount() {
-        return totalDocumentsCount;
-    }
-
-    public DBObject getCriteria() {
-        return criteria;
-    }
-
-    public void setCriteria(DBObject criteria) {
-        this.criteria = criteria;
-    }
-
-    public DBObject getProjection() {
-        return projection;
-    }
-
-    public void setProjection(DBObject projection) {
-        this.projection = projection;
-    }
-
-    public DBObject getSort() {
-        return sort;
-    }
-
-    public void setSort(DBObject sort) {
-        this.sort = sort;
     }
 }

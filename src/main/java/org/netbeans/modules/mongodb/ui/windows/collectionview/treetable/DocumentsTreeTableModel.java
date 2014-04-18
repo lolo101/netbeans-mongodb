@@ -30,14 +30,14 @@ import javax.swing.SwingUtilities;
 import org.jdesktop.swingx.treetable.DefaultTreeTableModel;
 import org.jdesktop.swingx.treetable.TreeTableNode;
 import org.netbeans.modules.mongodb.ui.windows.collectionview.CollectionQueryResult;
-import org.netbeans.modules.mongodb.ui.windows.collectionview.CollectionQueryResultProvider;
 import org.netbeans.modules.mongodb.ui.windows.collectionview.CollectionQueryResultView;
+import org.netbeans.modules.mongodb.ui.windows.collectionview.CollectionQueryResultUpdateListener;
 
 /**
  *
  * @author Yann D'Isanto
  */
-public final class DocumentsTreeTableModel extends DefaultTreeTableModel implements CollectionQueryResultProvider, CollectionQueryResultView {
+public final class DocumentsTreeTableModel extends DefaultTreeTableModel implements CollectionQueryResultView, CollectionQueryResultUpdateListener {
 
     private final CollectionQueryResult collectionQueryResult;
 
@@ -51,15 +51,15 @@ public final class DocumentsTreeTableModel extends DefaultTreeTableModel impleme
     }
 
     @Override
-    public void updateStarting() {
+    public void updateStarting(CollectionQueryResult source) {
     }
 
     @Override
-    public void documentAdded(DBObject document) {
+    public void documentAdded(CollectionQueryResult source, DBObject document) {
     }
 
     @Override
-    public void updateFinished() {
+    public void updateFinished(CollectionQueryResult source) {
         final TreeTableNode rootNode = new CollectionViewTreeTableNode<>(null, collectionQueryResult.getDocuments(),
             new CollectionViewTreeTableNode.ChildrenFactory<List<DBObject>>() {
 

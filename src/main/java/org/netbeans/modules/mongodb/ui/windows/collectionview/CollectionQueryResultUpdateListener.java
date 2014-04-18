@@ -21,14 +21,37 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 package org.netbeans.modules.mongodb.ui.windows.collectionview;
 
+import com.mongodb.DBObject;
+
 /**
+ * A listener to be notified on collection query result update events.
  *
  * @author Yann D'Isanto
  */
-public interface CollectionQueryResultProvider {
-    
-    CollectionQueryResult getCollectionQueryResult();
+public interface CollectionQueryResultUpdateListener {
+
+    /**
+     * Invoked on collection query result update start.
+     *
+     * @param source the collection query result event source
+     */
+    void updateStarting(CollectionQueryResult source);
+
+    /**
+     * Invoked when a document is added to the collection query result during
+     * update.
+     *
+     * @param source the collection query result event source
+     * @param document the added document
+     */
+    void documentAdded(CollectionQueryResult source, DBObject document);
+
+    /**
+     * Invoked on collection query result update end.
+     *
+     * @param source the collection query result event source
+     */
+    void updateFinished(CollectionQueryResult source);
 }
