@@ -24,6 +24,8 @@
 package org.netbeans.modules.mongodb.ui.windows.collectionview.actions;
 
 import java.awt.event.ActionEvent;
+import javax.swing.ImageIcon;
+import org.netbeans.modules.mongodb.resources.Images;
 import org.netbeans.modules.mongodb.ui.windows.CollectionView;
 import org.openide.util.NbBundle.Messages;
 
@@ -40,7 +42,7 @@ public final class CollapseAllDocumentsAction extends CollectionViewAction {
     public CollapseAllDocumentsAction(CollectionView view) {
         super(view,
             Bundle.ACTION_collapseAllDocuments(),
-            null,
+            new ImageIcon(Images.COLLAPSE_TREE_ICON),
             Bundle.ACTION_collapseAllDocuments_tooltip());
     }
 

@@ -358,6 +358,9 @@ public final class CollectionView extends TopComponent {
             public void run() {
                 final CardLayout layout = (CardLayout) resultPanel.getLayout();
                 layout.show(resultPanel, resultView.name());
+                final boolean treeView = resultView == ResultView.TREE_TABLE;
+                collapseTreeAction.setEnabled(treeView);
+                expandTreeAction.setEnabled(treeView);
             }
         });
     }
@@ -452,6 +455,9 @@ public final class CollectionView extends TopComponent {
         treeTableViewButton = new javax.swing.JToggleButton();
         flatTableViewButton = new javax.swing.JToggleButton();
         jSeparator4 = new javax.swing.JToolBar.Separator();
+        expandTreeButton = new javax.swing.JButton();
+        collapseTreeButton = new javax.swing.JButton();
+        jSeparator5 = new javax.swing.JToolBar.Separator();
         addButton = new javax.swing.JButton();
         deleteButton = new javax.swing.JButton();
         editButton = new javax.swing.JButton();
@@ -562,6 +568,21 @@ public final class CollectionView extends TopComponent {
         flatTableViewButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         documentsToolBar.add(flatTableViewButton);
         documentsToolBar.add(jSeparator4);
+
+        expandTreeButton.setAction(getExpandTreeAction());
+        expandTreeButton.setFocusable(false);
+        expandTreeButton.setHideActionText(true);
+        expandTreeButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        expandTreeButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        documentsToolBar.add(expandTreeButton);
+
+        collapseTreeButton.setAction(getCollapseTreeAction());
+        collapseTreeButton.setFocusable(false);
+        collapseTreeButton.setHideActionText(true);
+        collapseTreeButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        collapseTreeButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        documentsToolBar.add(collapseTreeButton);
+        documentsToolBar.add(jSeparator5);
 
         addButton.setAction(getAddDocumentAction());
         addButton.setFocusable(false);
@@ -684,6 +705,7 @@ public final class CollectionView extends TopComponent {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
     private javax.swing.JButton clearQueryButton;
+    private javax.swing.JButton collapseTreeButton;
     private javax.swing.JTextField criteriaField;
     private javax.swing.JLabel criteriaLabel;
     private javax.swing.JButton deleteButton;
@@ -692,6 +714,7 @@ public final class CollectionView extends TopComponent {
     private org.jdesktop.swingx.JXTreeTable documentsTreeTable;
     private javax.swing.JButton editButton;
     private javax.swing.JButton editQueryButton;
+    private javax.swing.JButton expandTreeButton;
     private javax.swing.JButton exportButton;
     private javax.swing.JScrollPane flatTableScrollPane;
     private javax.swing.JToggleButton flatTableViewButton;
@@ -699,6 +722,7 @@ public final class CollectionView extends TopComponent {
     private javax.swing.JToolBar.Separator jSeparator2;
     private javax.swing.JToolBar.Separator jSeparator3;
     private javax.swing.JToolBar.Separator jSeparator4;
+    private javax.swing.JToolBar.Separator jSeparator5;
     private javax.swing.JButton navFirstButton;
     private javax.swing.JButton navLastButton;
     private javax.swing.JButton navLeftButton;
@@ -774,6 +798,10 @@ public final class CollectionView extends TopComponent {
 
     private final Action flatTableViewAction = ChangeResultViewAction.create(this, ResultView.FLAT_TABLE);
 
+    private final Action collapseTreeAction = new CollapseAllDocumentsAction(this);
+
+    private final Action expandTreeAction = new ExpandAllDocumentsAction(this);
+    
     public Action getEditQueryAction() {
         return editQueryAction;
     }
@@ -826,6 +854,14 @@ public final class CollectionView extends TopComponent {
         return treeTableViewAction;
     }
 
+    public Action getCollapseTreeAction() {
+        return collapseTreeAction;
+    }
+
+    public Action getExpandTreeAction() {
+        return expandTreeAction;
+    }
+
     public enum ResultView {
 
         FLAT_TABLE, TREE_TABLE
@@ -852,8 +888,8 @@ public final class CollectionView extends TopComponent {
             menu.add(new JMenuItem(new DeleteSelectedDocumentAction(this)));
             menu.addSeparator();
         }
-        menu.add(new JMenuItem(new CollapseAllDocumentsAction(this)));
-        menu.add(new JMenuItem(new ExpandAllDocumentsAction(this)));
+        menu.add(new JMenuItem(collapseTreeAction));
+        menu.add(new JMenuItem(expandTreeAction));
         return menu;
     }
 
