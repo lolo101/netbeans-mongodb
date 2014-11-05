@@ -28,6 +28,7 @@ import com.mongodb.util.JSON;
 import com.mongodb.util.JSONParseException;
 import java.awt.Dimension;
 import javax.swing.JEditorPane;
+import javax.swing.JScrollPane;
 import javax.swing.text.EditorKit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.modules.mongodb.util.Json;
@@ -59,13 +60,14 @@ public final class JsonUI {
         if (jsonEditorKit != null) {
             editor.setEditorKit(jsonEditorKit);
         }
-        editor.setPreferredSize(new Dimension(450, 300));
+		final JScrollPane pane = new JScrollPane(editor);
+        pane.setPreferredSize(new Dimension(450, 300));
         String json = defaultJson.trim().isEmpty() ? "{}" : Json.prettify(defaultJson);
         boolean doLoop = true;
         while (doLoop) {
             doLoop = false;
             editor.setText(json);
-            final DialogDescriptor desc = new DialogDescriptor(editor, title);
+            final DialogDescriptor desc = new DialogDescriptor(pane, title);
             final Object dlgResult = DialogDisplayer.getDefault().notify(desc);
             if (dlgResult.equals(NotifyDescriptor.OK_OPTION)) {
                 try {
